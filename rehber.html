@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ayet Haritası Kılavuzu</title>
+<meta name="description" content="Ayet Haritası nasıl kullanılır: 12 kartta arama, karşılaştırma, grafik ve ayet kartı.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Düzen: dikey (9:16) bilgi kartları — masaüstünde ızgara, telefonda kaydırmalı şerit */
+:root{
+  --bg0:#0a0a22; --bg1:#16153a; --bg2:#221d4d;
+  --card0:#1f1c4a; --card1:#141238;
+  --gold:#e9c46a; --gold2:#f6dc95; --ink:#ecebf7; --muted:#9a98c2; --line:rgba(233,196,106,.32); --line2:rgba(255,255,255,.09);
+  --c1:#f2c14e; --c2:#7fb2ff; --c3:#f08a7e; --c4:#6fd6b0; --c5:#c59bff;
+  --serif:"Cormorant Garamond",Georgia,serif; --sans:Inter,system-ui,-apple-system,sans-serif; --ar:"Amiri Quran","Amiri","Geeza Pro",serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(180deg,var(--bg0),var(--bg1) 55%,var(--bg2)) fixed;color:var(--ink);font:14px/1.5 var(--sans)}
+#stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+a{color:inherit}
+.top{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:20px clamp(16px,3vw,40px) 4px}
+.top h1{margin:6px 0 0;font:600 32px/1.1 var(--serif);color:var(--gold);text-wrap:balance}
+.top p{margin:2px 0 0;color:var(--muted)}
+.pill{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:2px 12px;font:600 11px/1.6 var(--serif);letter-spacing:.16em}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px}
+.btn.gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1b1640}
+.btn.ghost{border:1px solid var(--line2);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--line)}
+.btn:focus-visible,.card a:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+
+.deck{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;padding:20px clamp(16px,3vw,40px) 48px}
+.card{position:relative;aspect-ratio:9/16;max-width:100%;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:24px;background:radial-gradient(ellipse at 50% 30%,rgba(90,80,170,.25),transparent 70%),linear-gradient(180deg,var(--card0),var(--card1));padding:22px 22px 18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.card .no{display:flex;justify-content:space-between;align-items:center}
+.card .no span{font:600 12px var(--serif);color:var(--muted);letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.card h2{margin:14px 0 4px;font:700 30px/1.05 var(--serif);color:var(--gold);text-wrap:balance;letter-spacing:.01em}
+.card h2 small{display:block;font:italic 500 17px/1.3 var(--serif);color:var(--ink);opacity:.85;margin-top:4px}
+.viz{flex:1;min-height:0;display:grid;place-items:center;margin:10px 0}
+.viz canvas{width:100%;height:100%;max-height:260px;display:block}
+.card ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.card li{display:grid;grid-template-columns:18px 1fr;gap:6px;font-size:13px;line-height:1.45}
+.card li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);margin-top:6px;box-shadow:0 0 10px var(--gold)}
+.card li b{color:var(--gold2);font-weight:600}
+.card .try{margin-top:12px;align-self:flex-start;font-size:12px;color:var(--gold2);text-decoration:none;border-bottom:1px dotted var(--gold)}
+.ar{font-family:var(--ar);font-size:1.25em;unicode-bidi:isolate}
+kbd{display:inline-block;min-width:20px;text-align:center;border:1px solid var(--line);border-radius:5px;padding:0 5px;font:11px/1.6 var(--sans);background:rgba(255,255,255,.04)}
+
+/* mini arayüz parçaları */
+.mock{width:100%;display:grid;gap:10px}
+.seg{display:inline-flex;gap:2px;background:rgba(20,19,52,.8);border:1px solid var(--line2);border-radius:10px;padding:3px;justify-self:center;flex-wrap:wrap;justify-content:center}
+.seg i{font-style:normal;padding:4px 10px;border-radius:7px;color:var(--muted);font-size:12px}
+.seg i.on{background:rgba(233,196,106,.18);color:var(--gold2)}
+.field{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:rgba(20,19,52,.8);font-size:14px}
+.field .caret{width:1px;height:16px;background:var(--gold2);animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+.field em{margin-left:auto;font-style:normal;font-size:11px;background:var(--gold);color:#1b1640;border-radius:7px;padding:2px 8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c);border-radius:999px;padding:2px 10px;font-size:12px;background:color-mix(in srgb,var(--c) 14%,transparent)}
+.chip b{color:var(--c)}
+.chip small{color:var(--muted)}
+.big{font:700 64px/1 var(--serif);color:#fff;text-align:center;text-shadow:0 0 30px rgba(233,196,106,.4);font-variant-numeric:tabular-nums}
+.eq{display:flex;align-items:baseline;justify-content:center;gap:14px;font:700 44px/1 var(--serif);font-variant-numeric:tabular-nums}
+.eq span:nth-child(2){color:var(--gold);font-size:32px}
+.versecard{width:100%;border:1px solid var(--gold);border-radius:16px;padding:12px;background:linear-gradient(180deg,#25215a,#18163f);box-shadow:0 0 40px rgba(233,196,106,.15)}
+.versecard .r{font:600 11px var(--serif);letter-spacing:.12em;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:0 8px;display:inline-block}
+.versecard .a{font:20px/1.9 var(--ar);text-align:right;direction:rtl;margin:4px 0}
+.versecard .a .h{color:var(--c2);text-shadow:0 0 14px var(--c2)}
+.versecard .a .h1{color:var(--c1);text-shadow:0 0 14px var(--c1)}
+.versecard .t{font:500 14px/1.4 var(--serif)}
+.versecard .t mark{background:transparent;color:#fff;border-bottom:2px solid var(--c1)}
+.versecard .w{margin:6px 0;font-size:11px;color:var(--muted);border-left:2px solid var(--line);padding-left:8px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;font-size:13px}
+.note{font:italic 500 16px/1.45 var(--serif);text-align:center;color:var(--ink);padding:0 6px}
+.note b{color:var(--gold2);font-style:normal}
+
+/* kapak */
+.cover h2{font-size:46px;margin-top:22px}
+.cover .sub{font:italic 500 19px/1.35 var(--serif);text-align:center}
+.cover .sub b{color:var(--gold2);font-style:normal}
+
+/* telefon: kaydırmalı şerit */
+@media (max-width:700px){
+  .deck{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;padding:16px max(16px,env(safe-area-inset-left,0px)) 28px;-webkit-overflow-scrolling:touch}
+  .card{flex:0 0 min(86vw,380px);scroll-snap-align:center;aspect-ratio:auto;height:min(152vw,calc(100dvh - 170px));min-height:560px}
+  .top h1{font-size:26px}
+}
+.dots{display:none;justify-content:center;gap:6px;padding-bottom:24px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line2)}
+.dots i.on{background:var(--gold)}
+@media (max-width:700px){.dots{display:flex}}
+@media (prefers-reduced-motion:reduce){.field .caret{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<header class="top">
+  <div>
+    <span class="pill">AYET HARİTASI · KILAVUZ</span>
+    <h1>12 kartta Ayet Haritası</h1>
+    <p>Her kartın altındaki bağlantı, anlatılanı sitede hazır olarak açar.</p>
+  </div>
+  <a class="btn gold" href="./">Haritayı aç →</a>
+</header>
+
+<main class="deck" id="deck">
+
+  <article class="card cover">
+    <div class="no"><span class="pill">KULLANIM KILAVUZU</span><span>01 / 12</span></div>
+    <h2>Bütün Kur'an, tek ekranda</h2>
+    <div class="viz"><canvas data-viz="cover" aria-label="6.236 noktalık ızgara"></canvas></div>
+    <div class="big" data-count>6.236</div>
+    <p class="sub"><b>her nokta = bir ayet</b><br>114 sûre · 77.429 kelime · 1.651 kök</p>
+    <a class="try" href="./">Haritayı aç →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">HARİTAYI OKUMAK</span><span>02 / 12</span></div>
+    <h2>Fâtiha'dan Nâs'a<small>Sol üstten sağ alta, mushaf sırasıyla.</small></h2>
+    <div class="viz"><canvas data-viz="read" aria-label="Izgarada sûre sınırları"></canvas></div>
+    <ul>
+      <li><span>Her satırda <b>79 ayet</b> var. Açık ve koyu şeritler sûreleri ayırır.</span></li>
+      <li><span>Fareyle bir noktanın <b>üzerine gelin</b>: sûre, ayet no ve meal özeti çıkar.</span></li>
+      <li><span><b>Tekerlek</b> ya da iki parmakla yakınlaşın, sürükleyerek gezin. <kbd>0</kbd> görünümü sıfırlar.</span></li>
+    </ul>
+    <a class="try" href="./">Dene →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">ARAMA</span><span>03 / 12</span></div>
+    <h2>Bir kelime yazın<small>Geçtiği ayetler yanar.</small></h2>
+    <div class="viz"><div class="mock">
+      <div class="seg"><i class="on">Meal</i><i>Arapça</i><i>Kök</i><i>Lemma</i></div>
+      <div class="field">sabır<span class="caret"></span><em>Ekle</em></div>
+      <canvas data-viz="search" aria-label="Aramada yanan noktalar" style="height:150px"></canvas>
+    </div></div>
+    <ul>
+      <li><span><b>Meal</b>: Diyanet mealinde arar. "dünya" yazınca dünyanın, dünyada da bulunur.</span></li>
+      <li><span><b>Enter</b> kelimeyi ekler. <b>2:255</b> yazmak doğrudan o ayeti açar.</span></li>
+    </ul>
+    <a class="try" href="./#t=tr~start~sab%C4%B1r">Dene: sabır →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">ARAMA TÜRLERİ</span><span>04 / 12</span></div>
+    <h2>Dört farklı mercek<small>Aynı kelime, dört ayrı sayım.</small></h2>
+    <div class="viz"><div class="mock">
+      <div class="chips">
+        <span class="chip" style="--c:var(--c1)"><b>Meal</b><small>sabır · 23</small></span>
+        <span class="chip" style="--c:var(--c2)"><b>Arapça</b><span class="ar">الصبر</span></span>
+        <span class="chip" style="--c:var(--c3)"><b>Kök</b><span class="ar">ص ب ر</span><small>103</small></span>
+        <span class="chip" style="--c:var(--c4)"><b>Lemma</b><span class="ar">صَبْر</span></span>
+      </div>
+    </div></div>
+    <ul>
+      <li><span><b>Arapça</b>: harekesiz metin. "Ekli" ayarı و ف ب ل ال öneklerini de sayar.</span></li>
+      <li><span><b>Kök</b>: üç harfli kökün bütün türevleri: sabretti, sabırlı, sabredin…</span></li>
+      <li><span><b>Lemma</b>: kelimenin sözlük biçimi. Videodaki sayımlar bu yönteme en yakındır.</span></li>
+      <li><span>Türkçe "şükür" yazınca öneride <b>Arapça kökle ara</b> da çıkar.</span></li>
+    </ul>
+    <a class="try" href="./#t=root~root~%D8%B5%D8%A8%D8%B1~Sab%C4%B1r">Dene: ص ب ر kökü →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">KARŞILAŞTIRMA</span><span>05 / 12</span></div>
+    <h2>Teraziye koyun<small>En fazla 5 kelime, her biri kendi renginde.</small></h2>
+    <div class="viz"><canvas data-viz="balance" aria-label="Dünya ve âhiret terazisi"></canvas></div>
+    <div class="eq"><span style="color:var(--c1)">115</span><span>=</span><span style="color:var(--c2)">115</span></div>
+    <ul>
+      <li><span>İki kelimede terazi çıkar; ağır gelen taraf aşağı iner.</span></li>
+      <li><span>İkisinin birden geçtiği ayetler <b>iki renkli</b> nokta olur.</span></li>
+    </ul>
+    <a class="try" href="./#t=lemma~lemma~%D8%AF%D9%8F%D9%86%D9%92%D9%8A%D8%A7~D%C3%BCnya&t=ar~affix~%D8%A7%D9%84%D8%A2%D8%AE%D8%B1%D8%A9~%C3%82hiret">Dene: Dünya ⚖ Âhiret →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">GRAFİK</span><span>06 / 12</span></div>
+    <h2>Noktaları toplayın<small>▥ Grafik ile ayetler sütunlara akar.</small></h2>
+    <div class="viz"><canvas data-viz="bars" aria-label="Peygamber isimleri sütun grafiği"></canvas></div>
+    <ul>
+      <li><span><b>Geçiş</b>: kelimenin kaç kez geçtiği. <b>Ayet</b>: kaç ayette geçtiği.</span></li>
+      <li><span>Mûsâ 136 · İbrâhim 69 · Nûh 43 · İsâ 25 · Âdem 25</span></li>
+      <li><span>Kısayol: <kbd>G</kbd></span></li>
+    </ul>
+    <a class="try" href="./#t=lemma~lemma~%D9%85%D9%8F%D9%88%D8%B3%D9%8E%D9%89~M%C3%BBs%C3%A2&t=lemma~lemma~%D8%A5%D9%90%D8%A8%D9%92%D8%B1%D8%A7%D9%87%D9%90%D9%8A%D9%85~%C4%B0br%C3%A2him&t=lemma~lemma~%D9%86%D9%8F%D9%88%D8%AD~N%C3%BBh&t=lemma~lemma~%D8%B9%D9%90%D9%8A%D8%B3%D9%8E%D9%89~%C4%B0s%C3%A2&t=lemma~lemma~%D8%A2%D8%AF%D9%8E%D9%85~%C3%82dem&g=1">Dene: Peygamberler →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">GÖRÜNÜMLER</span><span>07 / 12</span></div>
+    <h2>Dört dizilim<small>Noktalar akarak yer değiştirir.</small></h2>
+    <div class="viz"><canvas data-viz="layouts" aria-label="Dört görünümün küçük örnekleri"></canvas></div>
+    <ul>
+      <li><span><b>Izgara</b>: mushaf sırası. <b>Sureler</b>: her sûre ayrı blok.</span></li>
+      <li><span><b>Nüzul</b>: sûreler iniş sırasına göre; Alak başta.</span></li>
+      <li><span><b>Spiral</b>: ayçiçeği dizilimi, merkezde Fâtiha.</span></li>
+    </ul>
+    <a class="try" href="./#t=root~root~%D8%B1%D8%AD%D9%85~Rahmet&l=spiral">Dene: Rahmet, spiralde →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">FİLTRE VE DAĞILIM</span><span>08 / 12</span></div>
+    <h2>Nerede yoğunlaşıyor?<small>Sûre çubukları ve filtreler.</small></h2>
+    <div class="viz"><canvas data-viz="histo" aria-label="Sûrelere göre dağılım çubukları"></canvas></div>
+    <ul>
+      <li><span>Haritanın altındaki 114 çubuk, kelimenin <b>hangi sûrede kaç kez</b> geçtiğini gösterir. Bir çubuğa tıklamak o sûreye yakınlaşır.</span></li>
+      <li><span><b>Mekkî / Medenî</b>, <b>cüz</b> ve <b>sûre</b> filtreleri sayıları da yeniden hesaplar.</span></li>
+    </ul>
+    <a class="try" href="./#t=tr~start~cennet~Cennet&t=tr~start~cehennem~Cehennem&ft=M">Dene: Mekkî sûrelerde cennet ve cehennem →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">AYET KARTI</span><span>09 / 12</span></div>
+    <h2>Bir noktaya tıklayın<small>Ayet o noktadan büyüyerek açılır.</small></h2>
+    <div class="viz"><div class="versecard">
+      <span class="r">3:59</span>
+      <div class="a">إِنَّ مَثَلَ <span class="h1">عِيسَىٰ</span> عِندَ ٱللَّهِ كَمَثَلِ <span class="h">ءَادَمَ</span></div>
+      <div class="w">Kök <span class="ar">ء د م</span> · 25 kez — tıkla: kökü ara</div>
+      <div class="t">Allah katında <mark>İsa</mark>'nın durumu, Âdem'in durumu gibidir…</div>
+    </div></div>
+    <ul>
+      <li><span>Arapça bir kelimenin <b>üzerine gelin</b>: kökü ve kaç kez geçtiği görünür. Tıklayınca o kök aranır.</span></li>
+      <li><span><b>▶ Dinle</b> ile tilavet. "Sonrakine geç" işaretliyse sırayla okur.</span></li>
+      <li><span>Altta <b>kökleri en çok örtüşen</b> 5 ayet. <kbd>←</kbd><kbd>→</kbd> ile gezin.</span></li>
+    </ul>
+    <a class="try" href="./#t=lemma~lemma~%D8%B9%D9%90%D9%8A%D8%B3%D9%8E%D9%89~%C4%B0s%C3%A2&t=lemma~lemma~%D8%A2%D8%AF%D9%8E%D9%85~%C3%82dem&a=3%3A59">Dene: Âl-i İmrân 59 →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">KEŞFET</span><span>10 / 12</span></div>
+    <h2>Hazır karşılaştırmalar<small>Tek dokunuşla 12 örnek.</small></h2>
+    <div class="viz"><div class="mock">
+      <div class="chips">
+        <span class="chip" style="--c:var(--c1)"><b>Dünya ⚖ Âhiret</b></span>
+        <span class="chip" style="--c:var(--c3)"><b>De ki ⚖ Dediler</b></span>
+        <span class="chip" style="--c:var(--c2)"><b>Peygamberler</b></span>
+        <span class="chip" style="--c:var(--c4)"><b>Ay</b><span class="ar">شهر</span><small>12</small></span>
+        <span class="chip" style="--c:var(--c5)"><b>Hayat ⚖ Ölüm</b></span>
+        <span class="chip" style="--c:var(--c1)"><b>Sabır · Şükür · Tevekkül</b></span>
+        <span class="chip" style="--c:var(--c2)"><b>Akıl · İlim · Tefekkür</b></span>
+      </div>
+    </div></div>
+    <ul>
+      <li><span>Sağdaki <b>Keşfet</b> panelinde. Videodaki eşitlikler burada canlı hesaplanır.</span></li>
+      <li><span>Bir örneği açıp üstüne kendi kelimenizi ekleyebilirsiniz.</span></li>
+    </ul>
+    <a class="try" href="./#t=ar~affix~%D9%82%D9%84~De+ki~%D9%82%D9%8E%D9%84%D9%8E%D9%91&t=ar~affix~%D9%82%D8%A7%D9%84%D9%88%D8%A7~Dediler&g=1">Dene: De ki ⚖ Dediler →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">PAYLAŞ VE KISAYOLLAR</span><span>11 / 12</span></div>
+    <h2>Gördüğünüzü gönderin<small>Adres, ekranın aynısını açar.</small></h2>
+    <div class="viz"><div class="keys">
+      <kbd>/</kbd><span>Arama kutusuna git</span>
+      <kbd>Enter</kbd><span>Kelimeyi ekle</span>
+      <kbd>G</kbd><span>Grafiği aç / kapat</span>
+      <kbd>R</kbd><span>Rastgele ayet</span>
+      <kbd>0</kbd><span>Görünümü sıfırla</span>
+      <span><kbd>←</kbd><kbd>→</kbd></span><span>Ayetler arası geçiş</span>
+      <kbd>Boşluk</kbd><span>Dinle / durdur</span>
+      <kbd>Esc</kbd><span>Kartı kapat</span>
+    </div></div>
+    <ul>
+      <li><span>Aramalar, görünüm, filtre ve açık ayet <b>adres satırında</b> saklanır.</span></li>
+      <li><span>Ayet kartındaki <b>Bağlantı</b> düğmesi adresi kopyalar.</span></li>
+    </ul>
+    <a class="try" href="./#a=2%3A255">Dene: Âyetü'l-Kürsî →</a>
+  </article>
+
+  <article class="card">
+    <div class="no"><span class="pill">SAYIMLAR HAKKINDA</span><span>12 / 12</span></div>
+    <h2>Yöntem göz önünde<small>Her sayı nasıl hesaplandığıyla birlikte.</small></h2>
+    <div class="viz"><p class="note">"De ki" kelimesi Arapça metinde <b>333</b> kez görünür. Biri Nisâ 7'deki <span class="ar">قَلَّ</span> ("az oldu") kelimesidir. Morfolojiyle ayıklanınca <b>332</b> kalır.</p></div>
+    <ul>
+      <li><span>Tekil mi çoğul mu, önekler dahil mi, kök mü biçim mi: sonuç <b>buna göre değişir</b>.</span></li>
+      <li><span>Arapça metin: Tanzil. Meal: Diyanet İşleri Başkanlığı. Kök ve lemma: Quranic Arabic Corpus. Tilavet: Mişârî el-Afâsî.</span></li>
+    </ul>
+    <a class="try" href="./">Haritayı aç →</a>
+  </article>
+
+</main>
+<nav class="dots" id="dots" aria-hidden="true"></nav>
+
+<script>
+(() => {
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C = ['--c1','--c2','--c3','--c4','--c5'].map(css);
+const BASE = 'rgba(170,170,225,';
+// sabit, tekrar üretilebilir rastgelelik
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+function setup(cv){
+  const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, r.width * d); cv.height = Math.max(1, r.height * d);
+  const g = cv.getContext('2d'); g.setTransform(d,0,0,d,0,0); return [g, r.width, r.height];
+}
+function dotGrid(g, w, h, cols, rows, fn){
+  const s = Math.min(w / cols, h / rows), ox = (w - s * cols) / 2, oy = (h - s * rows) / 2, rad = Math.max(.6, s * .32);
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const i = y * cols + x, c = fn(i, x, y);
+    if (!c) continue;
+    g.fillStyle = c; g.beginPath(); g.arc(ox + x * s + s / 2, oy + y * s + s / 2, c.startsWith('rgba') ? rad : rad * 1.35, 0, 6.283); g.fill();
+  }
+  return { s, ox, oy };
+}
+const viz = {
+  cover(g, w, h){ dotGrid(g, w, h, 79, 79, i => i < 6236 ? BASE + (0.25 + 0.25 * ((Math.floor(i / 140)) % 2)) + ')' : null); },
+  read(g, w, h){
+    const cols = 40, rows = 34; let band = 0, next = 7;
+    const lens = [7,60,50,44,30,40,46,20,30,25,30,25,10,12,22,30,22,22,20,20,18,16,14,12,12,10,10,9,8,8];
+    let k = 0, acc = lens[0];
+    dotGrid(g, w, h, cols, rows, i => { while (i >= acc && k < lens.length - 1) { k++; acc += lens[k]; } if (i >= acc) { if ((i - acc) % 8 === 0) k++; } return BASE + (k % 2 ? .25 : .5) + ')'; });
+    g.font = '600 12px "Cormorant Garamond",serif'; g.fillStyle = css('--gold2');
+    g.fillText('Fâtiha', 4, 12); g.textAlign = 'right'; g.fillText('Nâs', w - 4, h - 4);
+  },
+  search(g, w, h){ seed = 11; dotGrid(g, w, h, 60, 22, () => rnd() < .025 ? C[0] : BASE + '.22)'); },
+  balance(g, w, h){
+    seed = 3; dotGrid(g, w, h, 50, 34, () => { const r = rnd(); return r < .03 ? C[0] : r < .06 ? C[1] : BASE + '.12)'; });
+    const cx = w / 2, top = h * .2, bw = Math.min(w * .38, 120);
+    g.strokeStyle = css('--ink'); g.lineWidth = 2;
+    g.beginPath(); g.moveTo(cx, top); g.lineTo(cx, h * .85); g.moveTo(cx - 34, h * .85); g.lineTo(cx + 34, h * .85); g.moveTo(cx - bw, top); g.lineTo(cx + bw, top); g.stroke();
+    [[cx - bw, C[0]], [cx + bw, C[1]]].forEach(([x, c]) => { g.strokeStyle = c; g.lineWidth = 1; g.beginPath(); g.moveTo(x, top); g.lineTo(x - 26, top + 60); g.moveTo(x, top); g.lineTo(x + 26, top + 60); g.stroke(); g.fillStyle = c; g.beginPath(); g.ellipse(x, top + 62, 30, 7, 0, 0, Math.PI); g.fill(); });
+    g.fillStyle = css('--gold'); g.beginPath(); g.arc(cx, top, 5, 0, 6.283); g.fill();
+  },
+  bars(g, w, h){
+    seed = 5; dotGrid(g, w, h, 50, 40, () => BASE + '.08)');
+    const vals = [136, 69, 43, 25, 25], names = ['MÛSÂ','İBRÂHİM','NÛH','İSÂ','ÂDEM'], bw = 6, gap = w / 5;
+    const s = Math.min((gap * .7) / bw, (h * .7) / Math.ceil(136 / bw));
+    vals.forEach((v, j) => {
+      const x0 = j * gap + (gap - bw * s) / 2, base = h * .8;
+      for (let n = 0; n < v; n++) { g.fillStyle = C[j]; g.beginPath(); g.arc(x0 + (n % bw) * s + s / 2, base - Math.floor(n / bw) * s, s * .36, 0, 6.283); g.fill(); }
+      g.textAlign = 'center'; g.fillStyle = C[j]; g.font = '600 10px "Cormorant Garamond",serif'; g.fillText(names[j], j * gap + gap / 2, base + 16);
+      g.fillStyle = '#fff'; g.font = '700 17px "Cormorant Garamond",serif'; g.fillText(v, j * gap + gap / 2, base + 34);
+    });
+  },
+  layouts(g, w, h){
+    const cw = w / 2, ch = h / 2, names = ['Izgara','Sureler','Nüzul','Spiral'];
+    names.forEach((nm, q) => {
+      const x0 = (q % 2) * cw, y0 = Math.floor(q / 2) * ch, pad = 12, aw = cw - pad * 2, ah = ch - pad * 2 - 14;
+      g.save(); g.translate(x0 + pad, y0 + pad);
+      seed = 21 + q;
+      if (q === 3) {
+        const N = 700, ga = Math.PI * (3 - Math.sqrt(5)), k = Math.min(aw, ah) / 2 / Math.sqrt(N);
+        for (let i = 0; i < N; i++) { const r = k * Math.sqrt(i), t = i * ga; g.fillStyle = rnd() < .04 ? C[0] : BASE + '.35)'; g.beginPath(); g.arc(aw / 2 + r * Math.cos(t), ah / 2 + r * Math.sin(t), 1.3, 0, 6.283); g.fill(); }
+      } else {
+        let lens = q === 1 ? [3,22,16,14,10,12,14,6,8,9,9,7,4,4,6,8,6,6,5,5] : null;
+        let si = 0, left = lens ? lens[0] : 0;
+        dotGrid(g, aw, ah, 24, 18, (i, x) => {
+          if (q === 1) { if (left <= 0 && x > 0) { si++; left = lens[si % lens.length]; return null; } left--; return si % 2 ? BASE + '.25)' : BASE + '.5)'; }
+          if (q === 2) return rnd() < .04 ? C[1] : BASE + (Math.floor(i / 50) % 2 ? '.25)' : '.45)');
+          return rnd() < .04 ? C[0] : BASE + '.35)';
+        });
+      }
+      g.restore();
+      g.fillStyle = q === 0 ? css('--gold2') : css('--muted'); g.font = '600 12px Inter,sans-serif'; g.textAlign = 'center'; g.fillText(nm, x0 + cw / 2, y0 + ch - 6);
+    });
+  },
+  histo(g, w, h){
+    seed = 9; const n = 57, bw = w / n;
+    for (let s = 0; s < n; s++) {
+      const a = Math.pow(rnd(), 2.4) * (s < 10 ? 1 : .55), b = Math.pow(rnd(), 2.4) * (s < 10 ? .9 : .5);
+      const ha = a * h * .5, hb = b * h * .4;
+      g.fillStyle = C[0]; g.fillRect(s * bw + .5, h - 16 - ha, bw - 1, ha);
+      g.fillStyle = C[2]; g.fillRect(s * bw + .5, h - 16 - ha - hb, bw - 1, hb);
+    }
+    g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, h - 15, w, 1);
+    g.fillStyle = css('--muted'); g.font = '11px Inter,sans-serif'; g.fillText('Bakara', 2, h - 2); g.textAlign = 'right'; g.fillText('Nâs', w - 2, h - 2);
+    g.strokeStyle = css('--gold2'); g.strokeRect(3 * bw, 2, bw, h - 18);
+  },
+};
+function drawAll(){ document.querySelectorAll('canvas[data-viz]').forEach(cv => { const [g, w, h] = setup(cv); g.clearRect(0, 0, w, h); viz[cv.dataset.viz](g, w, h); }); }
+function stars(){ const c = document.getElementById('stars'), d = Math.min(devicePixelRatio || 1, 2); c.width = innerWidth * d; c.height = innerHeight * d; const g = c.getContext('2d'); g.scale(d, d); seed = 99; for (let k = 0; k < 150; k++) { g.fillStyle = `rgba(255,255,255,${rnd() * .5 + .1})`; g.beginPath(); g.arc(rnd() * innerWidth, rnd() * innerHeight, rnd() + .2, 0, 6.28); g.fill(); } }
+// kapakta sayaç
+const cnt = document.querySelector('[data-count]');
+if (cnt && !matchMedia('(prefers-reduced-motion: reduce)').matches) { const t0 = performance.now(); const tick = t => { const k = Math.min(1, (t - t0) / 1600), v = Math.round((1 - Math.pow(1 - k, 3)) * 6236); cnt.textContent = v.toLocaleString('tr-TR'); if (k < 1) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
+// telefon: sayfa noktaları
+const deck = document.getElementById('deck'), dots = document.getElementById('dots'), cards = [...deck.children];
+dots.innerHTML = cards.map(() => '<i></i>').join('');
+const upd = () => { const k = Math.round(deck.scrollLeft / (cards[0].offsetWidth + 14)); [...dots.children].forEach((d, i) => d.classList.toggle('on', i === k)); };
+deck.addEventListener('scroll', upd, { passive: true }); upd();
+let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { drawAll(); stars(); }, 120); });
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(drawAll); drawAll(); stars();
+})();
+</script>
+</body>
+</html>
