@@ -153,3 +153,13 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:
   .big{font-size:44px}
   .hint{white-space:normal;text-align:center;width:90%}
 }
+
+.chips.many{gap:5px}
+.chips.many .chip{padding:1px 4px 1px 9px;font-size:12px;gap:4px}
+.chips.many .chip button{width:18px;height:18px;font-size:10px}
+.mini{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:3px}
+.mini li{display:grid;grid-template-columns:118px 1fr 34px;align-items:center;gap:8px;font-size:13px}
+.mini .nm{color:var(--c);font:600 15px var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .nm .ar{font:15px var(--ar);color:var(--muted);unicode-bidi:isolate}
+.mini i{display:block;height:6px;border-radius:3px;background:var(--c);min-width:2px}
+.mini b{text-align:right;font:700 16px var(--serif);font-variant-numeric:tabular-nums}

@@ -95,24 +95,34 @@ function makeTerm(mode, q, match, opts = {}) {
     for (const i of (isRoot ? rootOcc : lemOcc)[id]) counts[i]++;
     ar = isRoot ? Q.roots[id].split('').join(' ') : Q.lemmas[id];
   }
+  if (opts.refs) { // ayet listesiyle sınırla ("7:73,7:75") ya da hariç tut ("-2:111,2:135")
+    const neg = opts.refs.startsWith('-'), set = new Set(opts.refs.replace(/^-/, '').split(',').map(r => { const [a, b] = r.split(':').map(Number); return verseIndex(a, b); }));
+    for (let i = 0; i < N; i++) if (counts[i] && set.has(i) === neg) counts[i] = 0;
+  }
   let ver = 0, occ = 0;
   for (let i = 0; i < N; i++) if (counts[i]) { ver++; occ += counts[i]; }
-  return { mode, q, match, counts, ver, occ, label, ar, id, notLemma: opts.notLemma || null };
+  return { mode, q, match, counts, ver, occ, label, ar, id, notLemma: opts.notLemma || null, refs: opts.refs || '' };
 }
 const usedColors = () => state.terms.map(t => t.color);
 function addTerm(mode, q, match, opts = {}) {
-  if (state.terms.length >= 5) { toast('En fazla 5 kelime karşılaştırılabilir'); return false; }
+  if (state.terms.length >= (opts.many ? 30 : 5)) { toast('En fazla 5 kelime karşılaştırılabilir'); return false; }
   if (state.terms.some(t => t.mode === mode && t.q === q && t.match === match)) { toast('Bu arama zaten ekli'); return false; }
   const t = makeTerm(mode, q, match, opts);
   if (!t) return false;
   if (t.error) { toast(t.error); return false; }
   if (opts.label) t.label = opts.label;
-  t.color = COLORS.find(c => !usedColors().includes(c));
+  t.color = COLORS.find(c => !usedColors().includes(c)) || '#ffffff';
   state.terms.push(t);
+  if (state.terms.length > 5) recolor();
   if (!opts.silent) termsChanged();
   return true;
 }
-function removeTerm(k) { state.terms.splice(k, 1); termsChanged(); }
+const hsl2hex = (h, s, l) => { s /= 100; l /= 100; const f = n => { const k = (n + h / 30) % 12, c = l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1)); return Math.round(c * 255).toString(16).padStart(2, '0'); }; return '#' + f(0) + f(8) + f(4); };
+function recolor() { // 5'ten fazla terimde renk çemberine yay (altından başla)
+  const n = state.terms.length;
+  state.terms.forEach((t, k) => t.color = n > 5 ? hsl2hex((43 + k * 360 / n) % 360, 78, 70) : COLORS[k]);
+}
+function removeTerm(k) { state.terms.splice(k, 1); recolor(); termsChanged(); }
 function clearTerms() { state.terms = []; computeHits(); }
 
 /* ---------- filtre ---------- */
@@ -330,6 +340,13 @@ function draw(now) {
     const la = Math.min(1, Math.max(0, (el - 600) / 600));
     ctx.globalAlpha = la; ctx.textAlign = 'center';
     for (const lb of chartLabels) {
+      if (lb.h) {
+        const [x, y] = w2s(lb.x, lb.y), [xe] = w2s(lb.xe, lb.y), fs = Math.max(9, Math.min(22, s * 1.9));
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right'; ctx.fillStyle = lb.c; ctx.font = `600 ${fs}px "Cormorant Garamond",serif`; ctx.fillText(lb.name, x, y);
+        ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = `700 ${fs * 1.05}px "Cormorant Garamond",serif`; ctx.fillText(fmt(lb.n), xe, y);
+        ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center'; continue;
+      }
       const [x, y] = w2s(lb.x, lb.y);
       const fs = Math.max(11, Math.min(26, s * 2.2));
       ctx.fillStyle = lb.c; ctx.font = `600 ${fs * 0.75}px "Cormorant Garamond",serif`;
@@ -358,6 +375,8 @@ function buildChart() {
   const T = state.terms; if (!T.length) return;
   const b = cur.b, k = T.length;
   const vals = T.map(t => { let v = 0; for (let i = 0; i < N; i++) if (passF[i] && t.counts[i]) v += state.metric === 'occ' ? t.counts[i] : 1; return v; });
+  chartBounds = null;
+  if (k > 6) { buildHChart(T, vals, b); return; }
   const gap = Math.max(3, Math.round(b.w * 0.05));
   const bw = Math.max(3, Math.min(14, Math.floor((b.w - gap * (k + 1)) / k)));
   const Hmax = b.h * 0.62;
@@ -384,10 +403,37 @@ function buildChart() {
   });
   partStart = performance.now(); partT = 0; needs = true;
 }
+// çok terim: videodaki gibi yatay çubuklar (her satır 2 nokta kalınlığında)
+let chartBounds = null;
+function buildHChart(T, vals, b) {
+  const thick = 2, pitch = thick + 1.6, labelW = 17;
+  const maxV = Math.max(1, ...vals);
+  chartUnit = Math.max(1, Math.ceil(maxV / thick / 70));
+  const x0 = b.x0 + labelW, y0 = b.y0 + 1;
+  particles = [];
+  T.forEach((t, j) => {
+    let n = 0, acc = 0; const by = y0 + j * pitch;
+    for (let i = 0; i < N; i++) {
+      if (!passF[i] || !t.counts[i]) continue;
+      const reps = state.metric === 'occ' ? t.counts[i] : 1;
+      for (let q = 0; q < reps; q++) {
+        if (acc++ % chartUnit) continue;
+        particles.push({ i, tx: x0 + Math.floor(n / thick), ty: by + (n % thick), c: t.color, d: (n / Math.max(1, vals[j] / chartUnit)) * 450 + j * 45 });
+        n++;
+      }
+    }
+    chartLabels.push({ h: true, x: x0 - 1.4, y: by + (thick - 1) / 2, xe: x0 + Math.ceil(n / thick) + 0.8, name: t.label, n: vals[j], c: t.color });
+  });
+  const len = Math.ceil(maxV / chartUnit / thick);
+  chartBounds = { x0: b.x0, y0: y0 - 2, x1: x0 + len + 6, y1: y0 + T.length * pitch + 1 };
+  chartBounds.w = chartBounds.x1 - chartBounds.x0; chartBounds.h = chartBounds.y1 - chartBounds.y0;
+  tweenCam(fitCam(chartBounds, 0.03), 1000);
+  partStart = performance.now(); partT = 0; needs = true;
+}
 function setChart(on) {
   state.chart = on && state.terms.length > 0;
   $('#chartBtn').classList.toggle('on', state.chart);
-  if (state.chart) buildChart(); else particles = null;
+  if (state.chart) buildChart(); else { particles = null; if (chartBounds) { chartBounds = null; tweenCam(fitCam(), 900); } }
   needs = true;
 }
 
@@ -404,7 +450,9 @@ function termTitle(t) {
 }
 function renderChips() {
   const el = $('#chips');
-  el.innerHTML = state.terms.map((t, k) => `<span class="chip" style="--c:${t.color}">${termTitle(t)} <small>${modeName[t.mode]} · ${fmt(state.metric === 'occ' ? t.occ : t.ver)}</small><button data-k="${k}" aria-label="Kaldır">✕</button></span>`).join('')
+  const many = state.terms.length > 6;
+  el.classList.toggle('many', many);
+  el.innerHTML = state.terms.map((t, k) => `<span class="chip" style="--c:${t.color}">${many ? `<b>${escHtml(t.label)}</b>` : termTitle(t)} <small>${many ? '' : modeName[t.mode] + ' · '}${fmt(state.metric === 'occ' ? t.occ : t.ver)}</small><button data-k="${k}" aria-label="Kaldır">✕</button></span>`).join('')
     + (state.terms.length > 1 ? `<button class="ghost small" id="clearAll">Tümünü temizle</button>` : '');
   el.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => removeTerm(+b.dataset.k));
   const ca = $('#clearAll'); if (ca) ca.onclick = () => { clearTerms(); termsChanged(); };
@@ -446,6 +494,15 @@ function renderStats() {
     const [a, b] = ST.map(s => m === 'occ' ? s.occ : s.ver);
     html += balanceSVG(a, b, state.terms[0].color, state.terms[1].color);
     html += `<div class="eq"><span style="color:${state.terms[0].color}">${fmt(a)}</span> ${a === b ? '=' : a > b ? '>' : '<'} <span style="color:${state.terms[1].color}">${fmt(b)}</span></div>`;
+  }
+  if (state.terms.length > 6) {
+    const mx = Math.max(1, ...ST.map(x => m === 'occ' ? x.occ : x.ver));
+    const sum = ST.reduce((a, x) => a + (m === 'occ' ? x.occ : x.ver), 0);
+    html += `<div class="sub muted small">${state.terms.length} terim · toplam ${fmt(sum)} ${m === 'occ' ? 'geçiş' : 'ayet'}</div><ol class="mini">` + state.terms.map((t, k) => {
+      const v = m === 'occ' ? ST[k].occ : ST[k].ver;
+      return `<li style="--c:${t.color}"><span class="nm">${escHtml(t.label)}${t.ar ? ` <span class="ar">${escHtml(t.ar)}</span>` : ''}</span><i style="width:${v / mx * 100}%"></i><b>${fmt(v)}</b></li>`;
+    }).join('') + '</ol>';
+    el.innerHTML = html; return;
   }
   state.terms.forEach((t, k) => {
     const s = ST[k], tot = s.mk + s.md || 1;
@@ -843,7 +900,13 @@ document.addEventListener('keydown', e => {
 const PRESETS = [
   { t: 'Dünya ⚖ Âhiret', d: 'Videodaki terazi', terms: [['lemma', 'دُنْيا', 'lemma', 'Dünya'], ['ar', 'الآخرة', 'affix', 'Âhiret']], chart: false },
   { t: 'De ki ⚖ Dediler', d: 'قُلْ ve قَالُوا', terms: [['ar', 'قل', 'affix', 'De ki', ['قَلَّ']], ['ar', 'قالوا', 'affix', 'Dediler']], chart: true },
-  { t: 'Peygamberler', d: 'Mûsâ, İbrâhim, Nûh, İsâ, Âdem', terms: [['lemma', 'مُوسَى', 'lemma', 'Mûsâ'], ['lemma', 'إِبْراهِيم', 'lemma', 'İbrâhim'], ['lemma', 'نُوح', 'lemma', 'Nûh'], ['lemma', 'عِيسَى', 'lemma', 'İsâ'], ['lemma', 'آدَم', 'lemma', 'Âdem']], chart: true },
+  { t: '25 Peygamber', d: 'Adı geçen bütün peygamberler', terms: [
+    ['lemma', 'مُوسَى', 'lemma', 'Mûsâ'], ['lemma', 'إِبْراهِيم', 'lemma', 'İbrâhim'], ['lemma', 'نُوح', 'lemma', 'Nûh'], ['lemma', 'لُوط', 'lemma', 'Lût'], ['lemma', 'يُوسُف', 'lemma', 'Yûsuf'],
+    ['lemma', 'آدَم', 'lemma', 'Âdem'], ['lemma', 'عِيسَى', 'lemma', 'İsâ'], ['lemma', 'هارُون', 'lemma', 'Hârûn'], ['lemma', 'إِسْحاق', 'lemma', 'İshâk'], ['lemma', 'سُلَيْمان', 'lemma', 'Süleyman'],
+    ['lemma', 'داوُد', 'lemma', 'Dâvûd'], ['lemma', 'يَعْقُوب', 'lemma', 'Yakub'], ['lemma', 'إِسْماعِيل', 'lemma', 'İsmâil'], ['lemma', 'شُعَيْب', 'lemma', 'Şuayb'],
+    ['lemma', 'صالِح', 'lemma', 'Sâlih', null, '7:73,7:75,7:77,11:61,11:62,11:66,11:89,26:142,27:45'], ['lemma', 'هُود', 'lemma', 'Hûd', null, '-2:111,2:135,2:140'],
+    ['lemma', 'زَكَرِيّا', 'lemma', 'Zekeriyyâ'], ['lemma', 'يَحْيَى', 'lemma', 'Yahyâ'], ['lemma', 'مُحَمَّد', 'lemma', 'Muhammed'], ['lemma', 'أَيُّوب', 'lemma', 'Eyyûb'], ['lemma', 'يُونُس', 'lemma', 'Yûnus'], ['lemma', 'إِلْياس', 'lemma', 'İlyâs'],
+    ['lemma', 'إِدْرِيس', 'lemma', 'İdrîs'], ['lemma', 'الْيَسَع', 'lemma', 'Elyesa'], ['lemma', 'كِفْل', 'lemma', 'Zülkifl', null, '21:85,38:48']], chart: true },
   { t: 'İsâ ⚖ Âdem', d: 'Âl-i İmrân 59', terms: [['lemma', 'عِيسَى', 'lemma', 'İsâ'], ['lemma', 'آدَم', 'lemma', 'Âdem']], chart: false, open: [3, 59] },
   { t: 'Ay (شهر)', d: 'Tekil "ay" kelimesi', terms: [['ar', 'شهر', 'affix', 'Ay']], chart: true, open: [9, 36] },
   { t: 'Gün (يوم)', d: 'Tekil "gün" kelimesi', terms: [['ar', 'يوم', 'affix', 'Gün']], chart: true },
@@ -860,7 +923,7 @@ let presetT = 0;
 function runPreset(p) {
   if (!card.hidden) closeVerse();
   clearTerms();
-  for (const [m, q, mt, label, notLemma] of p.terms) addTerm(m, q, mt, { label, notLemma, silent: true });
+  for (const [m, q, mt, label, notLemma, refs] of p.terms) addTerm(m, q, mt, { label, notLemma, refs, many: true, silent: true });
   termsChanged();
   if (state.fSurah) focusSurah(0);
   setChart(p.chart);
@@ -875,7 +938,7 @@ function runPreset(p) {
 let hashStr = '';
 function buildHash() {
   const p = new URLSearchParams();
-  state.terms.forEach(t => p.append('t', [t.mode, t.match, t.q, t.label, t.notLemma ? t.notLemma.join(',') : ''].join('~').replace(/~+$/, '')));
+  state.terms.forEach(t => p.append('t', [t.mode, t.match, t.q, t.label, t.notLemma ? t.notLemma.join(',') : '', t.refs].join('~').replace(/~+$/, '')));
   if (state.layout !== 'grid') p.set('l', state.layout);
   if (state.chart) p.set('g', '1');
   if (state.metric !== 'occ') p.set('m', state.metric);
@@ -889,7 +952,7 @@ let syncT = 0;
 function syncHash() { if (!LOCAL) return; clearTimeout(syncT); syncT = setTimeout(() => { const h = hashStr ? '#' + hashStr : ' '; if (location.hash.slice(1) !== hashStr) history.replaceState(null, '', h === ' ' ? location.pathname + location.search : h); }, 150); }
 function readHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  for (const t of p.getAll('t')) { const [m, mt, q, label, nl] = t.split('~'); if (MATCHES[m]) addTerm(m, q, mt, { label: label || q, notLemma: nl ? nl.split(',') : null, silent: true }); }
+  for (const t of p.getAll('t')) { const [m, mt, q, label, nl, refs] = t.split('~'); if (MATCHES[m]) addTerm(m, q, mt, { label: label || q, notLemma: nl ? nl.split(',') : null, refs, many: true, silent: true }); }
   if (p.get('m') === 'ver') { state.metric = 'ver'; $$('#metricSeg button').forEach(x => x.classList.toggle('on', x.dataset.m === 'ver')); }
   if (p.get('ft')) { state.fType = p.get('ft'); $('#fType').value = state.fType; }
   if (p.get('fj')) { state.fJuz = +p.get('fj'); $('#fJuz').value = state.fJuz; }
