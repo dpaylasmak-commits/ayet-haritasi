@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ayet Haritası</title>
+<meta name="description" content="Kur'an'daki 6.236 ayet, her biri bir nokta. Bir kelime yazın, geçtiği ayetler yansın.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<header class="top">
+  <div class="brand">
+    <span class="pill">AYET HARİTASI</span>
+    <h1><span id="introCount">6.236</span> <em>ayet · her nokta bir ayet</em></h1>
+  </div>
+  <button class="ghost icon" id="infoBtn" title="Nasıl çalışır?" aria-label="Nasıl çalışır">?</button>
+</header>
+
+<section class="searchbar">
+  <div class="modes" role="tablist" aria-label="Arama türü">
+    <button data-mode="tr" class="on" title="Diyanet mealinde ara">Meal</button>
+    <button data-mode="ar" title="Arapça metinde ara (harekesiz)">Arapça</button>
+    <button data-mode="root" title="Arapça kök (ör. رحم)">Kök</button>
+    <button data-mode="lemma" title="Sözlük biçimi (Quranic Arabic Corpus)">Lemma</button>
+  </div>
+  <div class="field">
+    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Bir kelime yazın: sabır, rahmet, dünya…  (Enter = ekle · 2:255 = ayete git)">
+    <select id="match" title="Eşleşme biçimi"></select>
+    <button id="addBtn" class="gold">Ekle</button>
+    <ul id="suggest" class="suggest" hidden></ul>
+  </div>
+  <div id="chips" class="chips"></div>
+</section>
+
+<main class="stage">
+  <div class="mapwrap">
+    <div class="toolbar">
+      <div class="seg" id="layoutSeg">
+        <button data-l="grid" class="on" title="Mushaf sırasıyla ızgara">Izgara</button>
+        <button data-l="flow" title="Her sure ayrı blok">Sureler</button>
+        <button data-l="rev" title="Nüzul (iniş) sırasına göre">Nüzul</button>
+        <button data-l="spiral" title="Ayçiçeği spirali, merkez = Fâtiha">Spiral</button>
+      </div>
+      <button id="chartBtn" class="toggle" title="Bulunan noktaları sütunlarda topla (G)">▥ Grafik</button>
+      <div class="seg small" id="metricSeg" title="Sayım ölçüsü">
+        <button data-m="occ" class="on" title="Kelimenin kaç kez geçtiği">Geçiş</button>
+        <button data-m="ver" title="Kaç ayette geçtiği">Ayet</button>
+      </div>
+      <span class="spacer"></span>
+      <select id="fType" title="Sure türü"><option value="">Mekkî + Medenî</option><option value="M">Mekkî</option><option value="D">Medenî</option></select>
+      <select id="fJuz" title="Cüz"></select>
+      <select id="fSurah" title="Sure"></select>
+      <button class="ghost" id="randBtn" title="Rastgele ayet (R)">⟳ Rastgele</button>
+      <button class="ghost icon" id="fitBtn" title="Görünümü sıfırla (0)">⤢</button>
+    </div>
+    <div class="map" id="map">
+      <canvas id="cv"></canvas>
+      <div id="tip" class="tip" hidden></div>
+      <div id="hint" class="hint">Fareyle gezin · tekerlekle yakınlaşın · bir noktaya tıklayın</div>
+    </div>
+    <div class="histo">
+      <div class="histo-h"><span>Surelere göre dağılım</span><span id="histoInfo" class="muted"></span></div>
+      <canvas id="hist"></canvas>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div id="stats" class="stats"></div>
+    <div class="explore">
+      <h3>Keşfet</h3>
+      <p class="muted small">Videodaki karşılaştırmalar ve fazlası. Sayılar canlı hesaplanır; yöntemi değiştirince değişir.</p>
+      <div id="presets" class="presets"></div>
+    </div>
+  </aside>
+</main>
+
+<div id="veil" class="veil" hidden></div>
+<article id="card" class="card" hidden role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <header class="card-h">
+    <div>
+      <div class="pill" id="cRef">2:255</div>
+      <h2 id="cTitle">Bakara</h2>
+      <div class="meta" id="cMeta"></div>
+    </div>
+    <div class="card-nav">
+      <button class="ghost icon" id="prevBtn" title="Önceki ayet (←)">‹</button>
+      <button class="ghost icon" id="nextBtn" title="Sonraki ayet (→)">›</button>
+      <button class="ghost icon" id="closeBtn" title="Kapat (Esc)">✕</button>
+    </div>
+  </header>
+  <div class="card-b">
+    <p class="arabic" id="cAr" dir="rtl" lang="ar"></p>
+    <div class="wordinfo muted small" id="cWord">Bir Arapça kelimenin üzerine gelin: kökü ve kaç kez geçtiği görünür. Tıklayınca o kökü arar.</div>
+    <p class="meal" id="cTr"></p>
+    <div class="actions">
+      <button class="gold" id="playBtn">▶ Dinle</button>
+      <label class="small muted chk"><input type="checkbox" id="autoNext"> sonrakine geç</label>
+      <a class="ghost" id="qcomLink" href="https://quran.com/1/1" target="_blank" rel="noopener">Quran.com ↗</a>
+      <button class="ghost" id="copyBtn">Kopyala</button>
+      <button class="ghost" id="linkBtn">Bağlantı</button>
+      <button class="ghost" id="surahBtn">Bu sureye odaklan</button>
+    </div>
+    <div class="similar">
+      <h4>Kökleri en çok örtüşen ayetler</h4>
+      <ul id="cSim"></ul>
+    </div>
+  </div>
+</article>
+
+<div id="info" class="modal" hidden>
+  <div class="modal-in">
+    <button class="ghost icon close" data-close>✕</button>
+    <h2>Nasıl çalışır?</h2>
+    <p>Ekrandaki her nokta Kur'an'daki bir ayettir: <b>114 sure, 6.236 ayet</b>. Sol üstten sağ alta mushaf sırasıyla dizilir. Bir kelime aradığınızda o kelimenin geçtiği ayetler kendi rengiyle yanar. En fazla 5 kelimeyi aynı anda, farklı renklerle karşılaştırabilirsiniz.</p>
+    <h3>Arama türleri</h3>
+    <ul>
+      <li><b>Meal</b>: Diyanet İşleri meali. "Kelime başı" eşleşmesi Türkçe ekleri de yakalar (<i>dünya</i> → dünyanın, dünyada).</li>
+      <li><b>Arapça</b>: Harekesiz Arapça metin. "Ekli" eşleşme و ف ب ل ك ve ال öneklerini kabul eder.</li>
+      <li><b>Kök</b>: Üç harfli Arapça kök (ör. <span lang="ar">رحم</span>: rahmet, rahîm, rahmân…).</li>
+      <li><b>Lemma</b>: Kelimenin sözlük biçimi (ör. <span lang="ar">دُنْيا</span>). Videodaki sayımlar bu yönteme en yakındır.</li>
+    </ul>
+    <h3>Sayımlar hakkında</h3>
+    <p>Bir kelimenin "kaç kez geçtiği" neyi saydığınıza bağlıdır: tekil mi çoğul mu, önekler dahil mi, kök mü biçim mi. Buradaki her sayı açık bir yöntemle, sizin gözünüzün önünde hesaplanır. Bazı popüler eşitlikler bir yöntemde tutar, diğerinde tutmaz; bu aracın amacı onları kendiniz inceleyebilmenizdir.</p>
+    <h3>Kısayollar</h3>
+    <p class="kbd"><kbd>/</kbd> arama · <kbd>G</kbd> grafik · <kbd>R</kbd> rastgele ayet · <kbd>0</kbd> görünümü sıfırla · <kbd>←</kbd><kbd>→</kbd> ayetler arası · <kbd>Esc</kbd> kapat</p>
+    <h3>Kaynaklar</h3>
+    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Meal: Diyanet İşleri Başkanlığı. Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com).</p>
+  </div>
+</div>
+
+<div id="loading" class="loading"><div class="spin"></div><p>6.236 ayet yükleniyor…</p></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
