@@ -173,3 +173,7 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:
 .allmeals .om b{font:600 13px var(--sans);color:var(--gold);letter-spacing:.02em}
 .allmeals .om p{margin:2px 0 0;font:500 17px/1.5 var(--serif)}
 .allmeals mark{background:color-mix(in srgb,var(--c) 22%,transparent);color:#fff;border-bottom:2px solid var(--c);border-radius:3px}
+
+.listen{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px;border:1px solid var(--line);border-radius:12px;background:rgba(233,196,106,.05)}
+.listen select{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:6px 6px;font-size:12px}
+.meal .spk{background:color-mix(in srgb,var(--gold) 30%,transparent);color:#fff;border-radius:4px;box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}

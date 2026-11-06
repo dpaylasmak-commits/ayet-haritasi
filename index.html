@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
@@ -103,8 +103,17 @@
     <p class="meal" id="cTr"></p>
     <div class="allmeals" id="cAll" hidden></div>
     <div class="actions">
-      <button class="gold" id="playBtn">▶ Dinle</button>
-      <label class="small muted chk"><input type="checkbox" id="autoNext"> sonrakine geç</label>
+      <div class="listen">
+        <button class="gold" id="playBtn">▶ Dinle</button>
+        <select id="listenMode" title="Ne dinlensin">
+          <option value="ar">Arapça tilavet</option>
+          <option value="tr">Meal (Türkçe ses)</option>
+          <option value="artr">Arapça + meal</option>
+        </select>
+        <select id="rateSel" title="Okuma hızı"><option value="0.85">Yavaş</option><option value="1" selected>Normal</option><option value="1.2">Hızlı</option></select>
+        <select id="voiceSel" title="Türkçe ses" hidden></select>
+        <label class="small muted chk"><input type="checkbox" id="autoNext"> sonrakine geç</label>
+      </div>
       <a class="ghost" id="qcomLink" href="https://quran.com/1/1" target="_blank" rel="noopener">Quran.com ↗</a>
       <button class="ghost" id="copyBtn">Kopyala</button>
       <button class="ghost" id="linkBtn">Bağlantı</button>
@@ -135,13 +144,13 @@
     <h3>Kısayollar</h3>
     <p class="kbd"><kbd>/</kbd> arama · <kbd>G</kbd> grafik · <kbd>R</kbd> rastgele ayet · <kbd>0</kbd> görünümü sıfırla · <kbd>←</kbd><kbd>→</kbd> ayetler arası · <kbd>Esc</kbd> kapat</p>
     <h3>Kaynaklar</h3>
-    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Mealler: Diyanet İşleri, Diyanet Vakfı, Elmalılı Hamdi Yazır, Süleyman Ateş, Abdülbaki Gölpınarlı, Suat Yıldırım, Ali Bulaç, Yaşar Nuri Öztürk, Edip Yüksel; okunuş: Muhammet Abay (Tanzil / alquran.cloud). Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com).</p>
+    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Mealler: Diyanet İşleri, Diyanet Vakfı, Elmalılı Hamdi Yazır, Süleyman Ateş, Abdülbaki Gölpınarlı, Suat Yıldırım, Ali Bulaç, Yaşar Nuri Öztürk, Edip Yüksel; okunuş: Muhammet Abay (Tanzil / alquran.cloud). Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com). Meal seslendirmesi cihazınızın Türkçe sesiyle yapılır.</p>
   </div>
 </div>
 
 <div id="loading" class="loading"><div class="spin"></div><p>6.236 ayet yükleniyor…</p></div>
 
 <script src="data.js"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

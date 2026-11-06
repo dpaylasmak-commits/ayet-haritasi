@@ -685,7 +685,7 @@ function openVerse(i, opts = {}) {
     b.animate([{ opacity: .2, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
   }
   needs = true; buildHash(); syncHash();
-  if (audio && !audio.paused) { if (opts.auto) playAudio(); else stopAudio(); }
+  if (playing) { if (opts.auto) playVerse(); else stopAudio(); }
 }
 function closeVerse() {
   if (card.hidden) return;
@@ -770,15 +770,85 @@ function renderCard(i) {
 }
 const toArabicDigits = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 const pad3 = n => String(n).padStart(3, '0');
-function playAudio() {
-  const i = selected; if (i < 0) return;
-  if (!audio) { audio = new Audio(); audio.onended = () => { if ($('#autoNext').checked && selected >= 0 && selected < N - 1) { openVerse(selected + 1, { auto: true }); } else setPlay(false); }; }
-  audio.src = `https://everyayah.com/data/Alafasy_128kbps/${pad3(vS[i])}${pad3(vA[i])}.mp3`;
-  audio.play().then(() => setPlay(true)).catch(() => { toast('Ses yüklenemedi (internet bağlantısı gerekir)'); setPlay(false); });
+/* ---------- dinleme: Arapça tilavet (everyayah) + meal seslendirme (tarayıcının Türkçe sesi) ---------- */
+let playing = false, playTok = 0;
+const tts = window.speechSynthesis || null;
+let trVoices = [];
+function loadVoices() {
+  if (!tts) return;
+  trVoices = tts.getVoices().filter(v => /^tr(-|_|$)/i.test(v.lang));
+  const sel = $('#voiceSel'); if (!sel) return;
+  const keep = sel.value;
+  sel.innerHTML = trVoices.length ? trVoices.map((v, k) => `<option value="${k}">${v.name.replace(/\s*\(.*\)$/, '')}</option>`).join('') : '<option value="">Türkçe ses</option>';
+  if (keep && sel.querySelector(`option[value="${keep}"]`)) sel.value = keep;
+  sel.hidden = trVoices.length < 2;
 }
-function stopAudio() { if (audio) { audio.pause(); } setPlay(false); }
+if (tts) { loadVoices(); tts.addEventListener ? tts.addEventListener('voiceschanged', loadVoices) : (tts.onvoiceschanged = loadVoices); }
+function playAr(i, tok) {
+  return new Promise((res, rej) => {
+    if (!audio) audio = new Audio();
+    audio.onended = () => res(); audio.onerror = () => rej(new Error('ses'));
+    audio.src = `https://everyayah.com/data/Alafasy_128kbps/${pad3(vS[i])}${pad3(vA[i])}.mp3`;
+    audio.playbackRate = 1;
+    audio.play().catch(rej);
+  });
+}
+function speakTr(i, tok) {
+  return new Promise(async (res, rej) => {
+    if (!tts) return rej(new Error('tts'));
+    const id = state.cardMeal;
+    try { await loadMeal(id); } catch (e) { return rej(e); }
+    if (tok !== playTok) return res();
+    const text = mealText[id][i];
+    // uzun metinler bazı tarayıcılarda yarıda kesilir: cümlelere böl
+    const parts = []; const re = /[^.!?;:]+[.!?;:]*\s*/g; let m;
+    while ((m = re.exec(text))) { if (m[0].trim()) parts.push([m.index, m[0]]); }
+    if (!parts.length) parts.push([0, text]);
+    const voice = trVoices[+$('#voiceSel').value] || trVoices[0] || null;
+    let k = 0;
+    const next = () => {
+      if (tok !== playTok) return res();
+      if (k >= parts.length) { markSpoken(i, -1); return res(); }
+      const [off, chunk] = parts[k++];
+      const u = new SpeechSynthesisUtterance(chunk);
+      u.lang = 'tr-TR'; if (voice) u.voice = voice; u.rate = +$('#rateSel').value || 1;
+      u.onboundary = e => { if (tok === playTok && (e.name === 'word' || e.name === undefined)) markSpoken(i, off + e.charIndex, e.charLength); };
+      u.onstart = () => markSpoken(i, off, 0);
+      u.onend = next; u.onerror = e => (e.error === 'interrupted' || e.error === 'canceled') ? res() : rej(e);
+      tts.speak(u);
+    };
+    next();
+  });
+}
+function markSpoken(i, at, len) {
+  if (selected !== i) return;
+  const id = state.cardMeal, text = mealText[id] && mealText[id][i]; if (!text) return;
+  if (at < 0) { $('#cTr').innerHTML = highlightTr(text, i, id); return; }
+  if (!len) { const w = text.slice(at).match(/^[\s"'“”(]*[^\s]+/); len = w ? w[0].length : 0; }
+  $('#cTr').innerHTML = escHtml(text.slice(0, at)) + `<span class="spk">${escHtml(text.slice(at, at + len))}</span>` + escHtml(text.slice(at + len));
+}
+async function playVerse() {
+  const i = selected; if (i < 0) return;
+  const tok = ++playTok; stopMedia(); playing = true; setPlay(true);
+  const mode = $('#listenMode').value;
+  try {
+    if (mode !== 'tr') await playAr(i, tok);
+    if (tok !== playTok) return;
+    if (mode !== 'ar') await speakTr(i, tok);
+  } catch (e) {
+    if (tok !== playTok) return;
+    toast(e && e.message === 'tts' ? 'Bu tarayıcı sesli okumayı desteklemiyor' : e && e.message === 'ses' ? 'Tilavet yüklenemedi (internet bağlantısı gerekir)' : 'Ses çalınamadı');
+    playing = false; setPlay(false); return;
+  }
+  if (tok !== playTok) return;
+  if ($('#autoNext').checked && selected >= 0 && selected < N - 1) openVerse(selected + 1, { auto: true });
+  else { playing = false; setPlay(false); }
+}
+function stopMedia() { if (audio) audio.pause(); if (tts) tts.cancel(); }
+function stopAudio() { playTok++; stopMedia(); playing = false; setPlay(false); if (selected >= 0 && mealText[state.cardMeal]) markSpoken(selected, -1); }
 function setPlay(on) { $('#playBtn').textContent = on ? '❚❚ Durdur' : '▶ Dinle'; }
-$('#playBtn').onclick = () => (audio && !audio.paused) ? stopAudio() : playAudio();
+$('#playBtn').onclick = () => playing ? stopAudio() : playVerse();
+$('#listenMode').onchange = () => { if (playing) playVerse(); };
 $('#prevBtn').onclick = () => openVerse(selected - 1);
 $('#nextBtn').onclick = () => openVerse(selected + 1);
 $('#closeBtn').onclick = closeVerse; veil.onclick = closeVerse;
@@ -823,7 +893,7 @@ $('#mealSel').onchange = e => {
   loadMeal(state.meal).then(() => { $('#mealSel').disabled = false; updateSuggest(); }, () => { $('#mealSel').disabled = false; toast('Meal yüklenemedi'); });
 };
 $('#cMeal').innerHTML = mealOpts(false);
-$('#cMeal').onchange = e => { state.cardMeal = e.target.value; if (selected >= 0) renderMeal(selected); };
+$('#cMeal').onchange = e => { state.cardMeal = e.target.value; if (selected >= 0) renderMeal(selected); if (playing && $('#listenMode').value !== 'ar') playVerse(); };
 function renderMeal(i) {
   const id = state.cardMeal, el = $('#cTr');
   $('#cMeal').value = id;
@@ -1040,7 +1110,7 @@ function toast(msg) {
 }
 
 /* ---------- başlat ---------- */
-if (!LOCAL) { $('#playBtn').hidden = true; $('#autoNext').parentElement.hidden = true; $('#linkBtn').hidden = true; }
+if (!LOCAL) { $('#listenMode').innerHTML = '<option value="tr">Meal</option>'; $('#linkBtn').hidden = true; if (!tts) { $('#playBtn').hidden = true; $('#autoNext').parentElement.hidden = true; } }
 setMode('tr');
 const init = LOCAL ? readHash() : { chart: false, a: null };
 computeHits(); renderChips();
