@@ -21,6 +21,24 @@ const AR_DIAC = /[ؐ-ًؚ-ٰٟۖ-ۭـ]/g;
 const normAr = s => s.replace(AR_DIAC, '').replace(/[أإآٱٲٳ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي').replace(/\s+/g, ' ').trim();
 const normTr = s => s.toLocaleLowerCase('tr').replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u').replace(/[’‘`´]/g, "'");
 const clnTok = [], trN = [];
+/* ---------- mealler (Diyanet gömülü, diğerleri istenince yüklenir) ---------- */
+const MEALS = [['tr.diyanet', 'Diyanet İşleri', 'Diyanet'], ['tr.vakfi', 'Diyanet Vakfı', 'D. Vakfı'], ['tr.yazir', 'Elmalılı Hamdi Yazır', 'Elmalılı'], ['tr.ates', 'Süleyman Ateş', 'Ateş'],
+  ['tr.golpinarli', 'Abdülbaki Gölpınarlı', 'Gölpınarlı'], ['tr.yildirim', 'Suat Yıldırım', 'Yıldırım'], ['tr.bulac', 'Ali Bulaç', 'Bulaç'], ['tr.ozturk', 'Yaşar Nuri Öztürk', 'Öztürk'], ['tr.yuksel', 'Edip Yüksel', 'Yüksel']];
+const mealName = id => id === 'all' ? 'Tüm mealler' : (MEALS.find(m => m[0] === id) || [, id])[1];
+const mealShort = id => id === 'all' ? 'tüm mealler' : (MEALS.find(m => m[0] === id) || [, , id])[2];
+const mealText = {}, mealNorm = {}, mealLoading = {};
+function loadMeal(id) {
+  if (id === 'all') return Promise.all(MEALS.map(m => loadMeal(m[0])));
+  if (mealText[id]) return Promise.resolve();
+  return mealLoading[id] || (mealLoading[id] = new Promise((res, rej) => {
+    const sc = document.createElement('script'); sc.src = `meal/${id}.js`;
+    sc.onload = () => { mealText[id] = window.QMEAL[id]; res(); };
+    sc.onerror = () => { delete mealLoading[id]; rej(new Error(id)); };
+    document.head.appendChild(sc);
+  }));
+}
+const mealReady = id => id === 'all' ? MEALS.every(m => mealText[m[0]]) : !!mealText[id];
+const normOf = id => mealNorm[id] || (mealNorm[id] = mealText[id].map(t => normTr(t)));
 for (let i = 0; i < N; i++) {
   const v = Q.verses[i];
   vS[i] = v[0]; vA[i] = v[1]; vJuz[i] = v[5]; vType[i] = SUR[v[0] - 1].t === 'M' ? 1 : 2;
@@ -35,6 +53,7 @@ for (let i = 0; i < N; i++) {
   clnTok.push(normAr(v[3]).split(' '));
   trN.push(normTr(v[4]));
 }
+mealText['tr.diyanet'] = Q.verses.map(v => v[4]); mealNorm['tr.diyanet'] = trN;
 const countDistinct = a => { let c = 0, p = -1; for (const x of a) if (x !== p) { c++; p = x; } return c; };
 const rootDf = rootOcc.map(countDistinct), lemDf = lemOcc.map(countDistinct);
 const rootNorm = Q.roots.map(normAr), lemNorm = Q.lemmas.map(normAr);
@@ -79,8 +98,9 @@ function makeTerm(mode, q, match, opts = {}) {
   const counts = new Uint16Array(N);
   let label = q, ar = '', id = -1;
   if (mode === 'tr') {
-    const re = trRegex(q, match);
-    for (let i = 0; i < N; i++) { const m = trN[i].match(re); if (m) counts[i] = m.length; }
+    const re = trRegex(q, match), meal = opts.meal || 'tr.diyanet';
+    const lists = (meal === 'all' ? MEALS.map(m => m[0]) : [meal]).map(normOf);
+    for (let i = 0; i < N; i++) { let c = 0; for (const L of lists) { const m = L[i].match(re); if (m && m.length > c) c = m.length; } counts[i] = c; }
   } else if (mode === 'ar') {
     const t = arTest(q, match); ar = q;
     for (let i = 0; i < N; i++) { let c = 0; for (const w of clnTok[i]) if (t(w)) c++; counts[i] = c; }
@@ -101,12 +121,13 @@ function makeTerm(mode, q, match, opts = {}) {
   }
   let ver = 0, occ = 0;
   for (let i = 0; i < N; i++) if (counts[i]) { ver++; occ += counts[i]; }
-  return { mode, q, match, counts, ver, occ, label, ar, id, notLemma: opts.notLemma || null, refs: opts.refs || '' };
+  return { mode, q, match, counts, ver, occ, label, ar, id, notLemma: opts.notLemma || null, refs: opts.refs || '', meal: mode === 'tr' ? (opts.meal || 'tr.diyanet') : '' };
 }
 const usedColors = () => state.terms.map(t => t.color);
 function addTerm(mode, q, match, opts = {}) {
   if (state.terms.length >= (opts.many ? 30 : 5)) { toast('En fazla 5 kelime karşılaştırılabilir'); return false; }
-  if (state.terms.some(t => t.mode === mode && t.q === q && t.match === match)) { toast('Bu arama zaten ekli'); return false; }
+  if (mode === 'tr' && !opts.meal) opts.meal = 'tr.diyanet';
+  if (state.terms.some(t => t.mode === mode && t.q === q && t.match === match && (t.meal || '') === (mode === 'tr' ? opts.meal : ''))) { toast('Bu arama zaten ekli'); return false; }
   const t = makeTerm(mode, q, match, opts);
   if (!t) return false;
   if (t.error) { toast(t.error); return false; }
@@ -452,7 +473,7 @@ function renderChips() {
   const el = $('#chips');
   const many = state.terms.length > 6;
   el.classList.toggle('many', many);
-  el.innerHTML = state.terms.map((t, k) => `<span class="chip" style="--c:${t.color}">${many ? `<b>${escHtml(t.label)}</b>` : termTitle(t)} <small>${many ? '' : modeName[t.mode] + ' · '}${fmt(state.metric === 'occ' ? t.occ : t.ver)}</small><button data-k="${k}" aria-label="Kaldır">✕</button></span>`).join('')
+  el.innerHTML = state.terms.map((t, k) => `<span class="chip" style="--c:${t.color}">${many ? `<b>${escHtml(t.label)}</b>` : termTitle(t)} <small>${many ? '' : (t.mode === 'tr' ? mealShort(t.meal) : modeName[t.mode]) + ' · '}${fmt(state.metric === 'occ' ? t.occ : t.ver)}</small><button data-k="${k}" aria-label="Kaldır">✕</button></span>`).join('')
     + (state.terms.length > 1 ? `<button class="ghost small" id="clearAll">Tümünü temizle</button>` : '');
   el.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => removeTerm(+b.dataset.k));
   const ca = $('#clearAll'); if (ca) ca.onclick = () => { clearTerms(); termsChanged(); };
@@ -508,7 +529,7 @@ function renderStats() {
     const s = ST[k], tot = s.mk + s.md || 1;
     html += `<div class="term" style="--c:${t.color}">
       <div class="head"><div class="name">${t.mode === 'tr' || t.label !== t.q ? escHtml(t.label) : ''}${t.ar ? `<span class="ar">${escHtml(t.ar)}</span>` : ''}</div><div class="n">${fmt(m === 'occ' ? s.occ : s.ver)}</div></div>
-      <div class="sub">${fmt(s.occ)} geçiş · ${fmt(s.ver)} ayet · ${s.surahs} sûre · ${modeName[t.mode]}</div>
+      <div class="sub">${fmt(s.occ)} geçiş · ${fmt(s.ver)} ayet · ${s.surahs} sûre · ${t.mode === 'tr' ? mealName(t.meal) + ' meali' : modeName[t.mode]}</div>
       <div class="bar" title="Mekkî / Medenî"><i style="width:${s.mk / tot * 100}%;background:${t.color}"></i><i style="width:${s.md / tot * 100}%;background:${t.color};opacity:.4"></i></div>
       <div class="sub">Mekkî %${Math.round(s.mk / tot * 100)} · Medenî %${Math.round(s.md / tot * 100)}${s.first >= 0 ? ` · ilk: <a href="#" data-v="${s.first}">${ref(s.first)}</a> · son: <a href="#" data-v="${s.last}">${ref(s.last)}</a>` : ''}</div>
       <div class="tops">${s.tops.map(x => `<button data-s="${x}">${SUR[x - 1].tr} ${s.per[x]}</button>`).join('')}</div>
@@ -567,7 +588,8 @@ function showTip(html, x, y, above) {
 function verseTip(i, x, y) {
   const v = Q.verses[i]; const S = SUR[vS[i] - 1];
   const hits = hitTerms[i] ? hitTerms[i].map(k => `<span style="color:${state.terms[k].color}">● ${state.terms[k].counts[i]}×</span>`).join(' ') : '';
-  const tr = v[4].length > 160 ? v[4].slice(0, 160) + '…' : v[4];
+  const mt = (mealText[state.cardMeal] || mealText['tr.diyanet'])[i];
+  const tr = mt.length > 160 ? mt.slice(0, 160) + '…' : mt;
   showTip(`<b>${S.tr} ${vA[i]}</b> <span class="muted">${ref(i)} · ${vJuz[i]}. cüz</span> ${hits}<div class="ar">${escHtml(v[2].length > 90 ? v[2].slice(0, 90) + '…' : v[2])}</div>${escHtml(tr)}`, x, y);
 }
 
@@ -678,11 +700,11 @@ function closeVerse() {
     .onfinish = () => { card.hidden = true; veil.hidden = true; };
   selected = -1; needs = true; buildHash(); syncHash();
 }
-function highlightTr(text, i) {
+function highlightTr(text, i, meal = 'tr.diyanet') {
   // meal içinde aranan kelimeleri işaretle (normalize edilmiş metin aynı uzunlukta)
   const n = normTr(text); const marks = [];
   state.terms.forEach(t => {
-    if (t.mode !== 'tr' || !t.counts[i]) return;
+    if (t.mode !== 'tr' || !t.counts[i] || (t.meal !== 'all' && t.meal !== meal)) return;
     const re = trRegex(t.q, t.match); let m;
     while ((m = re.exec(n))) { let e = m.index + m[0].length; if (t.match === 'start') { while (e < n.length && /[\p{L}\p{N}]/u.test(n[e])) e++; } marks.push([m.index, e, t.color]); if (!m[0].length) re.lastIndex++; }
   });
@@ -718,7 +740,7 @@ function renderCard(i) {
     const h = `<span class="w${c ? ' hit' : ''}" data-k="${k}"${c ? ` style="--c:${c}"` : ''}>${t}</span>`; k++; return h;
   }).join(' ') + ` <span class="end">﴿${toArabicDigits(vA[i])}﴾</span>`;
   $('#cWord').innerHTML = 'Bir Arapça kelimenin üzerine gelin: kökü ve kaç kez geçtiği görünür. Tıklayınca o kökü arar.';
-  $('#cTr').innerHTML = highlightTr(v[4], i);
+  renderMeal(i);
   $('#cAr').querySelectorAll('.w').forEach(el => {
     const kk = +el.dataset.k;
     el.onmouseenter = () => {
@@ -790,6 +812,40 @@ function trRootSuggest(q) {
   return out.slice(0, 3);
 }
 
+/* ---------- meal seçiciler ---------- */
+state.meal = 'tr.diyanet'; state.cardMeal = 'tr.diyanet';
+const mealOpts = (all) => MEALS.map(m => `<option value="${m[0]}">${m[1]}</option>`).join('') + (all ? '<option value="all">Tüm mealler (9)</option>' : '');
+$('#mealSel').innerHTML = mealOpts(true);
+$('#mealSel').onchange = e => {
+  state.meal = e.target.value;
+  if (state.meal !== 'all') { state.cardMeal = state.meal; $('#cMeal').value = state.meal; }
+  if (!mealReady(state.meal)) { $('#mealSel').disabled = true; toast(state.meal === 'all' ? '9 meal yükleniyor…' : 'Meal yükleniyor…'); }
+  loadMeal(state.meal).then(() => { $('#mealSel').disabled = false; updateSuggest(); }, () => { $('#mealSel').disabled = false; toast('Meal yüklenemedi'); });
+};
+$('#cMeal').innerHTML = mealOpts(false);
+$('#cMeal').onchange = e => { state.cardMeal = e.target.value; if (selected >= 0) renderMeal(selected); };
+function renderMeal(i) {
+  const id = state.cardMeal, el = $('#cTr');
+  $('#cMeal').value = id;
+  if (!mealText[id]) { el.innerHTML = '<span class="muted">Meal yükleniyor…</span>'; loadMeal(id).then(() => { if (selected === i) renderMeal(i); }, () => el.textContent = 'Meal yüklenemedi.'); }
+  else el.innerHTML = highlightTr(mealText[id][i], i, id);
+  // okunuş
+  const tl = $('#cTl');
+  if (window.QMEAL && window.QMEAL['tr.transliteration']) tl.textContent = window.QMEAL['tr.transliteration'][i];
+  else { tl.textContent = ''; loadMeal('tr.transliteration').then(() => { if (selected === i) tl.textContent = window.QMEAL['tr.transliteration'][i]; }, () => {}); }
+  if (!$('#cAll').hidden) renderAllMeals(i);
+}
+function renderAllMeals(i) {
+  const el = $('#cAll');
+  if (!mealReady('all')) { el.innerHTML = '<p class="muted small">9 meal yükleniyor…</p>'; loadMeal('all').then(() => { if (selected === i) renderAllMeals(i); }, () => el.innerHTML = '<p class="muted small">Mealler yüklenemedi.</p>'); return; }
+  el.innerHTML = MEALS.filter(m => m[0] !== state.cardMeal).map(m => `<div class="om"><b>${m[1]}</b><p>${highlightTr(mealText[m[0]][i], i, m[0])}</p></div>`).join('');
+}
+$('#allMealsBtn').onclick = () => {
+  const el = $('#cAll'); el.hidden = !el.hidden;
+  $('#allMealsBtn').textContent = el.hidden ? 'Tüm mealleri karşılaştır (9)' : 'Karşılaştırmayı gizle';
+  if (!el.hidden) renderAllMeals(selected);
+};
+
 /* ---------- arama kutusu ve öneriler ---------- */
 const qEl = $('#q'), mEl = $('#match'), sug = $('#suggest');
 let sugItems = [], sugIdx = -1;
@@ -798,6 +854,7 @@ function setMode(m) {
   $$('.modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
   mEl.innerHTML = MATCHES[m].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
   mEl.hidden = MATCHES[m].length < 2;
+  $('#mealSel').hidden = m !== 'tr';
   qEl.placeholder = { tr: 'Mealde bir kelime: sabır, rahmet, dünya…  (Enter = ekle · 2:255 = ayete git)', ar: 'Arapça kelime: الدنيا ، قل ، شهر', root: 'Kök yazın: رحم ، صبر ، علم', lemma: 'Lemma yazın: دنيا ، موسى ، يوم' }[m];
   qEl.dir = m === 'tr' ? 'ltr' : 'auto';
   updateSuggest();
@@ -828,8 +885,8 @@ function updateSuggest() {
       if (t) sugItems.push({ html: `<span>Ekle: <span class="ar">${escHtml(q)}</span></span><span class="muted">${fmt(t.occ)} kez · ${fmt(t.ver)} ayet</span>`, go: submit });
     }
   } else if (q.length >= 2) {
-    const t = makeTerm('tr', q, mEl.value);
-    if (t) sugItems.push({ html: `<span>Mealde ara: <b>${escHtml(q)}</b></span><span class="muted">${fmt(t.occ)} kez · ${fmt(t.ver)} ayet</span>`, go: submit });
+    const t = mealReady(state.meal) ? makeTerm('tr', q, mEl.value, { meal: state.meal }) : null;
+    if (t) sugItems.push({ html: `<span>${state.meal === 'all' ? 'Tüm meallerde' : mealShort(state.meal) + ' mealinde'} ara: <b>${escHtml(q)}</b></span><span class="muted">${fmt(t.occ)} kez · ${fmt(t.ver)} ayet</span>`, go: submit });
     trRootSuggest(q).forEach(id => sugItems.push({ html: `<span>Arapça kökle ara: <span class="ar">${Q.roots[id].split('').join(' ')}</span> <span class="muted">(tüm türevleri)</span></span><span class="muted">${fmt(rootOcc[id].length)} kez · ${fmt(rootDf[id])} ayet</span>`, go: () => { addTerm('root', Q.roots[id], 'root', { label: q.trim().replace(/^./, c => c.toLocaleUpperCase('tr')) }); qEl.value = ''; } }));
   }
   sug.innerHTML = sugItems.map((s, k) => `<li data-k="${k}">${s.html}</li>`).join('');
@@ -846,7 +903,8 @@ function submit() {
     const list = mode === 'root' ? rootNorm : lemNorm, n = normAr(q).replace(/\s+/g, '');
     if (findId(mode === 'root' ? Q.roots : Q.lemmas, list, q) < 0) { const k = list.findIndex(x => x.startsWith(n)); if (k >= 0) { if (addTerm(mode, (mode === 'root' ? Q.roots : Q.lemmas)[k], mode)) qEl.value = ''; sug.hidden = true; return; } }
   }
-  if (addTerm(mode, q, mEl.value)) { qEl.value = ''; sug.hidden = true; }
+  if (mode === 'tr' && !mealReady(state.meal)) { toast('Meal yükleniyor…'); loadMeal(state.meal).then(submit, () => toast('Meal yüklenemedi')); return; }
+  if (addTerm(mode, q, mEl.value, { meal: state.meal })) { qEl.value = ''; sug.hidden = true; }
 }
 qEl.addEventListener('input', updateSuggest);
 mEl.addEventListener('change', updateSuggest);
@@ -938,7 +996,7 @@ function runPreset(p) {
 let hashStr = '';
 function buildHash() {
   const p = new URLSearchParams();
-  state.terms.forEach(t => p.append('t', [t.mode, t.match, t.q, t.label, t.notLemma ? t.notLemma.join(',') : '', t.refs].join('~').replace(/~+$/, '')));
+  state.terms.forEach(t => p.append('t', [t.mode, t.match, t.q, t.label, t.notLemma ? t.notLemma.join(',') : '', t.refs, t.meal && t.meal !== 'tr.diyanet' ? t.meal : ''].join('~').replace(/~+$/, '')));
   if (state.layout !== 'grid') p.set('l', state.layout);
   if (state.chart) p.set('g', '1');
   if (state.metric !== 'occ') p.set('m', state.metric);
@@ -952,7 +1010,12 @@ let syncT = 0;
 function syncHash() { if (!LOCAL) return; clearTimeout(syncT); syncT = setTimeout(() => { const h = hashStr ? '#' + hashStr : ' '; if (location.hash.slice(1) !== hashStr) history.replaceState(null, '', h === ' ' ? location.pathname + location.search : h); }, 150); }
 function readHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  for (const t of p.getAll('t')) { const [m, mt, q, label, nl, refs] = t.split('~'); if (MATCHES[m]) addTerm(m, q, mt, { label: label || q, notLemma: nl ? nl.split(',') : null, refs, many: true, silent: true }); }
+  for (const t of p.getAll('t')) {
+    const [m, mt, q, label, nl, refs, meal] = t.split('~'); if (!MATCHES[m]) continue;
+    const o = { label: label || q, notLemma: nl ? nl.split(',') : null, refs, meal: meal || undefined, many: true, silent: true };
+    if (m === 'tr' && meal && !mealReady(meal)) loadMeal(meal).then(() => { addTerm(m, q, mt, o); termsChanged(); }, () => {});
+    else addTerm(m, q, mt, o);
+  }
   if (p.get('m') === 'ver') { state.metric = 'ver'; $$('#metricSeg button').forEach(x => x.classList.toggle('on', x.dataset.m === 'ver')); }
   if (p.get('ft')) { state.fType = p.get('ft'); $('#fType').value = state.fType; }
   if (p.get('fj')) { state.fJuz = +p.get('fj'); $('#fJuz').value = state.fJuz; }

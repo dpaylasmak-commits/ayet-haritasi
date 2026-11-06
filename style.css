@@ -163,3 +163,13 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:
 .mini .nm .ar{font:15px var(--ar);color:var(--muted);unicode-bidi:isolate}
 .mini i{display:block;height:6px;border-radius:3px;background:var(--c);min-width:2px}
 .mini b{text-align:right;font:700 16px var(--serif);font-variant-numeric:tabular-nums}
+
+.field #mealSel{max-width:190px}
+.translit{font:italic 500 16px/1.5 var(--serif);color:var(--muted);margin:0 0 12px}
+.mealbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}
+.mealbar select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 8px;color:var(--gold2)}
+.mealbar .small{font-size:12px}
+.allmeals{display:grid;gap:10px;margin:0 0 16px;border-left:2px solid var(--line);padding-left:12px}
+.allmeals .om b{font:600 13px var(--sans);color:var(--gold);letter-spacing:.02em}
+.allmeals .om p{margin:2px 0 0;font:500 17px/1.5 var(--serif)}
+.allmeals mark{background:color-mix(in srgb,var(--c) 22%,transparent);color:#fff;border-bottom:2px solid var(--c);border-radius:3px}

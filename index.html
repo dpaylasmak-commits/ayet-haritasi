@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
@@ -24,13 +24,14 @@
 
 <section class="searchbar">
   <div class="modes" role="tablist" aria-label="Arama türü">
-    <button data-mode="tr" class="on" title="Diyanet mealinde ara">Meal</button>
+    <button data-mode="tr" class="on" title="Türkçe meallerde ara">Meal</button>
     <button data-mode="ar" title="Arapça metinde ara (harekesiz)">Arapça</button>
     <button data-mode="root" title="Arapça kök (ör. رحم)">Kök</button>
     <button data-mode="lemma" title="Sözlük biçimi (Quranic Arabic Corpus)">Lemma</button>
   </div>
   <div class="field">
     <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Bir kelime yazın: sabır, rahmet, dünya…  (Enter = ekle · 2:255 = ayete git)">
+    <select id="mealSel" title="Hangi mealde aransın"></select>
     <select id="match" title="Eşleşme biçimi"></select>
     <button id="addBtn" class="gold">Ekle</button>
     <ul id="suggest" class="suggest" hidden></ul>
@@ -97,7 +98,10 @@
   <div class="card-b">
     <p class="arabic" id="cAr" dir="rtl" lang="ar"></p>
     <div class="wordinfo muted small" id="cWord">Bir Arapça kelimenin üzerine gelin: kökü ve kaç kez geçtiği görünür. Tıklayınca o kökü arar.</div>
+    <p class="translit" id="cTl"></p>
+    <div class="mealbar"><select id="cMeal" title="Gösterilen meal"></select><button class="ghost small" id="allMealsBtn">Tüm mealleri karşılaştır (9)</button></div>
     <p class="meal" id="cTr"></p>
+    <div class="allmeals" id="cAll" hidden></div>
     <div class="actions">
       <button class="gold" id="playBtn">▶ Dinle</button>
       <label class="small muted chk"><input type="checkbox" id="autoNext"> sonrakine geç</label>
@@ -121,7 +125,7 @@
     <p>Ekrandaki her nokta Kur'an'daki bir ayettir: <b>114 sure, 6.236 ayet</b>. Sol üstten sağ alta mushaf sırasıyla dizilir. Bir kelime aradığınızda o kelimenin geçtiği ayetler kendi rengiyle yanar. En fazla 5 kelimeyi aynı anda, farklı renklerle karşılaştırabilirsiniz.</p>
     <h3>Arama türleri</h3>
     <ul>
-      <li><b>Meal</b>: Diyanet İşleri meali. "Kelime başı" eşleşmesi Türkçe ekleri de yakalar (<i>dünya</i> → dünyanın, dünyada).</li>
+      <li><b>Meal</b>: 9 Türkçe meal (Diyanet İşleri, Diyanet Vakfı, Elmalılı, Ateş, Gölpınarlı, Yıldırım, Bulaç, Öztürk, Yüksel) ya da hepsi birden. "Kelime başı" eşleşmesi Türkçe ekleri de yakalar (<i>dünya</i> → dünyanın, dünyada).</li>
       <li><b>Arapça</b>: Harekesiz Arapça metin. "Ekli" eşleşme و ف ب ل ك ve ال öneklerini kabul eder.</li>
       <li><b>Kök</b>: Üç harfli Arapça kök (ör. <span lang="ar">رحم</span>: rahmet, rahîm, rahmân…).</li>
       <li><b>Lemma</b>: Kelimenin sözlük biçimi (ör. <span lang="ar">دُنْيا</span>). Videodaki sayımlar bu yönteme en yakındır.</li>
@@ -131,13 +135,13 @@
     <h3>Kısayollar</h3>
     <p class="kbd"><kbd>/</kbd> arama · <kbd>G</kbd> grafik · <kbd>R</kbd> rastgele ayet · <kbd>0</kbd> görünümü sıfırla · <kbd>←</kbd><kbd>→</kbd> ayetler arası · <kbd>Esc</kbd> kapat</p>
     <h3>Kaynaklar</h3>
-    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Meal: Diyanet İşleri Başkanlığı. Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com).</p>
+    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Mealler: Diyanet İşleri, Diyanet Vakfı, Elmalılı Hamdi Yazır, Süleyman Ateş, Abdülbaki Gölpınarlı, Suat Yıldırım, Ali Bulaç, Yaşar Nuri Öztürk, Edip Yüksel; okunuş: Muhammet Abay (Tanzil / alquran.cloud). Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com).</p>
   </div>
 </div>
 
 <div id="loading" class="loading"><div class="spin"></div><p>6.236 ayet yükleniyor…</p></div>
 
 <script src="data.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
