@@ -1,0 +1,19 @@
+{
+  "name": "Ayet Haritası",
+  "short_name": "Ayet Haritası",
+  "description": "Kur'an'daki 6.236 ayet, her biri bir nokta. Bir kelime yazın, geçtiği ayetler yansın.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0a22",
+  "theme_color": "#0a0a22",
+  "categories": ["education", "books", "reference"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ayet Haritası</title>
 <meta name="description" content="Kur'an'daki 6.236 ayet, her biri bir nokta. Bir kelime yazın, geçtiği ayetler yansın.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a0a22">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
@@ -146,7 +148,7 @@
     <h3>Kısayollar</h3>
     <p class="kbd"><kbd>/</kbd> arama · <kbd>G</kbd> grafik · <kbd>R</kbd> rastgele ayet · <kbd>0</kbd> görünümü sıfırla · <kbd>←</kbd><kbd>→</kbd> ayetler arası · <kbd>Esc</kbd> kapat</p>
     <h3>Kaynaklar</h3>
-    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Mealler: Diyanet İşleri, Diyanet Vakfı, Elmalılı Hamdi Yazır, Süleyman Ateş, Abdülbaki Gölpınarlı, Suat Yıldırım, Ali Bulaç, Yaşar Nuri Öztürk, Edip Yüksel; okunuş: Muhammet Abay (Tanzil / alquran.cloud). Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com).</p>
+    <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Mealler: Diyanet İşleri, Diyanet Vakfı, Elmalılı Hamdi Yazır, Süleyman Ateş, Abdülbaki Gölpınarlı, Suat Yıldırım, Ali Bulaç, Yaşar Nuri Öztürk, Edip Yüksel; okunuş: Muhammet Abay (Tanzil / alquran.cloud). Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com). · <a href="gizlilik.html" style="color:var(--gold2)">Gizlilik politikası</a></p>
   </div>
 </div>
 
@@ -155,5 +157,6 @@
 <script src="data.js"></script>
 <script src="app.js?v=7"></script>
 <script src="kesif.js?v=3"></script>
+<script>if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>
