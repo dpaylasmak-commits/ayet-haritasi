@@ -82,8 +82,9 @@ function clockShape(b, n) {
 }
 
 /* ---------- önceden yazılan tezler ---------- */
-const TEZ_TARIH = '7 Kasım 2026';
-const TS = { acik: ['Açık', GOLD], destek: ['Destekleniyor', TEAL], kismen: ['Kısmen tutuyor', VIOLET], zor: ['Zorlanıyor', ROSE] };
+const TEZ_TARIH = '7 Kasım 2026', TEZ_TARIH2 = '8 Kasım 2026', TEZ_ILK = 25;
+const tezTarih = i => i < TEZ_ILK ? TEZ_TARIH : TEZ_TARIH2;
+const TS = { acik: ['Açık', GOLD], destek: ['Destekleniyor', TEAL], kismen: ['Kısmen tutuyor', VIOLET], zor: ['Zorlanıyor', ROSE], bilinen: ['Önceden biliniyordu', BLUE] };
 const TEZ = [
   { k: 'Geri dönüş', t: 'Evren sonunda geri dönecek', st: 'acik', r: ['51:47', '21:104'],
     q: [['51:47', 'Göğü gücümüzle biz kurduk; şüphesiz biz onu genişleticiyiz.'], ['21:104', 'Göğü, kitap dürer gibi dürdüğümüz gün… ilk yaratmaya başladığımız gibi onu yine iade ederiz.']],
@@ -229,7 +230,7 @@ const TEZ = [
     z: 'İnsanda kış uykusu benzeri uzun süreli bir askıya alma mümkün; anahtarı duyu yalıtımı ve düzenli pozisyon değişimi.',
     b: 'Açık. Avrupa Uzay Ajansı uzun yolculuklar için insan kış uykusunu araştırıyor.',
     s: [[2035, 'Tıbbi hipotermi ve uzay tıbbı çalışmaları']], c: 'İnsanda güvenli uzun süreli askıya almanın biyolojik olarak imkânsız olduğu gösterilirse.' },
-  { k: 'İçki', t: 'Alkolün hiçbir miktarı net fayda sağlamaz', st: 'destek', r: ['2:219'],
+  { k: 'İçki', t: 'Alkolün hiçbir miktarı net fayda sağlamaz', st: 'bilinen', r: ['2:219'],
     q: [['2:219', 'İkisinde hem büyük günah hem insanlara bazı faydalar vardır. Günahları faydasından daha büyüktür.']],
     o: 'Ayet faydayı inkâr etmiyor ama zararın her zaman ağır bastığını söylüyor.',
     z: '“Az içki kalbe iyi” bulgusu çöker; alkolün hiçbir miktarı sağlığa net fayda sağlamaz.',
@@ -252,7 +253,101 @@ const TEZ = [
     o: '“Nâşietü’l-leyl”: uykudan kalkıp yapılan gece ibadeti; etkisi ve okumanın kalıcılığı vurgulanıyor.',
     z: 'Uyku arasında uyanılarak yapılan ezber, gündüz yapılan ezberden daha kalıcıdır.',
     b: 'Kısmen destekleniyor. Uykunun belleği pekiştirdiği biliniyor; uyku arasındaki uyanışın ayrıca etkisi sınanmadı.',
-    s: [[2028, 'Uyku laboratuvarı deneyleri']], c: 'Deneyler gece ezberinin daha kalıcı olmadığını gösterirse.' },
+    s: [[2028, 'Uyku laboratuvarı deneyleri']], c: 'Deneyler gece ezberinin daha kalıcı olmadığını gösterirse.' },  // ---- 2. tarama (43 tezlik liste) ----
+  { k: 'İrem', t: 'Sütunlu İrem kenti bulunacak', st: 'acik', r: ['89:7'], q: [['89:7', 'Benzeri hiçbir memlekette yaratılmamış, sütunlarla dolu İrem…']],
+    o: '“Zâti’l-imâd”: sütunlar sahibi; yeri Âd’ın yurdu Güney Arabistan.', z: 'Güney Arabistan’da sütunlu, anıtsal bir eski yerleşim bulunacak ve Âd ile ilişkilendirilecek.',
+    b: 'Açık. 1992’de Umman’daki Şisr kazısı “İrem bulundu” diye duyuruldu; bu iddia tartışmalı.', s: [[2030, 'Güney Arabistan yüzey ve uydu taramaları']], c: 'Bölgede böyle bir yapı izi olmadığı kapsamlı taramalarla gösterilirse.' },
+  { k: 'Cûdî', t: 'Tufanın izleri Cûdî çevresinde', st: 'acik', r: ['11:44'], q: [['11:44', 'Su çekildi, iş bitti; gemi Cûdî’ye oturdu.']],
+    o: 'Klasik kaynaklar Cûdî’yi Cizre yakınında gösterir; aramalar ise çoğunlukla Ağrı Dağı’nda yapıldı.', z: 'Cûdî Dağı çevresinde büyük bir taşkının ve eski bir yerleşimin izleri bulunacak.',
+    b: 'Açık. Kanıt yok.', s: [[2032, 'Cizre–Cûdî jeoarkeoloji çalışmaları']], c: 'Bölgede taşkın tabakası bulunmazsa.' },
+  { k: 'Hicr', t: 'Hicr’de Nebatîlerden önce Semûd katmanı', st: 'kismen', r: ['7:74', '15:82'], q: [['15:82', 'Dağlarda, güven içinde evler yontuyorlardı.']],
+    o: 'Kaya evleri yontan Semûd ile Hicr (AlUla) özdeşleştirilir; görünen kaya mezarları ise Nebatî dönemine aittir.', z: 'Hicr’de Nebatîlerden önceki bir halka ait yerleşim katmanları bulunacak.',
+    b: 'Kısmen. Bölgede Semûdî yazıtlar var; kazılar sürüyor.', s: [[2030, 'AlUla kazıları']], c: 'Yerleşimin yalnız Nebatîlerle başladığı kesinleşirse.' },
+  { k: 'Hâmân', t: 'Mısır kayıtlarında Hâmân', st: 'acik', r: ['28:38'], q: [['28:38', 'Ey Hâmân! Benim için toprak üzerine ateş yak, tuğla hazırlayıp bana bir kule yap.']],
+    o: 'Firavun’un yanında inşaatla görevli bir Hâmân.', z: 'Mısır kaynaklarında inşaatla ilişkili ve adı Hâmân’a karşılık gelen bir görevli bulunacak.',
+    b: 'Açık ve tartışmalı. Bu yönde ileri sürülen bir hiyeroglif okuması kabul görmedi.', s: [], c: 'Önerilen okumaların hepsi çürütülürse tez zayıflar.' },
+  { k: 'Rum', t: 'Rumların yenilip birkaç yılda galip gelmesi', st: 'destek', r: ['30:2', '30:3'], q: [['30:2', 'Rumlar en yakın bir yerde yenildiler. Onlar bu yenilgilerinden birkaç yıl sonra galip geleceklerdir.']],
+    o: 'Kur’an’da önceden yapılmış tarihî bir öngörü.', z: 'Bizans, yenilgisinden sonra birkaç yıl (bid‘) içinde Sasanilere karşı zafer kazanacak.',
+    b: 'Tuttu: 614’teki yenilginin ardından 622–627’de Herakleios’un zaferleri geldi. Ayetin iniş tarihi ve bir okuma farkı tartışmalı.', s: [], c: 'Tarih kesin olarak ters çıksaydı.' },
+  { k: 'Yeraltı suyu', t: 'Yeraltı suyu çekiliyor', st: 'bilinen', r: ['67:30'], q: [['67:30', 'Suyunuz yere batarsa, size kim temiz bir su kaynağı getirebilir?']],
+    o: 'Suyun yerin dibine çekilmesi uyarısı.', z: 'Dünya genelinde yeraltı suyu seviyesinin düşüşü hızlanıyor.',
+    b: 'Sonuç önceden biliniyordu: 2024’te Nature’da ölçülen akiferlerin %71’inde düşüş bulundu.', s: [], c: '—' },
+  { k: 'Karga', t: 'Kargalar ölü türdeşlerine tepki gösterir', st: 'kismen', r: ['5:31'], q: [['5:31', 'Kardeşinin ölüsünü nasıl örteceğini göstermek için yeri eşeleyen bir karga gönderdi.']],
+    o: 'Ölünün yanında yeri eşeleyen karga.', z: 'Kargalar ölü türdeşlerinin yanında özel davranışlar gösterir, hatta onları örter.',
+    b: 'Kısmen. 2015’te ölü türdeşe tepki ve bundan öğrenme gösterildi; örtme davranışı belgelenmedi.', s: [[2028, 'Kuzgunlar üzerinde saha gözlemleri']], c: 'Örtme davranışı hiç gözlenmezse ikinci kısım çöker.' },
+  { k: 'Hurma', t: 'Hurma doğumu kolaylaştırır', st: 'kismen', r: ['19:25'], q: [['19:25', 'Hurma ağacını kendine doğru silkele, üstüne taze hurma dökülsün.']],
+    o: 'Doğum sancısındaki Meryem’e taze hurma.', z: 'Doğumun son haftalarında hurma yemek doğumu kısaltır ve müdahale ihtiyacını azaltır.',
+    b: 'Kısmen. Küçük klinik denemeler olumlu; büyük deneme yok.', s: [[2029, 'Büyük klinik deneme']], c: 'Büyük deneme etki bulmazsa.' },
+  { k: 'Zeytinyağı', t: 'Zeytinyağı kalbi korur', st: 'bilinen', r: ['23:20'], q: [['23:20', 'Tûr-i Sînâ’da yetişen, yiyenlere yağ ve katık veren zeytin ağacı.']],
+    o: 'Zeytin: yağ ve katık.', z: 'Zeytinyağı ağırlıklı beslenme kalp-damar olaylarını azaltır.', b: 'Sonuç önceden biliniyordu (PREDIMED, yaklaşık %30 azalma).', s: [], c: '—' },
+  { k: 'İsraf', t: 'Ölçülü yemek yaşlanmayı yavaşlatır', st: 'kismen', r: ['7:31'], q: [['7:31', 'Yiyin, için, fakat israf etmeyin.']],
+    o: 'Ölçülü yemek.', z: 'Ölçülü kalori kısıtlaması insanlarda biyolojik yaşlanmayı yavaşlatır.', b: 'Kısmen. CALERIE çalışması (2023) yaşlanma hızında hafif yavaşlama buldu.', s: [[2030, 'Uzun süreli takip']], c: 'Uzun vadede etki kaybolursa.' },
+  { k: 'Kumar', t: 'Kumarın zararı faydasını aşar', st: 'bilinen', r: ['5:90'], q: [['5:90', 'İçki, kumar, putlar ve fal okları şeytan işi pisliklerdir.']],
+    o: 'Kumar yasağı.', z: 'Kumarın toplum düzeyindeki zararı faydasını aşar.', b: 'Sonuç önceden biliniyordu: ABD’de spor bahisleri yasallaşınca iflaslarda artış bildirildi.', s: [], c: '—' },
+  { k: 'Gece vardiyası', t: 'Sürekli gece çalışmak zararlıdır', st: 'bilinen', r: ['78:9', '78:11'], q: [['78:9', 'Uykunuzu dinlenme kıldık; geceyi örtü, gündüzü geçim vakti yaptık.']],
+    o: 'Gece dinlenme, gündüz çalışma düzeni.', z: 'Sürekli gece çalışmak ağır sağlık zararı verir.', b: 'Sonuç önceden biliniyordu: Dünya Sağlık Örgütü’nün kanser ajansı 2019’da gece vardiyasını “muhtemel kanserojen” saydı.', s: [], c: '—' },
+  { k: 'Şükür', t: 'Şükür iyi oluşu artırır', st: 'bilinen', r: ['14:7'], q: [['14:7', 'Şükrederseniz and olsun ki size artırırım.']],
+    o: 'Şükrün artışı getirmesi.', z: 'Düzenli şükür egzersizi iyi oluşu kalıcı biçimde artırır.', b: 'Sonuç önceden biliniyordu: etki var ama küçük (2003’ten beri).', s: [], c: '—' },
+  { k: 'Vermek', t: 'Başkası için harcamak mutlu eder', st: 'kismen', r: ['2:261'], q: [['2:261', 'Mallarını Allah yolunda harcayanlar, yedi başak veren ve her başakta yüz tane bulunan bir tane gibidir.']],
+    o: 'Vermenin kat kat geri dönmesi.', z: 'Başkası için harcamak, kendin için harcamaktan daha çok mutluluk verir.', b: 'Kısmen. 2008 bulgusu, 2020’deki büyük tekrarda daha zayıf çıktı.', s: [], c: 'Etki tekrar çalışmalarında sıfıra inerse.' },
+  { k: 'Affetmek', t: 'Affetmek sağlığı iyileştirir', st: 'kismen', r: ['42:40', '3:134'], q: [['42:40', 'Kim affeder ve barışırsa, onun ecri Allah’a aittir.']],
+    o: 'Affetme ve öfkeyi yenme.', z: 'Affetmek ruh sağlığını ve kalp-damar sağlığını iyileştirir.', b: 'Kısmen destekleniyor.', s: [], c: 'Kontrollü çalışmalar etki bulmazsa.' },
+  { k: 'Haberi araştır', t: 'Doğruluk hatırlatması yanlış bilgiyi azaltır', st: 'bilinen', r: ['49:6'], q: [['49:6', 'Size bir haber getirirse onun iç yüzünü araştırın.']],
+    o: 'Paylaşmadan önce araştırma.', z: 'Paylaşmadan önce yapılan bir doğruluk hatırlatması yanlış bilginin yayılmasını belirgin azaltır.', b: 'Sonuç önceden biliniyordu (Nature, 2021).', s: [], c: '—' },
+  { k: 'Faiz', t: 'Borca dayalı finans daha sık kriz üretir', st: 'acik', r: ['2:276'], q: [['2:276', 'Allah faizi eksiltir, sadakaları bereketlendirir.']],
+    o: 'Faizin “eksilmesi”.', z: 'Borca dayalı finans yapıları, ortaklığa dayalılara göre daha sık kriz üretir.', b: 'Açık ve tartışmalı.', s: [[2030, 'Karşılaştırmalı kriz veri tabanları']], c: 'Karşılaştırmalı veriler fark göstermezse.' },
+  { k: 'Kolay ezber', t: 'Kur’an metni daha kolay ezberlenir', st: 'acik', r: ['54:17'], q: [['54:17', 'Kur’an’ı öğüt olsun diye kolaylaştırdık.']],
+    o: 'Ölçüm: aynı sûrede art arda gelen ayetlerin %73,9’u aynı harfle bitiyor; harfler rastgele dağılsaydı oran %30,7 olurdu.', z: 'Kur’an metni, aynı uzunlukta kafiyesiz Arapça metne göre belirgin biçimde daha kolay ezberlenir.',
+    b: 'Açık. Kafiye oranı ölçüldü; ezber farkı deney ister.', s: [[2028, 'Ezber deneyi']], c: 'Deney fark bulmazsa.' },
+  // ---- 3. tarama: 6.236 ayetin tamamı ----
+  { k: 'Caydırıcılık', t: 'Ağır ve kesin cezalar suçu caydırır', st: 'acik', r: ['2:179', '5:38'], q: [['2:179', 'Ey akıl sahipleri! Kısasta sizin için hayat vardır.']],
+    o: 'Kısas (diyet seçeneğiyle) ve ağır cezalar “hayat” getirir.', z: 'Ağır ve kesin cezalar cinayeti ve hırsızlığı caydırır.', b: 'Kararsız. Araştırmalar cezanın kesinliğinin şiddetinden daha belirleyici olduğunu gösteriyor.', s: [[2030, 'Ülkeler arası doğal deneyler']], c: 'Caydırıcılık etkisi kesin olarak sıfır çıkarsa.' },
+  { k: 'Âdet', t: 'Âdette ilişki riski artırır', st: 'acik', r: ['2:222'], q: [['2:222', 'O bir rahatsızlıktır; âdet halinde kadınlardan uzak durun.']],
+    o: '“Ezâ”: rahatsızlık, zarar.', z: 'Âdet döneminde cinsel ilişki enfeksiyon ve endometriozis riskini artırır.', b: 'Kanıt karışık.', s: [[2030, 'Büyük kohort çalışmaları']], c: 'Büyük çalışmalar risk artışı bulmazsa.' },
+  { k: 'Ölüden diri', t: 'Cansızdan canlı laboratuvarda elde edilecek', st: 'acik', r: ['3:27', '6:95', '30:19'], q: [['30:19', 'O, ölüden diri çıkarır, diriden ölü çıkarır.']],
+    o: 'Klasik tefsir yumurta–civciv, tohum–bitki der; bu okuma kelimesi kelimesine cansızdan canlıyı anlıyor.', z: 'Cansız kimyadan kendini çoğaltan ve evrilebilen bir sistem laboratuvarda elde edilecek.', b: 'Açık. RNA dünyası deneyleri ilerliyor.', s: [[2035, 'Kökenler kimyası laboratuvarları']], c: 'Uzun vadede hiçbir yaklaşım sonuç vermezse tez zayıflar.' },
+  { k: 'Süt kardeşliği', t: 'Süt akrabalığının biyolojik bir izi var', st: 'acik', r: ['4:23'], q: [['4:23', 'Sizi emziren süt anneleriniz, süt kardeşleriniz size haram kılındı.']],
+    o: 'Sütün kan bağı gibi akrabalık kurması.', z: 'Anne sütüyle annenin hücreleri bebeğin dokularına yerleşir (süt yoluyla mikrokimerizm).', b: 'Farelerde gösterildi, insanda açık.', s: [[2030, 'Süt anneden beslenen bebeklerde hücre izi araştırması']], c: 'İnsanda süt yoluyla hücre aktarımı bulunmazsa.' },
+  { k: 'Bolluk ve çöküş', t: 'Uzun bolluk ve eşitsizlik çöküşü öngörür', st: 'kismen', r: ['6:44', '7:95'], q: [['6:44', 'Onlara her şeyin kapısını açtık; verilene sevinince ansızın yakaladık.']],
+    o: 'Refahın ardından gelen ani helak.', z: 'Uzun bolluk ve artan eşitsizlik toplumların ani çöküşünü öngörür.', b: 'Kısmen destekleniyor (Seshat veri tabanı, yapısal-demografik kuram).', s: [[2030, 'Tarihsel toplum veri tabanları']], c: 'Veriler ilişki göstermezse.' },
+  { k: 'Semûd ve Medyen', t: 'Semûd ve Medyen bir doğal felaketle bitti', st: 'acik', r: ['7:78', '7:91', '26:189'], q: [['7:78', 'Onları bir sarsıntı tuttu, oldukları yerde diz üstü çöküverdiler.'], ['26:189', 'Onları gölge gününün azabı yakaladı.']],
+    o: 'Sarsıntı, çığlık, yıldırım ve “gölge günü”.', z: 'Hicr ve Medyen yerleşimlerinin sonunda bir deprem ya da volkanik kül yıkım katmanı bulunacak.', b: 'Açık. Bölgede etkin fay hatları ve volkan alanları var.', s: [[2030, 'Paleosismoloji, AlUla ve Medyen kazıları']], c: 'Yerleşimlerin yavaş terk edildiği kesinleşirse.' },
+  { k: 'Lût', t: 'Lût kenti gökten gelen bir olayla yok oldu', st: 'acik', r: ['7:84', '15:76', '11:82'], q: [['11:82', 'Oraların altını üstüne getirdik; üzerine yığın yığın sert taş yağdırdık.'], ['15:76', 'O şehrin kalıntıları işlek yollar üzerinde hâlâ durmaktadır.']],
+    o: 'Altı üstüne getirilen, taş yağan, işlek yol üstündeki kent.', z: 'Ölü Deniz’in doğusundaki ticaret yolu üzerinde bir Tunç Çağı kenti havada patlayan bir göktaşı ya da fay çökmesiyle yok oldu.', b: 'Tartışmalı. 2021’deki Tall el-Hammam makalesi itiraz gördü.', s: [[2030, 'Yeni kazı ve mineral analizi']], c: 'Yıkımın yavaş ve sıradan olduğu kesinleşirse.' },
+  { k: 'Cumartesi balıkları', t: 'Av yasağı günlerinde balıklar kıyıya yaklaşır', st: 'acik', r: ['7:163'], q: [['7:163', 'Cumartesileri balıklar sürüyle geliyor, başka günler gelmiyordu.']],
+    o: 'Avlanılmayan günde balıkların sürüyle gelmesi.', z: 'Avlanmanın yasak olduğu gün ve bölgelerde balıklar kıyıya daha çok yaklaşır.', b: 'Kısmen biliniyor; haftalık yasaklar için az çalışma var.', s: [[2028, 'Deniz koruma alanı izleme verisi']], c: 'Haftalık yasakların davranışa etkisi yoksa.' },
+  { k: 'Başakta saklama', t: 'Başağında saklanan tahıl uzun dayanır', st: 'acik', r: ['12:47'], q: [['12:47', 'Biçtiğiniz ekinin yediğinizden artanını başağında bırakın.']],
+    o: 'Yusuf’un kıtlık planı.', z: 'Başağında saklanan tahıl, harmanlanmış tahıldan daha uzun süre bozulmadan kalır.', b: 'Az çalışılmış.', s: [[2027, 'Basit depolama deneyi']], c: 'Deney fark göstermezse.' },
+  { k: 'Tilavet', t: 'Tilavet kaygıyı ve ağrıyı azaltır', st: 'acik', r: ['17:82'], q: [['17:82', 'Kur’an’dan inananlara rahmet ve şifa olan şeyler indiriyoruz.']],
+    o: '“Şifa” ölçülebilir bir etki olarak.', z: 'Kur’an tilaveti dinlemek kaygıyı ve ağrıyı azaltır; etki aynı ezgide müzikten büyüktür.', b: 'Küçük denemeler olumlu; müzikten ayrıştırılmadı.', s: [[2029, 'Kontrollü klinik deneme']], c: 'Etki müzikten farksız çıkarsa ikinci kısım çöker.' },
+  { k: 'Güneşli zeytin', t: 'Güneş alan zeytinin yağı daha kalitelidir', st: 'acik', r: ['24:35'], q: [['24:35', 'Ne yalnız doğuda ne yalnız batıda bulunan bereketli zeytin ağacından yakılır.']],
+    o: '“Ne doğulu ne batılı”: gün boyu güneş alan ağaç.', z: 'Gün boyu güneş alan zeytin ağacının yağı, gölgede kalanınkinden daha kalitelidir.', b: 'Kısmen biliniyor.', s: [[2028, 'Aynı bahçede gölge/güneş karşılaştırması']], c: 'Fark çıkmazsa.' },
+  { k: 'Fıtrat', t: 'İnanç eğilimi doğuştandır', st: 'kismen', r: ['30:30'], q: [['30:30', 'Allah’ın insanlara yaratılışta verdiği dine ver.']],
+    o: 'Fıtrat: yaratılıştan gelen yatkınlık.', z: 'Çocuklar kültürden bağımsız olarak dünyayı “amaç” ve “tasarımcı” üzerinden düşünür.', b: 'Kısmen destekleniyor (bilişsel din bilimi).', s: [[2030, 'Kültürler arası çocuk çalışmaları']], c: 'Eğilimin tümüyle kültürden geldiği gösterilirse.' },
+  { k: 'Ürperme', t: 'Tilavet dinleyende ürperme ölçülür', st: 'acik', r: ['39:23'], q: [['39:23', 'Rablerinden korkanların tüyleri ürperir, sonra derileri ve kalpleri yumuşar.']],
+    o: 'Önce ürperme, sonra yumuşama.', z: 'Tilavet dinleyen inananlarda ürperme (frisson), ardından fizyolojik gevşeme ölçülür.', b: 'Ölçülmedi.', s: [[2028, 'Deri iletkenliği ve kalp atışı ölçümü']], c: 'Ölçümde ürperme ya da gevşeme görülmezse.' },
+  { k: 'Suyun kökeni', t: 'Dünya’nın suyu kendi içinden geldi', st: 'acik', r: ['79:30', '79:31'], q: [['79:31', 'Suyunu ve otlağını ondan çıkarmıştır.']],
+    o: '“Ondan çıkardı”: su yerin kendisinden.', z: 'Dünya’daki suyun çoğu kuyruklu yıldızlardan değil, gezegenin kendi yapı malzemesinden ve içinden geldi.', b: 'Açık. 2020’de Science’ta çıkan bir çalışma destekledi.', s: [[2030, 'Göktaşı ve manto izotopları']], c: 'Suyun çoğunun dışarıdan geldiği kesinleşirse.' },
+  { k: 'Ahlaki sezgi', t: 'Ahlaki sezgi doğuştandır', st: 'kismen', r: ['91:7', '91:8'], q: [['91:8', 'Ona iyilik ve kötülük kabiliyeti verene and olsun.']],
+    o: 'İyilik ve kötülüğün nefse ilham edilmesi.', z: 'Bebekler, öğretilmeden yardım edeni engel olana tercih eder.', b: '2007 bulgusu tekrarlarda karışık çıktı.', s: [[2028, 'Çok merkezli tekrar çalışması']], c: 'Büyük tekrar çalışması tercih bulmazsa.' },
+  { k: 'Demir set', t: 'Demir ve bakır set kalıntısı bulunacak', st: 'acik', r: ['18:95', '18:96'], q: [['18:96', 'Bana demir kütleleri getirin… erimiş bakır getirin de üzerine dökeyim.']],
+    o: 'İki dağ arasına demir ve erimiş bakırla yapılan set.', z: 'İki dağ arasında demir ve bakır içeren eski bir set kalıntısı bulunacak.', b: 'Açık.', s: [[2032, 'Kafkas ve Orta Asya geçitlerinde arkeometalurji']], c: 'Aday geçitlerde böyle bir iz bulunmazsa.' },
+  { k: 'Sebe', t: 'Marib’den sonra bitki örtüsü değişti', st: 'acik', r: ['34:15', '34:16'], q: [['34:16', 'Bahçelerini buruk yemişli, ılgınlık ve biraz da sedir bulunan iki bahçeye çevirdik.']],
+    o: 'Arim selinden sonra bahçelerin çalılığa dönmesi.', z: 'Marib barajı yıkıldıktan sonra Sebe’nin bitki örtüsü ılgın ve çalılığa döndü.', b: 'Barajın yıkılışı biliniyor; bitki değişimi sınanmadı.', s: [[2030, 'Polen ve odun kömürü analizi']], c: 'Polen kayıtları değişim göstermezse.' },
+  { k: 'Âd', t: 'Âd kum fırtınaları döneminde bitti', st: 'acik', r: ['41:16', '46:24', '69:7'], q: [['46:24', 'Bu yaygın bulut bize yağmur yağdıracak dediler. Hayır, o can yakıcı bir rüzgârdır.'], ['69:7', 'O rüzgârı üzerlerine yedi gece sekiz gün estirdi.']],
+    o: 'Bulut sanılan, günlerce süren dondurucu rüzgâr.', z: 'Ahkâf’taki yerleşimler günlerce süren kum fırtınaları ve kuraklık döneminde terk edildi.', b: 'Açık.', s: [[2030, 'Paleoiklim, kum tabakaları']], c: 'Terk edilişin iklimle ilgisi olmadığı gösterilirse.' },
+  { k: 'Fil yılı', t: 'Ebrehe’nin ordusu bir salgınla çöktü', st: 'acik', r: ['105:3', '105:4'], q: [['105:3', 'Üzerlerine sert taşlar atan sürü sürü kuşlar gönderdi.']],
+    o: 'Siccîl taşları ve “yenmiş ekin” gibi olma.', z: 'Ebrehe’nin ordusu bir salgınla (çiçek) çöktü; erken Arap kaynakları çiçeğin o yıl görüldüğünü söyler.', b: 'Açık.', s: [[2032, 'Antik DNA']], c: 'Kalıntılarda salgın izi bulunmazsa.' },
+  { k: 'Ebû Leheb', t: 'Ebû Leheb iman etmeden ölecek', st: 'destek', r: ['111:1', '111:3'], q: [['111:3', 'Alevli ateşe yaslanacaktır.']],
+    o: 'Ayet indiğinde Ebû Leheb ve karısı hayattaydı.', z: 'İkisi de iman etmeden ölecek.', b: 'Tuttu: ikisi de iman etmeden öldü.', s: [], c: 'Biri iman etseydi.' },
+  { k: 'Süleyman’ın bakırı', t: 'Süleyman döneminde büyük bakır üretimi', st: 'destek', r: ['34:12'], q: [['34:12', 'Onun için su gibi erimiş bakır akıttık.']],
+    o: 'Süleyman için akıtılan erimiş bakır.', z: 'Süleyman dönemine (MÖ 10. yy) tarihlenen büyük bakır eritme tesisleri bulunacak.', b: 'Destekleniyor: Timna ve Faynan’da 2013–2019 radyokarbon tarihleri.', s: [], c: '—' },
+  { k: 'Ninova', t: 'Ninova’nın nüfusu yüz bini aşıyordu', st: 'destek', r: ['37:147'], q: [['37:147', 'Onu yüz bin veya daha çok kişiye peygamber olarak gönderdik.']],
+    o: 'Yunus’un gönderildiği kalabalık.', z: 'Ninova’nın nüfusu MÖ 7. yüzyılda yüz binin üstündeydi.', b: 'Destekleniyor: arkeolojik tahminler 100–150 bin.', s: [], c: '—' },
+  { k: 'Tatlı su mercanı', t: 'İki denizden de mercan çıkar', st: 'zor', r: ['55:22'], q: [['55:22', 'Bu iki denizden de inci ve mercan çıkar.']],
+    o: 'Tatlı ve tuzlu iki denizin ikisinden de.', z: 'Tatlı suda da mercan bulunur.', b: 'Zorlanıyor: tatlı su incisi var, ama gerçek mercan yalnız denizde yaşar. Klasik tefsir “ikisinden” ifadesini “birinden” diye açıklar.', s: [], c: 'Zaten zorlanıyor.' },
+  { k: 'Âlimlerin huşusu', t: 'Bilgi arttıkça huşu artar', st: 'zor', r: ['35:28'], q: [['35:28', 'Allah’ın kulları arasında O’ndan korkan ancak bilginlerdir.']],
+    o: '“Âlim” geniş anlamda bilgi sahibi okunursa.', z: 'Bilgi düzeyi arttıkça huşu ve inanç artar.', b: 'Zorlanıyor: anketlerde bilim insanları ortalamadan daha az dindar çıkıyor. “Âlim” din âlimi de olabilir.', s: [], c: 'Zaten zorlanıyor.' },
 ];
 const tezRefs = TEZ.flatMap(t => t.r);
 const tezTerms = () => Object.entries(TS).map(([k, [n, c]]) => ['set', TEZ.filter(t => t.st === k).flatMap(t => t.r).join(','), '', n, c]);
@@ -269,7 +364,7 @@ function countdown(d, w) { const n = Math.ceil((new Date(d) - new Date()) / 864e
 const tezCard = (t, i) => `<div class="tzcard" style="--c:${TS[t.st][1]}"><div class="tzh"><span class="tzn">${i + 1}</span><h4>${t.t}</h4><span class="tag" style="--c:${TS[t.st][1]}">${TS[t.st][0]}</span></div>
   ${t.q.map(([r, x]) => `<div class="quote" style="--c:${TS[t.st][1]}">“${x}” <small>${vlink(r, TS[t.st][1])}</small></div>`).join('')}
   <dl><dt>Okuma</dt><dd>${t.o}</dd><dt>Tez</dt><dd><b>${t.z}</b></dd><dt>Bugün</dt><dd>${t.b}</dd>
-  ${t.s.length ? `<dt>Sınav</dt><dd>${t.s.map(([y, w]) => `<span class="tzy">${y}</span> ${w}`).join('<br>')}</dd>` : ''}<dt>Çökerse</dt><dd>${t.c}</dd></dl>
+  ${t.s.length ? `<dt>Sınav</dt><dd>${t.s.map(([y, w]) => `<span class="tzy">${y}</span> ${w}`).join('<br>')}</dd>` : ''}${t.c === '—' || t.st === 'zor' ? '' : `<dt>Çökerse</dt><dd>${t.c}</dd>`}<dt>Kayıt</dt><dd>${tezTarih(i)}</dd></dl>
   ${t.cd ? countdown(...t.cd) : ''}</div>`;
 
 const STORIES = [
@@ -319,17 +414,17 @@ const STORIES = [
     { terms: [['lemma', 'اللَّه', 'lemma', 'Allah', GOLD]], cam: 'fit', metric: true,
       text: `<b class="ar">اللَّه</b> ismi <b>2.699</b> kez geçiyor ve <b>1.821</b> ayette yer alıyor. 6.236 ayetin %29’u: <b>yaklaşık her üç ayetten biri.</b> Yanan noktalara bakın; hiçbir bölge boş kalmıyor.` },
   ] },
-  { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 25 tez, sonucu bekleniyor', nw: true, steps: [
+  { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 67 tez, 6.236 ayetin tamamından', nw: true, steps: [
     { terms: tezTerms(), labels: tezLabels(), pulses: TEZ.filter(t => t.st === 'acik').map(t => t.r[0]), cam: 'fit',
-      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt tarihi: <b>${TEZ_TARIH}</b></div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}${tezList()}<small class="muted">Haritadaki numaralar tezlere karşılık geliyor; halkalar sonucu henüz belli olmayanlar. Bir teze dokunun, doğrudan ona gidin.</small>` },
+      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt: 1–${TEZ_ILK}. tezler <b>${TEZ_TARIH}</b>, ${TEZ_ILK + 1}–${TEZ.length}. tezler <b>${TEZ_TARIH2}</b>. Son eklenenler 6.236 ayetin tek tek okunmasından çıktı.</div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}${tezList()}<small class="muted">Haritadaki numaralar tezlere karşılık geliyor; halkalar sonucu henüz belli olmayanlar. Bir teze dokunun, doğrudan ona gidin.</small>` },
     ...TEZ.map((t, i) => ({
       terms: [['set', t.r.join(','), '', `Tez ${i + 1} · ${t.k}`, TS[t.st][1]]],
       links: t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : [],
       labels: t.r.map(r => ({ r, t: r, c: TS[t.st][1] })), pulses: t.st === 'acik' ? [t.r[0]] : [], cam: t.r,
       text: tezCard(t, i) })),
     { terms: tezTerms(), labels: tezLabels(), links: tezLinks, cam: 'fit',
-      text: `<h4>Sonuç takvimi</h4><p>25 tezin çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
-      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> Bu liste ${TEZ_TARIH} tarihli.</li><li><b>Tutmayanlar da sayılır.</b> Yalnız tutanları anlatmak, “keşiften sonra yorum” yöntemine geri dönmek olur. Zorlanan tezler de listede kalıyor.</li></ol>` },
+      text: `<h4>Sonuç takvimi</h4><p>${TEZ.length} tezin açık kalanlarının çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
+      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> 1–${TEZ_ILK}. tezler ${TEZ_TARIH}, sonrakiler ${TEZ_TARIH2} tarihli.</li><li><b>Önceden bilinenler ayrı sayılır.</b> Mavi tezlerin sonucu biz yazmadan önce zaten biliniyordu; bu yüzden “öngörü” sayılmazlar. Yalnız tamlık için listedeler.</li><li><b>Tutmayanlar da sayılır.</b> Yalnız tutanları anlatmak, “keşiften sonra yorum” yöntemine geri dönmek olur. Zorlanan tezler de listede kalıyor.</li></ol><p><a class="tzall" href="tezler.html">285 adayın tam kataloğu →</a><br><small class="muted">Tam okumada not edilen her aday: tezler, bilinen bilgiler, zorlananlar ve elenenler.</small></p>` },
   ] },
   { id: 'siklik', t: 'En çok geçen kelimeler', icon: '▤', d: 'Kelimelerin yarışı', steps: [
     { top: TOP_ALL, text: `Kur’an’da <b>77.429</b> kelime var. Edatlarla birlikte sayınca zirvede “-den” (مِن) var; <b>Allah</b> ismi ikinci sırada. Her çubuk bir kelime, her nokta bir geçiş.` },
