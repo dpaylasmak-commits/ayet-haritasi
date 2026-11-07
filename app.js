@@ -438,7 +438,7 @@ function buildChart() {
   });
   partStart = performance.now(); partT = 0; needs = true;
 }
-// çok terim: videodaki gibi yatay çubuklar (her satır 2 nokta kalınlığında)
+// çok terim: yatay çubuklar (her satır 2 nokta kalınlığında)
 let chartBounds = null;
 function buildHChart(T, vals, b) {
   const thick = 2, pitch = thick + 1.6, labelW = 17;
@@ -1154,7 +1154,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------- hazır karşılaştırmalar ---------- */
 const PRESETS = [
-  { t: 'Dünya ⚖ Âhiret', d: 'Videodaki terazi', terms: [['lemma', 'دُنْيا', 'lemma', 'Dünya'], ['ar', 'الآخرة', 'affix', 'Âhiret']], chart: false },
+  { t: 'Dünya ⚖ Âhiret', d: 'Eşit mi geçiyor?', terms: [['lemma', 'دُنْيا', 'lemma', 'Dünya'], ['ar', 'الآخرة', 'affix', 'Âhiret']], chart: false },
   { t: 'De ki ⚖ Dediler', d: 'قُلْ ve قَالُوا', terms: [['ar', 'قل', 'affix', 'De ki', ['قَلَّ']], ['ar', 'قالوا', 'affix', 'Dediler']], chart: true },
   { t: '25 Peygamber', d: 'Adı geçen bütün peygamberler', terms: [
     ['lemma', 'مُوسَى', 'lemma', 'Mûsâ'], ['lemma', 'إِبْراهِيم', 'lemma', 'İbrâhim'], ['lemma', 'نُوح', 'lemma', 'Nûh'], ['lemma', 'لُوط', 'lemma', 'Lût'], ['lemma', 'يُوسُف', 'lemma', 'Yûsuf'],
