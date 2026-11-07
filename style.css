@@ -273,3 +273,11 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:
 .tztl span{font-size:12px;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:999px;padding:1px 8px 1px 2px;display:inline-flex;align-items:center;gap:5px}
 .tztl span i{font:normal 600 10px var(--sans);width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#1b1640}
 .tzrules{margin:6px 0 0;padding-left:18px;font-size:13px;display:grid;gap:4px}
+#stDots .stcount{font:600 12px var(--sans);color:var(--gold2);white-space:nowrap;align-self:center}
+#stDots .stbar{flex:1;align-self:center;height:6px;border-radius:3px;background:rgba(255,255,255,.14);cursor:pointer;overflow:hidden;min-width:40px}
+#stDots .stbar i{display:block;height:100%;background:var(--gold);border-radius:3px;width:auto;transition:width .3s}
+.tzlist{list-style:none;margin:8px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:12.5px}
+.tzlist a{display:flex;gap:6px;align-items:flex-start;color:var(--ink);text-decoration:none;padding:2px 0;line-height:1.3}
+.tzlist a:hover{color:var(--c)}
+.tzlist i{font:normal 600 10px/16px var(--sans);min-width:16px;height:16px;border-radius:50%;text-align:center;background:var(--c);color:#1b1640;flex:none;margin-top:1px}
+@media (max-width:480px){.tzlist{grid-template-columns:1fr}}

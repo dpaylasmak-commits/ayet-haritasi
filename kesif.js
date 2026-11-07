@@ -154,10 +154,110 @@ const TEZ = [
     z: 'Bir bebek altı aydan önce doğarsa yaşayamaz.',
     b: 'Kısmen tutuyor. Yoğun bakımda yaşatılan en erken bebek 21 haftalık doğdu (döllenmeden ~4,5 ay). Tıbbi destek olmadan doğal yaşama sınırı olarak büyük ölçüde tutuyor. Dünya Sağlık Örgütü de iki yıl emzirmeyi öneriyor.',
     s: [], c: 'Mutlak sınır olarak okunursa tutmadı; doğal sınır olarak tutuyor.' },
+  { k: 'Güneş ve Ay', t: 'Güneş, Ay’ı ve Dünya’yı yutacak', st: 'acik', r: ['75:9'],
+    q: [['75:9', 'Güneş ve Ay bir araya getirildiğinde…']],
+    o: 'Kıyamet sahnesinde Güneş ile Ay’ın “bir araya getirilmesi”. Bugün Ay Dünya’dan yılda 3,8 cm uzaklaşıyor; bir araya gelmeleri ancak Güneş’in büyümesiyle olabilir.',
+    z: 'Güneş kırmızı dev evresinde Ay’ı ve Dünya’yı yutacak.',
+    b: 'Modeller büyük ölçüde bunu söylüyor ama kesin değil. 2023’te başka bir yıldızın gezegenini yuttuğu ilk kez gözlendi.',
+    s: [[2030, 'Yıldız evrimi modelleri ve yutulma gözlemleri']],
+    c: 'Kütle kaybıyla genişleyen yörüngelerin Dünya’yı ve Ay’ı kurtardığı kesinleşirse.' },
+  { k: 'Yedi yer', t: 'Dünya benzeri gezegenler yaygındır', st: 'acik', r: ['65:12'],
+    q: [['65:12', 'Yedi göğü ve yerden de bir o kadarını yaratan Allah’tır.']],
+    o: '“Yerden de bir o kadarı”: tek bir Dünya değil, ona benzeyen başka yerler.',
+    z: 'Güneş benzeri yıldızların en az %10’unda, yaşanabilir bölgede kayalık, Dünya büyüklüğünde bir gezegen var.',
+    b: 'Açık. Tahminler %5 ile %50 arasında değişiyor.',
+    s: [[2026, 'PLATO teleskobunun fırlatılışı'], [2032, 'PLATO sonuçları']],
+    c: 'Oran %10’un belirgin biçimde altında çıkarsa.' },
+  { k: 'Değişen gökler', t: 'Evrenin vakumu yarı kararlıdır', st: 'kismen', r: ['14:48'],
+    q: [['14:48', 'Yerin başka bir yerle, göklerin de başka göklerle değiştirildiği gün…']],
+    o: 'Göklerin “başka göklerle değiştirilmesi”: bugünkü hâlin kalıcı olmadığı bir evren.',
+    z: 'Evrenin bugünkü vakum hâli en dip hâl değil, yarı kararlıdır; ilke olarak başka bir hâle geçebilir.',
+    b: 'Kısmen destekleniyor. Higgs ve top kuark ölçümleri bugün yarı kararlılığa işaret ediyor.',
+    s: [[2033, 'Yüksek ışınımlı LHC top kuark ölçümleri']],
+    c: 'Hassas ölçümler vakumu tam kararlı bölgeye taşırsa.' },
+  { k: 'Eksilen kenarlar', t: 'Kıyılar net kara kaybediyor', st: 'zor', r: ['13:41'],
+    q: [['13:41', 'Görmüyorlar mı ki, Biz yeryüzünü etrafından gitgide eksiltmekteyiz.']],
+    o: 'Klasik tefsir bunu fethedilen topraklar diye açıklar. Bu okuma kelimesi kelimesine kara kaybı anlıyor.',
+    z: 'Kıyılar küresel ölçekte net kara kaybediyor.',
+    b: '<b>Zorlanıyor.</b> 1985–2015 uydu verileri kıyılarda net kara kazancı gösterdi (dolgu, nehir birikintileri).',
+    s: [[2035, 'Deniz seviyesi yükselişiyle yeni uydu ölçümleri']],
+    c: 'Uydu ölçümleri net kazancın sürdüğünü gösterirse.' },
+  { k: 'Kızgın deniz', t: 'Yerin altında okyanus kadar su var', st: 'kismen', r: ['52:6'],
+    q: [['52:6', 'Ve mescûr denize andolsun.']],
+    o: '“Mescûr” hem “dolu” hem “kızdırılmış” demek: içi su dolu, sıcak bir “deniz”.',
+    z: 'Yer kabuğunun altında, sıcak manto kayalarının içinde yüzeydeki okyanuslar kadar ya da daha fazla su var.',
+    b: 'Kısmen destekleniyor. 2014’te manto kökenli bir mineralde su bulundu; toplam miktarı tartışmalı.',
+    s: [[2030, 'Sismik ve mineral çalışmaları']],
+    c: 'Manto geçiş bölgesinin büyük ölçüde kuru olduğu gösterilirse.' },
+  { k: 'Yarılan yer', t: 'Kabuğu levhalara bölünmüş tek gezegen Dünya', st: 'acik', r: ['86:12'],
+    q: [['86:12', 'Yarılan (sad‘) yeryüzüne andolsun.']],
+    o: 'Yeminde Dünya’nın ayırt edici özelliği olarak “yarılma” öne çıkarılıyor.',
+    z: 'Venüs’te ve Mars’ta bugün işleyen bir levha hareketi yok; yeri levhalara bölünmüş tek gezegen Dünya.',
+    b: 'Açık. Venüs’ün yüzeyi henüz yeterince tanınmıyor.',
+    s: [[2031, 'VERITAS ve EnVision Venüs görevleri']],
+    c: 'Venüs’te ya da başka bir gezegende etkin levha hareketi bulunursa.' },
+  { k: 'Dolu ve şimşek', t: 'Yıldırımı dolu ve buz başlatır', st: 'acik', r: ['24:43'],
+    q: [['24:43', 'Gökten, içinde dolu bulunan dağlar gibi bulutlar indirir… Şimşeğinin parıltısı neredeyse gözleri alır.']],
+    o: 'Ayet doluyu ve şimşeği aynı bulutta, art arda anıyor.',
+    z: 'Yıldırımı başlatan, buluttaki dolu ve buz parçacıklarının çarpışmasıdır, kozmik ışınlar değil.',
+    b: 'Açık. Yıldırımın nasıl başladığı hâlâ bilinmiyor.',
+    s: [[2029, 'LOFAR ve ASIM ölçümleri']],
+    c: 'Yıldırımın kozmik ışınlarla tetiklendiği gösterilirse.' },
+  { k: 'Aşılayan rüzgâr', t: 'Rüzgârın taşıdığı canlılar yağmuru başlatır', st: 'kismen', r: ['15:22'],
+    q: [['15:22', 'Rüzgârları aşılayıcı olarak gönderdik; yukarıdan su indirdik.']],
+    o: '“Levâkıh” aşılayan demek; ayet aşılamayı doğrudan yağmura bağlıyor.',
+    z: 'Rüzgârın taşıdığı bakteri ve polenler yağmurun başlamasında belirleyici bir rol oynar.',
+    b: 'Kısmen destekleniyor. Kar tanelerinde buz çekirdeği oluşturan bakteriler bulundu; etkinin büyüklüğü tartışmalı.',
+    s: [[2030, 'Atmosfer örneklemeleri']],
+    c: 'Biyolojik parçacıkların yağışa katkısı önemsiz çıkarsa.' },
+  { k: 'Balçık', t: 'Yaşam kilin üzerinde başladı', st: 'acik', r: ['15:26'],
+    q: [['15:26', 'İnsanı kuru balçıktan, işlenebilen kara topraktan yarattık.']],
+    o: '“Hame’in mesnûn”: şekillenmiş kara çamur. Okuma bunu yaşamın kimyasal başlangıcına uyguluyor.',
+    z: 'Yaşamın ilk molekülleri kil minerallerinin yüzeyinde oluştu, deniz altındaki sıcak su bacalarında değil.',
+    b: 'Açık. İki görüş de destekçi buluyor.',
+    s: [[2033, 'Mars Örnek Dönüşü'], [2030, 'Laboratuvar sentezleri']],
+    c: 'Yaşamın kökeninin kilsiz bir ortamda olduğu güçlü biçimde gösterilirse.' },
+  { k: 'Tek nefis', t: 'İnsan soyu dar bir darboğazdan geçti', st: 'kismen', r: ['4:1'],
+    q: [['4:1', 'Sizi bir tek nefisten yaratan, ondan eşini var eden…']],
+    o: 'Bütün insanlar tek bir kökten.',
+    z: 'İnsan soyu geçmişte çok dar bir nüfus darboğazından geçti.',
+    b: 'Kısmen. 2023’teki bir çalışma yaklaşık 900 bin yıl önce 1.300 kişilik bir darboğaz buldu. Ama genetik bulgular son 500 bin yılda tek bir çiftle bağdaşmıyor.',
+    s: [[2030, 'Antik genom çalışmaları']], c: 'Darboğaz bulgusu yeni verilerde kaybolursa.' },
+  { k: 'Uzun uyku', t: 'İnsan uzun süre askıya alınabilir', st: 'acik', r: ['18:11', '18:18'],
+    q: [['18:11', 'Mağarada kulaklarına yıllarca perde vurduk.'], ['18:18', 'Biz onları sağa ve sola çevirirdik.']],
+    o: 'Mağara arkadaşlarının uzun uykusunda iki ayrıntı veriliyor: dış seslerin kesilmesi ve bedenin düzenli çevrilmesi.',
+    z: 'İnsanda kış uykusu benzeri uzun süreli bir askıya alma mümkün; anahtarı duyu yalıtımı ve düzenli pozisyon değişimi.',
+    b: 'Açık. Avrupa Uzay Ajansı uzun yolculuklar için insan kış uykusunu araştırıyor.',
+    s: [[2035, 'Tıbbi hipotermi ve uzay tıbbı çalışmaları']], c: 'İnsanda güvenli uzun süreli askıya almanın biyolojik olarak imkânsız olduğu gösterilirse.' },
+  { k: 'İçki', t: 'Alkolün hiçbir miktarı net fayda sağlamaz', st: 'destek', r: ['2:219'],
+    q: [['2:219', 'İkisinde hem büyük günah hem insanlara bazı faydalar vardır. Günahları faydasından daha büyüktür.']],
+    o: 'Ayet faydayı inkâr etmiyor ama zararın her zaman ağır bastığını söylüyor.',
+    z: '“Az içki kalbe iyi” bulgusu çöker; alkolün hiçbir miktarı sağlığa net fayda sağlamaz.',
+    b: 'Destekleniyor. Dünya Sağlık Örgütü 2023’te “güvenli bir miktar yok” dedi; büyük analizler az içmenin faydasını bulamadı.',
+    s: [[2028, 'Genetik yöntemli (Mendel randomizasyonu) çalışmalar']], c: 'İyi tasarlanmış çalışmalar az miktarda net fayda bulursa.' },
+  { k: 'Oruç', t: 'Oruç kaloriden bağımsız fayda sağlar', st: 'acik', r: ['2:184'],
+    q: [['2:184', 'Oruç tutmanız sizin için daha hayırlıdır, eğer bilirseniz.']],
+    o: 'Ayet oruçtaki hayrı “bilirseniz” diyerek bilgiye bağlıyor.',
+    z: 'Düzenli, sınırlı süreli oruç, aynı kaloriyi yemeye göre metabolizmaya ve ömre ek fayda sağlar.',
+    b: 'Açık. Sonuçlar çelişkili; 2024’te bir gözlemsel çalışma risk bile bildirdi.',
+    s: [[2030, 'Uzun süreli klinik denemeler']], c: 'Denemeler faydanın tamamen kalori azalmasından geldiğini gösterirse.' },
+  { k: 'Zikir', t: 'Ritmik zikir stresi düşürür', st: 'kismen', r: ['13:28'],
+    q: [['13:28', 'Dikkat edin, kalpler ancak Allah’ı anmakla huzura kavuşur.']],
+    o: '“Huzur” ölçülebilir bir bedensel durum olarak okunuyor.',
+    z: 'Ritmik zikir nefesi dakikada 6’ya yaklaştırır, kalp atış değişkenliğini artırır, stres göstergelerini düşürür.',
+    b: 'Kısmen destekleniyor. 2001’de BMJ’de tespih ve mantra okumanın bu etkiyi yaptığı gösterildi.',
+    s: [[2028, 'Kalp atış değişkenliği ve kortizol çalışmaları']], c: 'Kontrollü denemeler etki bulmazsa.' },
+  { k: 'Gece kalkışı', t: 'Gece uyanıp yapılan ezber daha kalıcıdır', st: 'kismen', r: ['73:6'],
+    q: [['73:6', 'Şüphesiz gece kalkışı daha tesirli ve o vakit okumak daha elverişlidir.']],
+    o: '“Nâşietü’l-leyl”: uykudan kalkıp yapılan gece ibadeti; etkisi ve okumanın kalıcılığı vurgulanıyor.',
+    z: 'Uyku arasında uyanılarak yapılan ezber, gündüz yapılan ezberden daha kalıcıdır.',
+    b: 'Kısmen destekleniyor. Uykunun belleği pekiştirdiği biliniyor; uyku arasındaki uyanışın ayrıca etkisi sınanmadı.',
+    s: [[2028, 'Uyku laboratuvarı deneyleri']], c: 'Deneyler gece ezberinin daha kalıcı olmadığını gösterirse.' },
 ];
 const tezRefs = TEZ.flatMap(t => t.r);
 const tezTerms = () => Object.entries(TS).map(([k, [n, c]]) => ['set', TEZ.filter(t => t.st === k).flatMap(t => t.r).join(','), '', n, c]);
-const tezLabels = () => TEZ.map((t, i) => ({ r: t.r[0], t: `${i + 1} · ${t.k}`, c: TS[t.st][1] }));
+const tezLabels = () => TEZ.map((t, i) => ({ r: t.r[0], t: `${i + 1}`, c: TS[t.st][1] }));
+const tezList = () => `<ol class="tzlist">${TEZ.map((t, i) => `<li style="--c:${TS[t.st][1]}"><a href="#" data-go="${i + 1}"><i>${i + 1}</i>${t.t}</a></li>`).join('')}</ol>`;
 const tezLinks = TEZ.flatMap(t => t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : []);
 const tezScore = () => `<div class="tzscore">${Object.entries(TS).map(([k, [n, c]]) => `<span style="--c:${c}"><b>${TEZ.filter(t => t.st === k).length}</b>${n}</span>`).join('')}</div>`;
 function tezTimeline() {
@@ -219,17 +319,17 @@ const STORIES = [
     { terms: [['lemma', 'اللَّه', 'lemma', 'Allah', GOLD]], cam: 'fit', metric: true,
       text: `<b class="ar">اللَّه</b> ismi <b>2.699</b> kez geçiyor ve <b>1.821</b> ayette yer alıyor. 6.236 ayetin %29’u: <b>yaklaşık her üç ayetten biri.</b> Yanan noktalara bakın; hiçbir bölge boş kalmıyor.` },
   ] },
-  { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 10 tez, sonucu bekleniyor', nw: true, steps: [
+  { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 25 tez, sonucu bekleniyor', nw: true, steps: [
     { terms: tezTerms(), labels: tezLabels(), pulses: TEZ.filter(t => t.st === 'acik').map(t => t.r[0]), cam: 'fit',
-      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt tarihi: <b>${TEZ_TARIH}</b></div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}<small class="muted">Halkalar: sonucu henüz belli olmayan tezler.</small>` },
+      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt tarihi: <b>${TEZ_TARIH}</b></div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}${tezList()}<small class="muted">Haritadaki numaralar tezlere karşılık geliyor; halkalar sonucu henüz belli olmayanlar. Bir teze dokunun, doğrudan ona gidin.</small>` },
     ...TEZ.map((t, i) => ({
       terms: [['set', t.r.join(','), '', `Tez ${i + 1} · ${t.k}`, TS[t.st][1]]],
       links: t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : [],
       labels: t.r.map(r => ({ r, t: r, c: TS[t.st][1] })), pulses: t.st === 'acik' ? [t.r[0]] : [], cam: t.r,
       text: tezCard(t, i) })),
     { terms: tezTerms(), labels: tezLabels(), links: tezLinks, cam: 'fit',
-      text: `<h4>Sonuç takvimi</h4><p>Tezlerin çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
-      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> Bu liste ${TEZ_TARIH} tarihli.</li><li><b>Tutmayanlar da sayılır.</b> 10 tezden 3’ü tutarsa bu, yazı tura atmakla aynı başarıdır.</li></ol>` },
+      text: `<h4>Sonuç takvimi</h4><p>25 tezin çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
+      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> Bu liste ${TEZ_TARIH} tarihli.</li><li><b>Tutmayanlar da sayılır.</b> Yalnız tutanları anlatmak, “keşiften sonra yorum” yöntemine geri dönmek olur. Zorlanan tezler de listede kalıyor.</li></ol>` },
   ] },
   { id: 'siklik', t: 'En çok geçen kelimeler', icon: '▤', d: 'Kelimelerin yarışı', steps: [
     { top: TOP_ALL, text: `Kur’an’da <b>77.429</b> kelime var. Edatlarla birlikte sayınca zirvede “-den” (مِن) var; <b>Allah</b> ismi ikinci sırada. Her çubuk bir kelime, her nokta bir geçiş.` },
@@ -355,8 +455,12 @@ function start(id, s) {
 function go(k) {
   step = k; const st = story.steps[k];
   $('#stTitle').textContent = story.t;
-  $('#stDots').innerHTML = story.steps.map((_, j) => `<i class="${j === k ? 'on' : ''}" data-j="${j}"></i>`).join('');
-  $('#stDots').querySelectorAll('i').forEach(d => d.onclick = () => go(+d.dataset.j));
+  const N = story.steps.length;
+  $('#stDots').innerHTML = N > 14
+    ? `<span class="stcount">${k + 1} / ${N}</span><b class="stbar"><i style="width:${(k + 1) / N * 100}%"></i></b>`
+    : story.steps.map((_, j) => `<i class="${j === k ? 'on' : ''}" data-j="${j}"></i>`).join('');
+  $('#stDots').querySelectorAll('i[data-j]').forEach(d => d.onclick = () => go(+d.dataset.j));
+  const bar = $('#stDots .stbar'); if (bar) bar.onclick = e => { const r = bar.getBoundingClientRect(); go(Math.min(N - 1, Math.floor((e.clientX - r.left) / r.width * N))); };
   $('#stPrev').disabled = k === 0;
   const last = k === story.steps.length - 1;
   $('#stNext').textContent = last ? (nextStory() ? `Sonraki: ${nextStory().t} ›` : 'Bitir') : 'Devam ›';
@@ -377,6 +481,7 @@ function go(k) {
 }
 function body(html) {
   const b = $('#stBody'); b.innerHTML = html;
+  b.querySelectorAll('[data-go]').forEach(a => a.onclick = e => { e.preventDefault(); go(+a.dataset.go); });
   b.querySelectorAll('.vref').forEach(a => a.onclick = e => { e.preventDefault(); A.openVerse(vi(a.dataset.r)); });
   b.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'ease-out' });
 }
