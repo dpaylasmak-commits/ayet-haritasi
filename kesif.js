@@ -345,6 +345,28 @@ disc.innerHTML = `<h3>Keşifler</h3><p class="muted small">Adım adım anlatıla
 side.insertBefore(disc, $('.explore'));
 disc.querySelectorAll('button').forEach(b => b.onclick = () => start(STORIES[+b.dataset.k].id, 0));
 
+/* ---------- yan sütun sekmeleri: Sonuçlar · Keşifler · Keşfet ---------- */
+const TABS = [['res', 'Sonuçlar', $('#stats')], ['kesif', 'Keşifler', disc], ['kesfet', 'Keşfet', $('.explore:not(.discover)')]];
+const tabs = document.createElement('nav');
+tabs.className = 'sidetabs'; tabs.setAttribute('role', 'tablist');
+tabs.innerHTML = TABS.map(([k, l]) => `<button role="tab" data-tab="${k}" aria-controls="tab-${k}">${l}<b></b></button>`).join('');
+side.insertBefore(tabs, $('#stats'));
+TABS.forEach(([k, , el]) => { el.id = el.id || 'tab-' + k; el.setAttribute('role', 'tabpanel'); el.dataset.tabpanel = k; });
+let curTab = '';
+function showTab(k, save = true) {
+  curTab = k;
+  TABS.forEach(([kk, , el]) => { el.hidden = kk !== k; });
+  tabs.querySelectorAll('button').forEach(b => { const on = b.dataset.tab === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  if (save) try { sessionStorage.setItem('ayet-tab', k); } catch (_) {}
+}
+tabs.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
+const resBadge = () => { const n = A.state.terms.length ? A.resultCount() : 0; const b = tabs.querySelector('[data-tab=res] b'); b.textContent = n ? fmt(n) : ''; b.hidden = !n; };
+addEventListener('ayet:terms', e => { resBadge(); if (e.detail.n && !story) showTab('res'); });
+addEventListener('ayet:results', () => showTab('res'));
+addEventListener('ayet:stats', resBadge);
+let t0 = ''; try { t0 = sessionStorage.getItem('ayet-tab') || ''; } catch (_) {}
+showTab(TABS.some(t => t[0] === t0) ? t0 : (A.state.terms.length ? 'res' : 'kesif'), false); resBadge();
+
 const panel = document.createElement('section');
 panel.className = 'story'; panel.hidden = true;
 panel.innerHTML = `<div class="st-h"><span class="pill">KEŞİF</span><b id="stTitle"></b><button class="ghost icon" id="stClose" title="Kapat">✕</button></div>
@@ -355,7 +377,7 @@ const place = () => mq.matches ? mapEl.after(panel) : side.prepend(panel);
 place(); mq.addEventListener('change', place);
 
 const topBtns = $('.topbtns');
-if (topBtns) { const b = document.createElement('button'); b.className = 'ghost'; b.textContent = '✦ Keşifler'; b.onclick = () => start('madrake', 0); topBtns.prepend(b); }
+if (topBtns) { const b = document.createElement('button'); b.className = 'ghost'; b.textContent = '✦ Keşifler'; b.onclick = () => { showTab('kesif'); (mq.matches ? tabs : disc).scrollIntoView({ behavior: 'smooth', block: 'start' }); disc.animate([{ boxShadow: '0 0 0 0 rgba(233,196,106,.6)' }, { boxShadow: '0 0 0 14px rgba(233,196,106,0)' }], { duration: 900 }); }; topBtns.prepend(b); }
 
 /* ---------- harita katmanı: iplikler, etiketler, nabızlar ---------- */
 let story = null, step = 0, layer = null;
@@ -448,7 +470,7 @@ function setTerms(list) {
 }
 function start(id, s) {
   const st = STORIES.find(x => x.id === id); if (!st) return;
-  story = st; panel.hidden = false; document.body.classList.add('kesif-on'); disc.querySelectorAll('button').forEach(b => b.classList.toggle('on', STORIES[+b.dataset.k] === st));
+  story = st; panel.hidden = false; document.body.classList.add('kesif-on'); showTab('kesif', false); disc.querySelectorAll('button').forEach(b => b.classList.toggle('on', STORIES[+b.dataset.k] === st));
   go(Math.max(0, Math.min(st.steps.length - 1, s || 0)));
   if (mq.matches) mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

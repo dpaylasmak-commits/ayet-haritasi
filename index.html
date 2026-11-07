@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0a0a22">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
@@ -36,6 +36,7 @@
     <select id="mealSel" title="Hangi mealde aransın"></select>
     <select id="match" title="Eşleşme biçimi"></select>
     <button id="addBtn" class="gold">Ekle</button>
+    <button id="optBtn" class="ghost icon" type="button" title="Arama ayarları: meal ve eşleşme" aria-label="Arama ayarları" aria-expanded="false">⚙</button>
     <ul id="suggest" class="suggest" hidden></ul>
   </div>
   <div id="chips" class="chips"></div>
@@ -56,14 +57,20 @@
         <button data-m="ver" title="Kaç ayette geçtiği">Ayet</button>
       </div>
       <span class="spacer"></span>
-      <select id="fType" title="Sure türü"><option value="">Mekkî + Medenî</option><option value="M">Mekkî</option><option value="D">Medenî</option></select>
-      <select id="fJuz" title="Cüz"></select>
-      <select id="fSurah" title="Sure"></select>
-      <button class="ghost" id="randBtn" title="Rastgele ayet (R)">⟳ Rastgele</button>
+      <details class="filters" id="filters"><summary class="toggle" title="Sûre türü, cüz ve sûre filtresi">⚲ Filtreler <b id="fCount" hidden></b></summary>
+        <div class="fpop">
+          <label>Sûre türü<select id="fType" title="Sure türü"><option value="">Mekkî + Medenî</option><option value="M">Mekkî</option><option value="D">Medenî</option></select></label>
+          <label>Cüz<select id="fJuz" title="Cüz"></select></label>
+          <label>Sûre<select id="fSurah" title="Sure"></select></label>
+          <button class="ghost small" id="fClear">Filtreleri temizle</button>
+        </div>
+      </details>
+      <button class="ghost" id="randBtn" title="Rastgele ayet (R)" aria-label="Rastgele ayet">⟳<span class="lbl"> Rastgele</span></button>
       <button class="ghost icon" id="fitBtn" title="Görünümü sıfırla (0)">⤢</button>
     </div>
     <div class="map" id="map">
-      <canvas id="cv"></canvas>
+      <canvas id="cv" role="img" aria-label="Kur'an'ın 6.236 ayeti, her biri bir nokta. Aranan kelimelerin geçtiği ayetler renkli yanar; sonuçların listesi Sonuçlar sekmesinde."></canvas>
+      <div id="legend" class="legend" hidden></div>
       <div id="tip" class="tip" hidden></div>
       <div id="hint" class="hint">Fareyle gezin · tekerlekle yakınlaşın · bir noktaya tıklayın</div>
     </div>
@@ -92,6 +99,7 @@
       <div class="meta" id="cMeta"></div>
     </div>
     <div class="card-nav">
+      <button class="ghost icon" id="fsBtn" title="Yazı boyutu" aria-label="Yazı boyutunu değiştir">Aa</button>
       <button class="ghost icon" id="prevBtn" title="Önceki ayet (←)">‹</button>
       <button class="ghost icon" id="nextBtn" title="Sonraki ayet (→)">›</button>
       <button class="ghost icon" id="closeBtn" title="Kapat (Esc)">✕</button>
@@ -116,10 +124,14 @@
         <select id="voiceSel" title="Türkçe ses" hidden></select>
         <label class="small muted chk"><input type="checkbox" id="autoNext"> sonrakine geç</label>
       </div>
-      <a class="ghost" id="qcomLink" href="https://quran.com/1/1" target="_blank" rel="noopener">Quran.com ↗</a>
-      <button class="ghost" id="copyBtn">Kopyala</button>
-      <button class="ghost" id="linkBtn">Bağlantı</button>
-      <button class="ghost" id="surahBtn">Bu sureye odaklan</button>
+      <details class="more" id="cMore"><summary class="ghost">⋯ Diğer</summary>
+        <div class="menu">
+          <button class="ghost" id="surahBtn">Bu sûreye odaklan</button>
+          <button class="ghost" id="copyBtn">Ayeti kopyala</button>
+          <button class="ghost" id="linkBtn">Bağlantıyı kopyala</button>
+          <a class="ghost" id="qcomLink" href="https://quran.com/1/1" target="_blank" rel="noopener">Quran.com’da aç ↗</a>
+        </div>
+      </details>
     </div>
     <div class="similar">
       <h4>Kökleri en çok örtüşen ayetler</h4>
@@ -146,7 +158,7 @@
     <h3>Keşifler</h3>
     <p>Sağdaki <b>Keşifler</b> paneli, tespitleri haritada adım adım canlandırır: soru ayetlerinden cevap ayetlerine uzanan iplikler, yöntemi değiştirilebilen canlı terazi, takvime dizilen 365 "gün", kelimelerin yarışı. Her adımın kendi bağlantısı vardır; <b>Paylaş</b> ile kopyalayın.</p>
     <h3>Kısayollar</h3>
-    <p class="kbd"><kbd>/</kbd> arama · <kbd>G</kbd> grafik · <kbd>R</kbd> rastgele ayet · <kbd>0</kbd> görünümü sıfırla · <kbd>←</kbd><kbd>→</kbd> ayetler arası · <kbd>Esc</kbd> kapat</p>
+    <p class="kbd"><kbd>/</kbd> arama · <kbd>G</kbd> grafik · <kbd>R</kbd> rastgele ayet · <kbd>+</kbd><kbd>−</kbd> yakınlaş · <kbd>0</kbd> tümünü gör · <kbd>←</kbd><kbd>→</kbd> ayetler arası · <kbd>Esc</kbd> kapat</p>
     <h3>Kaynaklar</h3>
     <p class="small">Arapça metin: Tanzil (Osmanî ve sade), alquran.cloud üzerinden. Mealler: Diyanet İşleri, Diyanet Vakfı, Elmalılı Hamdi Yazır, Süleyman Ateş, Abdülbaki Gölpınarlı, Suat Yıldırım, Ali Bulaç, Yaşar Nuri Öztürk, Edip Yüksel; okunuş: Muhammet Abay (Tanzil / alquran.cloud). Kök ve lemma: Quranic Arabic Corpus morfoloji verisi. Tilavet: Mişârî Râşid el-Afâsî (everyayah.com). · <a href="gizlilik.html" style="color:var(--gold2)">Gizlilik politikası</a></p>
   </div>
@@ -155,8 +167,8 @@
 <div id="loading" class="loading"><div class="spin"></div><p>6.236 ayet yükleniyor…</p></div>
 
 <script src="data.js"></script>
-<script src="app.js?v=10"></script>
-<script src="kesif.js?v=5"></script>
+<script src="app.js?v=11"></script>
+<script src="kesif.js?v=6"></script>
 <script>if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>

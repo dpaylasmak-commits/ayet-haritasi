@@ -156,6 +156,8 @@ function computeFilter() {
     passF[i] = (!state.fType || (state.fType === 'M' ? vType[i] === 1 : vType[i] === 2)) &&
       (!state.fJuz || vJuz[i] === state.fJuz) && (!state.fSurah || vS[i] === state.fSurah) ? 1 : 0;
   }
+  const n = [state.fType, state.fJuz, state.fSurah].filter(Boolean).length, fc = document.getElementById('fCount');
+  if (fc) { fc.hidden = !n; fc.textContent = n; fc.parentElement.classList.toggle('on', !!n); }
 }
 const filterOn = () => state.fType || state.fJuz || state.fSurah;
 
@@ -483,17 +485,38 @@ function setChart(on) {
 
 /* ---------- arayüz: çipler, istatistik ---------- */
 function termsChanged() {
-  computeHits(); renderChips(); renderStats(); renderHisto();
+  resN = 25; computeHits(); renderChips(); renderStats(); renderHisto();
   if (state.chart) { if (state.terms.length) buildChart(); else setChart(false); }
   buildHash(); syncHash(); needs = true;
   if (!$('#card').hidden && selected >= 0) renderCard(selected);
+  window.dispatchEvent(new CustomEvent('ayet:terms', { detail: { n: state.terms.length } }));
 }
 const modeName = { tr: 'meal', ar: 'Arapça', root: 'kök', lemma: 'lemma', set: 'seçki' };
 function termTitle(t) {
   return (t.mode === 'tr' ? `<b>${escHtml(t.label)}</b>` : t.label !== t.q ? `<b>${escHtml(t.label)}</b> <span class="ar">${escHtml(t.ar)}</span>` : `<span class="ar">${escHtml(t.ar)}</span>`);
 }
+const TRY = [['sabır'], ['rahmet'], ['Dünya ⚖ Âhiret', ['dünya', 'ahiret']], ['cennet ⚖ cehennem', ['cennet', 'cehennem']]];
+function renderLegend() {
+  const lg = $('#legend'); if (!lg) return;
+  const T = state.terms; lg.hidden = !T.length;
+  if (!T.length) return;
+  lg.innerHTML = T.length > 5 ? `<span><i style="--c:var(--gold)"></i>${T.length} terim · bir nokta = bir ayet</span>`
+    : T.map(t => `<span><i style="--c:${t.color}"></i>${escHtml(t.label)} <b>${fmt(state.metric === 'occ' ? t.occ : t.ver)}</b></span>`).join('') + '<small>bir nokta = bir ayet</small>';
+}
 function renderChips() {
   const el = $('#chips');
+  renderLegend();
+  const ms = $('#metricSeg'); if (ms) ms.hidden = !state.terms.length;
+  if (!state.terms.length) {
+    el.classList.remove('many');
+    el.innerHTML = '<span class="trylbl">Dene:</span>' + TRY.map(([l, qs], k) => `<button class="chip try" data-try="${k}">${escHtml(l)}</button>`).join('');
+    el.querySelectorAll('[data-try]').forEach(b => b.onclick = () => {
+      const [, qs] = TRY[+b.dataset.try]; const list = qs || [TRY[+b.dataset.try][0]];
+      list.forEach(q => addTerm('tr', q, 'start', { meal: 'tr.diyanet', silent: true, label: q.replace(/^./, c => c.toLocaleUpperCase('tr')) }));
+      termsChanged(); window.dispatchEvent(new CustomEvent('ayet:results'));
+    });
+    return;
+  }
   const many = state.terms.length > 6;
   el.classList.toggle('many', many);
   el.innerHTML = state.terms.map((t, k) => `<span class="chip" style="--c:${t.color}">${many ? `<b>${escHtml(t.label)}</b>` : termTitle(t)} <small>${many ? '' : (t.mode === 'tr' ? mealShort(t.meal) : modeName[t.mode]) + ' · '}${fmt(state.metric === 'occ' ? t.occ : t.ver)}</small><button data-k="${k}" aria-label="Kaldır">✕</button></span>`).join('')
@@ -523,6 +546,7 @@ function balanceSVG(a, b, ca, cb) {
     </g><circle cx="150" cy="28" r="5" fill="#e9c46a"/></svg>`;
 }
 function renderStats() {
+  queueMicrotask(() => window.dispatchEvent(new Event('ayet:stats')));
   const el = $('#stats');
   const fl = filterOn() ? `<div class="small muted">Filtre açık: ${[state.fType && (state.fType === 'M' ? 'Mekkî' : 'Medenî'), state.fJuz && state.fJuz + '. cüz', state.fSurah && SUR[state.fSurah - 1].tr + ' sûresi'].filter(Boolean).join(' · ')}</div>` : '';
   if (!state.terms.length) {
@@ -558,9 +582,34 @@ function renderStats() {
       <div class="tops">${s.tops.map(x => `<button data-s="${x}">${SUR[x - 1].tr} ${s.per[x]}</button>`).join('')}</div>
     </div>`;
   });
-  el.innerHTML = html;
+  el.innerHTML = html + resultList();
   el.querySelectorAll('a[data-v]').forEach(a => a.onclick = e => { e.preventDefault(); openVerse(+a.dataset.v); });
   el.querySelectorAll('button[data-s]').forEach(b => b.onclick = () => focusSurah(+b.dataset.s));
+  bindResults(el);
+}
+/* sonuç listesi: haritadaki noktaların okunabilir karşılığı */
+let resN = 25;
+function resultIds() {
+  const out = [];
+  for (let i = 0; i < N; i++) if (passF[i] && hitTerms[i]) out.push(i);
+  return out;
+}
+function resultList() {
+  const ids = resultIds(); if (!ids.length) return '<div class="reslist"><h4>Ayetler</h4><p class="muted small">Bu aramayla eşleşen ayet yok.</p></div>';
+  const trT = state.terms.find(t => t.mode === 'tr' && mealText[t.meal]);
+  const mid = trT ? trT.meal : (mealText[state.cardMeal] ? state.cardMeal : 'tr.diyanet');
+  const items = ids.slice(0, resN).map(i => `<li data-i="${i}" tabindex="0"><div class="rh"><span class="dots">${hitTerms[i].slice(0, 5).map(k => `<i style="--c:${state.terms[k].color}"></i>`).join('')}</span><b>${SUR[vS[i] - 1].tr} ${vA[i]}</b><span class="muted">${ref(i)}</span></div><p>${highlightTr(mealText[mid][i], i, mid)}</p></li>`).join('');
+  return `<div class="reslist"><h4>Ayetler <span class="muted">${fmt(ids.length)}</span></h4><ol>${items}</ol>${ids.length > resN ? `<button class="ghost small" id="resMore">${fmt(Math.min(25, ids.length - resN))} ayet daha göster</button>` : ''}</div>`;
+}
+function bindResults(el) {
+  el.querySelectorAll('.reslist li').forEach(li => {
+    const i = +li.dataset.i;
+    li.onmouseenter = li.onfocus = () => { hover = i; needs = true; };
+    li.onmouseleave = li.onblur = () => { if (hover === i) { hover = -1; needs = true; } };
+    li.onclick = () => openVerse(i);
+    li.onkeydown = e => { if (e.key === 'Enter') openVerse(i); };
+  });
+  const more = el.querySelector('#resMore'); if (more) more.onclick = () => { resN += 25; renderStats(); };
 }
 
 /* ---------- sûre dağılımı ---------- */
@@ -1072,6 +1121,15 @@ $('#fJuz').onchange = e => { state.fJuz = +e.target.value; computeFilter(); rend
 $('#fSurah').innerHTML = '<option value="0">Tüm sûreler</option>' + SUR.map(s => `<option value="${s.n}">${s.n}. ${s.tr}</option>`).join('');
 $('#fSurah').onchange = e => focusSurah(+e.target.value);
 $('#randBtn').onclick = () => openVerse(Math.floor(Math.random() * N));
+$('#fClear').onclick = () => { state.fType = ''; state.fJuz = 0; $('#fType').value = ''; $('#fJuz').value = 0; focusSurah(0); computeFilter(); renderStats(); if (state.chart) buildChart(); needs = true; buildHash(); syncHash(); $('#filters').open = false; };
+document.addEventListener('click', e => { document.querySelectorAll('details.filters[open], details.more[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; }); });
+$('#cMore').addEventListener('click', e => { if (e.target.closest('.menu button, .menu a')) setTimeout(() => $('#cMore').open = false, 50); });
+$('#optBtn').onclick = () => { const f = $('#optBtn').closest('.field'); const on = f.classList.toggle('opts'); $('#optBtn').setAttribute('aria-expanded', on); };
+/* kart yazı boyutu */
+const FS = [1, 1.15, 1.3, .9]; let fsK = 0; try { fsK = Math.max(0, FS.indexOf(+localStorage.getItem('ayet-fs'))); } catch (_) {}
+const applyFs = () => document.documentElement.style.setProperty('--cfs', FS[fsK]);
+applyFs();
+$('#fsBtn').onclick = () => { fsK = (fsK + 1) % FS.length; applyFs(); try { localStorage.setItem('ayet-fs', FS[fsK]); } catch (_) {} toast('Yazı boyutu: %' + Math.round(FS[fsK] * 100)); };
 $('#fitBtn').onclick = () => tweenCam(fitCam(), 700);
 $('#infoBtn').onclick = () => $('#info').hidden = false;
 $('#info').onclick = e => { if (e.target.id === 'info' || e.target.hasAttribute('data-close')) $('#info').hidden = true; };
@@ -1206,6 +1264,7 @@ window.__ayet = { state, openVerse, addTerm, termsChanged }; // hata ayıklama
 window.AYET = {
   Q, N, SUR, state, pos, vS, vA, wLem, wRoot, lemOcc, rootOcc, verseIndex, ref, sName, escHtml, fmt, toast, makeTerm,
   openVerse, closeVerse, addTerm, clearTerms, termsChanged, setChart, focusSurah, buildHash, syncHash, recolor,
+  resultCount: () => resultIds().length,
   tweenCam, fitCam, w2s, cardOpen: () => !card.hidden, curBounds: () => cur.b, curP: () => cur.P, cam,
   setOverlay(fn) { overlay = fn; needs = true; }, redraw() { needs = true; },
   setExtraHash(h) { extraHash = h; buildHash(); syncHash(); }, LOCAL,
