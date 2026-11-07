@@ -61,7 +61,7 @@ bdi.ar,.chip .ar,.term .ar{unicode-bidi:isolate}
 .toggle{background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:6px 12px}
 .toggle.on{border-color:var(--gold);color:var(--gold2);background:rgba(233,196,106,.12)}
 .spacer{flex:1}
-.map{position:relative;aspect-ratio:1/1;max-height:calc(100vh - 230px);min-height:320px;width:100%;border:1px solid var(--line2);border-radius:18px;background:radial-gradient(ellipse at 50% 40%,rgba(80,70,160,.18),transparent 70%);overflow:hidden;touch-action:none}
+.map{position:relative;aspect-ratio:1/1;max-height:calc(100vh - 230px);min-height:320px;width:100%;border:1px solid var(--line2);border-radius:18px;background:radial-gradient(ellipse at 50% 40%,rgba(80,70,160,.18),transparent 70%);overflow:hidden;touch-action:pan-y}
 .map canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
 .map.grab canvas{cursor:grabbing}
 .tip{position:absolute;pointer-events:none;max-width:300px;background:rgba(14,13,40,.95);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:3}
@@ -109,7 +109,7 @@ bdi.ar,.chip .ar,.term .ar{unicode-bidi:isolate}
 .card-b{padding:4px 22px 22px}
 .arabic{font:32px/2.1 var(--ar);margin:8px 0 6px;color:#fff;text-align:right}
 .arabic .w{border-radius:6px;padding:0 2px;transition:background .15s;cursor:pointer}
-.arabic .w:hover{background:rgba(255,255,255,.1)}
+.arabic .w:hover,.arabic .w.sel{background:rgba(255,255,255,.1)}
 .arabic .w.hit{color:var(--c);text-shadow:0 0 18px var(--c)}
 .wordinfo{min-height:20px;border-left:2px solid var(--line);padding-left:10px;margin-bottom:12px}
 .wordinfo .ar{font:20px var(--ar);color:var(--ink)}
@@ -281,3 +281,22 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:
 .tzlist a:hover{color:var(--c)}
 .tzlist i{font:normal 600 10px/16px var(--sans);min-width:16px;height:16px;border-radius:50%;text-align:center;background:var(--c);color:#1b1640;flex:none;margin-top:1px}
 @media (max-width:480px){.tzlist{grid-template-columns:1fr}}
+
+/* UX: harita kontrolleri, kenetli kart, mobil başlık */
+.zoomctl{position:absolute;right:10px;top:10px;z-index:4;display:flex;flex-direction:column;border:1px solid var(--line2);border-radius:12px;overflow:hidden;background:rgba(14,13,40,.82);backdrop-filter:blur(6px)}
+.zoomctl button{width:36px;height:34px;display:grid;place-items:center;font:500 18px/1 var(--sans);color:var(--ink);background:transparent;border:0;border-radius:0;padding:0;cursor:pointer}
+.zoomctl button+button{border-top:1px solid var(--line2)}
+.zoomctl button:hover{background:rgba(233,196,106,.14);color:var(--gold2)}
+.zoomctl [data-z=fit]{font-size:15px;opacity:.55;transition:opacity .2s}
+.map.zoomed .zoomctl [data-z=fit]{opacity:1;color:var(--gold2)}
+.veil.docked{border-radius:0 18px 18px 0}
+.card.docked{max-height:calc(100vh - 32px)}
+.pill{white-space:nowrap}
+.topbtns .ghost{white-space:nowrap}
+@media (max-width:600px){
+  .top{align-items:flex-start;gap:10px}
+  .topbtns{flex-wrap:wrap;justify-content:flex-end;gap:6px}
+  .topbtns .ghost{padding:7px 10px;font-size:13px}
+  .zoomctl{right:8px;top:8px}
+  .zoomctl button{width:40px;height:40px}
+}

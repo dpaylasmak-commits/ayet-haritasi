@@ -1,7 +1,7 @@
 /* Ayet Haritası · çevrimdışı önbellek
    Uygulama dosyaları ilk açılışta önbelleğe alınır; mealler açıldıkça eklenir.
    Önbellekten hemen cevap verilir, arka planda yenisi indirilir (yeni sürüm bir sonraki açılışta gelir). */
-const V = 'ayet-v10';
+const V = 'ayet-v11';
 const CORE = ['./', 'index.html', 'rehber.html', 'style.css', 'app.js', 'kesif.js', 'data.js', 'manifest.webmanifest', 'fonts/fonts.css',
   'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => {

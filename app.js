@@ -262,6 +262,7 @@ function computeHits() {
 }
 
 function draw(now) {
+  if (typeof syncTouchAction === 'function') syncTouchAction();
   // kamera
   if (camAnim) {
     const t = Math.min(1, (now - camAnim.t0) / camAnim.dur), e = ease(t);
@@ -617,8 +618,11 @@ function verseTip(i, x, y) {
 
 /* ---------- etkileşim: kaydır, yakınlaş, tıkla ---------- */
 const ptrs = new Map(); let drag = null, pinch = null;
+let engaged = false; // haritaya tıklandıktan sonra tekerlek yakınlaştırır; çıkınca sayfa kaydırılır
+const TOUCH = matchMedia('(pointer:coarse)').matches;
 cv.addEventListener('pointerdown', e => {
-  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
+  engaged = true;
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {} ptrs.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
   if (ptrs.size === 1) drag = { x: e.offsetX, y: e.offsetY, cx: cam.x, cy: cam.y, moved: false };
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: cam.s }; drag = null; }
   camAnim = null;
@@ -643,19 +647,48 @@ const endPtr = e => {
   if (ptrs.size < 2) pinch = null;
   if (drag && !drag.moved && e.type === 'pointerup') {
     const i = pick(e.offsetX, e.offsetY);
-    if (i >= 0) openVerse(i);
+    // dokunmatikte noktalar parmaktan küçükse önce oraya yakınlaş, ikinci dokunuşta ayet açılsın
+    if (e.pointerType === 'touch' && cam.s < 11 && !(state.chart && particles)) {
+      const [wx, wy] = s2w(e.offsetX, e.offsetY); tweenCam({ x: wx, y: wy, s: Math.min(fitCam().s * 40, Math.max(16, cam.s * 3.2)) }, 550);
+    } else if (i >= 0) openVerse(i);
   }
   drag = null;
 };
 cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
-cv.addEventListener('pointerleave', () => { hover = -1; tip.hidden = true; needs = true; });
+cv.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') engaged = false; hover = -1; tip.hidden = true; needs = true; });
 function zoomAt(sx, sy, f) {
   const [wx, wy] = s2w(sx, sy);
   const fit = fitCam();
   cam.s = Math.max(fit.s * 0.6, Math.min(fit.s * 40, cam.s * f));
   cam.x = wx - (sx - W / 2) / cam.s; cam.y = wy - (sy - H / 2) / cam.s; needs = true;
 }
-cv.addEventListener('wheel', e => { e.preventDefault(); camAnim = null; zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * 0.0018)); }, { passive: false });
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+let wheelHintT = 0;
+cv.addEventListener('wheel', e => {
+  if (!(e.ctrlKey || e.metaKey || engaged)) { // sayfa kaydırılıyor: haritayı rahat bırak, nasıl yakınlaşılacağını göster
+    const now = performance.now();
+    if (now - wheelHintT > 2500) { wheelHintT = now; flashHint(`Yakınlaştırmak için ${isMac ? '⌘' : 'Ctrl'} + tekerlek · ya da haritaya bir kez tıklayın`); }
+    return;
+  }
+  e.preventDefault(); camAnim = null; const dy = Math.max(-60, Math.min(60, e.deltaMode ? e.deltaY * 20 : e.deltaY));
+  zoomAt(e.offsetX, e.offsetY, Math.exp(-dy * (e.ctrlKey ? 0.006 : 0.003)));
+}, { passive: false });
+document.addEventListener('scroll', () => { engaged = false; }, { passive: true });
+const hintEl = $('#hint'); let hintTo = 0;
+function flashHint(txt, ms = 2200) { hintEl.textContent = txt; hintEl.style.opacity = 1; clearTimeout(hintTo); hintTo = setTimeout(() => hintEl.style.opacity = 0, ms); }
+// dokunmatik: genel görünümde tek parmak sayfayı kaydırır, yakınlaşınca haritayı gezdirir
+let lastTA = '';
+function syncTouchAction() {
+  const ta = cam.s > fitCam().s * 1.08 || (camAnim && camAnim.to.s > fitCam().s * 1.08) ? 'none' : 'pan-y';
+  if (ta !== lastTA) { lastTA = ta; map.style.touchAction = ta; map.classList.toggle('zoomed', ta === 'none'); }
+}
+/* harita üstü yakınlaştırma düğmeleri */
+const zc = document.createElement('div'); zc.className = 'zoomctl';
+zc.innerHTML = '<button data-z="in" aria-label="Yakınlaş" title="Yakınlaş (+)">+</button><button data-z="out" aria-label="Uzaklaş" title="Uzaklaş (−)">−</button><button data-z="fit" aria-label="Tümünü gör" title="Tümünü gör (0)">⤢</button>';
+map.appendChild(zc);
+zc.onclick = e => { const z = e.target.closest('button')?.dataset.z; if (!z) return; camAnim = null;
+  if (z === 'fit') tweenCam(fitCam(), 600); else { const f = z === 'in' ? 1.8 : 1 / 1.8, fit = fitCam(); tweenCam({ x: cam.x, y: cam.y, s: Math.max(fit.s * .6, Math.min(fit.s * 40, cam.s * f)) }, 350); } };
+zc.addEventListener('pointerdown', e => e.stopPropagation());
 hc.addEventListener('mousemove', histHover);
 hc.addEventListener('mouseleave', () => tip.hidden = true);
 hc.addEventListener('click', e => {
@@ -679,6 +712,16 @@ function focusSurah(s) {
 /* ---------- ayet kartı (yakınlaşma animasyonu) ---------- */
 const card = $('#card'), veil = $('#veil');
 let camBefore = null, audio = null;
+// geniş ekranda kart harita sütununa yerleşir; sağdaki açıklama paneli görünür ve kullanılabilir kalır
+function placeCard() {
+  const side = $('.side');
+  if (innerWidth > 980 && side) {
+    const r = $('.mapwrap').getBoundingClientRect(), sr = side.getBoundingClientRect();
+    card.style.left = (r.left + r.width / 2) + 'px'; card.style.width = Math.min(760, r.width - 16) + 'px';
+    veil.style.right = Math.max(0, innerWidth - sr.left + 9) + 'px'; card.classList.add('docked'); veil.classList.add('docked');
+  } else { card.style.left = card.style.width = veil.style.right = ''; card.classList.remove('docked'); veil.classList.remove('docked'); }
+}
+window.addEventListener('resize', () => { if (!card.hidden) placeCard(); });
 function openVerse(i, opts = {}) {
   if (i < 0 || i >= N) return;
   const wasOpen = !card.hidden;
@@ -691,7 +734,7 @@ function openVerse(i, opts = {}) {
     const mr = map.getBoundingClientRect();
     const fx = mr.left + sx, fy = mr.top + sy;
     tweenCam({ x: tx, y: ty, s: Math.max(cam.s * 4, fitCam().s * 9) }, 750);
-    veil.hidden = false; card.hidden = false;
+    placeCard(); veil.hidden = false; card.hidden = false;
     const cr = card.getBoundingClientRect();
     const dx = fx - (cr.left + cr.width / 2), dy = fy - (cr.top + cr.height / 2);
     veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, fill: 'both' });
@@ -761,7 +804,7 @@ function renderCard(i) {
     const c = wordHitColor(i, k, clAlign ? k : null);
     const h = `<span class="w${c ? ' hit' : ''}" data-k="${k}"${c ? ` style="--c:${c}"` : ''}>${t}</span>`; k++; return h;
   }).join(' ') + ` <span class="end">﴿${toArabicDigits(vA[i])}﴾</span>`;
-  $('#cWord').innerHTML = 'Bir Arapça kelimenin üzerine gelin: kökü ve kaç kez geçtiği görünür. Tıklayınca o kökü arar.';
+  $('#cWord').innerHTML = TOUCH ? 'Bir Arapça kelimeye dokunun: kökü ve kaç kez geçtiği görünür. İkinci dokunuşta o kökü arar.' : 'Bir Arapça kelimenin üzerine gelin: kökü ve kaç kez geçtiği görünür. Tıklayınca o kökü arar.';
   renderMeal(i);
   $('#cAr').querySelectorAll('.w').forEach(el => {
     const kk = +el.dataset.k;
@@ -772,6 +815,8 @@ function renderCard(i) {
     };
     el.onclick = () => {
       const r = wRoot[i][kk], l = wLem[i][kk];
+      // dokunmatikte üzerine gelme yok: ilk dokunuş bilgiyi gösterir, aynı kelimeye ikinci dokunuş arar
+      if (TOUCH && !el.classList.contains('sel')) { $('#cAr').querySelectorAll('.w.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel'); el.onmouseenter(); $('#cWord').innerHTML = $('#cWord').innerHTML.replace('tıkla: kökü ara', 'tekrar dokun: kökü ara'); return; }
       if (r >= 0) addTerm('root', Q.roots[r], 'root'); else if (l >= 0) addTerm('lemma', Q.lemmas[l], 'lemma');
     };
   });
@@ -1045,6 +1090,8 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'g' || e.key === 'G') $('#chartBtn').click();
   else if (e.key === 'r' || e.key === 'R') $('#randBtn').click();
   else if (e.key === '0') $('#fitBtn').click();
+  else if (e.key === '+' || e.key === '=') zc.querySelector('[data-z=in]').click();
+  else if (e.key === '-') zc.querySelector('[data-z=out]').click();
 });
 
 /* ---------- hazır karşılaştırmalar ---------- */
@@ -1152,6 +1199,7 @@ intro.t0 = performance.now(); intro.on = !init.a; needs = true;
 requestAnimationFrame(loop);
 if (init.chart) setTimeout(() => setChart(true), 400);
 if (init.a) { const [s, a] = init.a.split(':').map(Number); setTimeout(() => openVerse(verseIndex(s, a), { fast: true }), 300); }
+$('#hint').textContent = TOUCH ? 'Dokunun: yakınlaşır · tekrar dokunun: ayet açılır · iki parmakla yakınlaşın' : 'Sürükleyerek gezin · Ctrl + tekerlek ya da +/− ile yakınlaşın · noktaya tıklayın';
 setTimeout(() => $('#hint').style.opacity = 0, 6000);
 window.__ayet = { state, openVerse, addTerm, termsChanged }; // hata ayıklama
 // Keşifler modülü (kesif.js) için arayüz
