@@ -8,6 +8,7 @@ const N = Q.verses.length;
 const SUR = Q.surahs;
 const COLORS = ['#f2c14e', '#7fb2ff', '#f08a7e', '#6fd6b0', '#c59bff'];
 const fmt = n => n.toLocaleString('tr-TR');
+const MEAL_TTS = false; // Türkçe meal seslendirmesi şimdilik kapalı (yalnız Arapça tilavet)
 const LOCAL = !window.ARTIFACT_BUILD; // Claude sayfası sürümünde ses ve URL durumu kapalı; normal sitede açık
 
 /* ---------- veri hazırlığı ---------- */
@@ -799,6 +800,7 @@ function loadVoices() {
   if (!tts) return;
   trVoices = tts.getVoices().filter(v => /^tr(-|_|$)/i.test(v.lang));
   const sel = $('#voiceSel'); if (!sel) return;
+  if (!MEAL_TTS) { sel.hidden = true; return; }
   const keep = sel.value;
   sel.innerHTML = trVoices.length ? trVoices.map((v, k) => `<option value="${k}">${v.name.replace(/\s*\(.*\)$/, '')}</option>`).join('') : '<option value="">Türkçe ses</option>';
   if (keep && sel.querySelector(`option[value="${keep}"]`)) sel.value = keep;
@@ -1135,6 +1137,7 @@ function toast(msg) {
 
 /* ---------- başlat ---------- */
 if (!LOCAL) { $('#listenMode').innerHTML = '<option value="tr">Meal</option>'; $('#linkBtn').hidden = true; if (!tts) { $('#playBtn').hidden = true; $('#autoNext').parentElement.hidden = true; } }
+if (LOCAL && !MEAL_TTS) { $('#listenMode').innerHTML = '<option value="ar">Arapça tilavet</option>'; $('#listenMode').hidden = true; $('#rateSel').hidden = true; }
 setMode('tr');
 const init = LOCAL ? readHash() : { chart: false, a: null };
 computeHits(); renderChips();
