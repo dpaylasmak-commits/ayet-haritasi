@@ -81,6 +81,97 @@ function clockShape(b, n) {
   return { pts, labels, bounds: { x0: cx - 16, y0: cy - 16, x1: cx + 16, y1: cy + 16, w: 32, h: 32 } };
 }
 
+/* ---------- önceden yazılan tezler ---------- */
+const TEZ_TARIH = '7 Kasım 2026';
+const TS = { acik: ['Açık', GOLD], destek: ['Destekleniyor', TEAL], kismen: ['Kısmen tutuyor', VIOLET], zor: ['Zorlanıyor', ROSE] };
+const TEZ = [
+  { k: 'Geri dönüş', t: 'Evren sonunda geri dönecek', st: 'acik', r: ['51:47', '21:104'],
+    q: [['51:47', 'Göğü gücümüzle biz kurduk; şüphesiz biz onu genişleticiyiz.'], ['21:104', 'Göğü, kitap dürer gibi dürdüğümüz gün… ilk yaratmaya başladığımız gibi onu yine iade ederiz.']],
+    o: 'İki ayet yan yana okununca önce bir genişleme, sonunda bir “dürülme” anlatılıyor.',
+    z: 'Karanlık enerji sabit değil, zayıflıyor. Evren sonsuza kadar genişleyip soğumayacak; uzak gelecekte geri çökecek.',
+    b: 'Ana akım model sonsuz genişleme diyor. DESI’nin 2024–2025 sonuçları karanlık enerjinin zayıflıyor olabileceğini gösteriyor; henüz kesin değil.',
+    s: [[2027, 'DESI son verileri'], [2030, 'Euclid tam taraması'], [2035, 'Rubin 10 yıllık taraması']],
+    c: 'Karanlık enerjinin sabit olduğu ya da güçlendiği kesinleşirse.' },
+  { k: 'Görünmeyen direk', t: 'Karanlık madde gerçek bir maddedir', st: 'acik', r: ['13:2', '31:10'],
+    q: [['13:2', 'Gökleri, gördüğünüz direkler olmaksızın yükselten…']],
+    o: '“Bi-gayri amedin terevnehâ” iki türlü okunur: “görüldüğü gibi direksiz” ya da “göremediğiniz direklerle”. İkinci okuma, göğü tutan görünmez bir yapı öngörür.',
+    z: 'Galaksileri bir arada tutan görünmez kütle gerçek bir parçacıktır. Kütleçekim yasasını değiştiren kuramlar (MOND) yanlış çıkacak.',
+    b: 'Açık soru. Doğrudan algılama deneyleri (LZ, XENONnT) şimdiye kadar parçacık bulamadı.',
+    s: [[2028, 'LZ son sonuçları'], [2030, 'Euclid kütle haritası']],
+    c: 'Karanlık madde olmadan bütün gözlemleri açıklayan bir kütleçekim kuramı kesinleşirse.' },
+  { k: 'Değişmeyen ölçü', t: 'Doğa yasaları her yerde aynıdır', st: 'kismen', r: ['67:3', '67:4', '54:49'],
+    q: [['67:3', 'Rahman’ın yaratmasında bir düzensizlik bulamazsın. Gözünü çevir bak, bir çatlak görebilir misin?'], ['54:49', 'Şüphesiz Biz her şeyi bir ölçüye göre yarattık.']],
+    o: 'Çatlaksız bir yaratılış ve her şeyde bir ölçü: evrenin her köşesinde aynı yasalar.',
+    z: 'A) Temel sabitler uzayda ve zamanda değişmez. B) Evren büyük ölçekte homojendir; bunu zorlayan dev yapılar (Herkül–Kuzey Tacı Büyük Duvarı) daha büyük veride rastlantı olarak çözülecek.',
+    b: 'A tutuyor: ESPRESSO ölçümleri sabitlerde değişim bulmadı. B açık.',
+    s: [[2029, 'ESPRESSO ve ELT ölçümleri'], [2030, 'Euclid ve DESI yapı haritaları']],
+    c: 'Sabitlerde gerçek bir değişim ölçülürse ya da homojenliği bozan bir yapı kesinleşirse.' },
+  { k: 'Sudan canlı', t: 'Bulunacak her canlı suya dayalı olacak', st: 'acik', r: ['21:30'],
+    q: [['21:30', 'Bütün canlıları sudan meydana getirdik.']],
+    o: 'Ayet “her canlı” diyor, yalnız yeryüzündekiler demiyor.',
+    z: 'Başka bir yerde yaşam bulunursa kimyası sıvı suya dayanacak.',
+    b: 'Dünya dışında henüz yaşam bulunmadı. En keskin sınav Titan: metan göllerinde suya dayanmayan bir canlı bulunursa bu okuma çöker.',
+    s: [[2030, 'Europa Clipper Jüpiter’de'], [2031, 'JUICE Jüpiter’de'], [2034, 'Dragonfly Titan’da']],
+    c: 'Suya dayanmayan bir yaşam bulunursa.', cd: ['2030-04-11', 'Europa Clipper’ın varışına'] },
+  { k: 'Gökte canlılar', t: 'Gökte hareket eden canlılar var', st: 'acik', r: ['42:29'],
+    q: [['42:29', 'Gökleri, yeri ve ikisinde yaydığı canlıları (dâbbe) yaratması O’nun delillerindendir.']],
+    o: '“Dâbbe” sözlükte yürüyen, kımıldayan canlı demek. Klasik tefsirde bunu meleklerle açıklayanlar var; bu okuma kelimenin sözlük anlamını izliyor.',
+    z: 'Dünya dışında yalnız mikrop değil, hareket eden çok hücreli yaşam vardır.',
+    b: 'Kanıt yok. JWST’nin 2025’te K2-18b gezegeninde bildirdiği olası yaşam işareti tartışmalı.',
+    s: [[2027, 'Roman teleskobu'], [2035, 'Yeni nesil gezegen teleskopları']],
+    c: 'Zayıf yanı: “henüz bulunmadı” tezi çürütmez. Bu yüzden sınanması en zor tez.' },
+  { k: 'Gizli çiftler', t: 'Her parçacığın bilinmeyen bir eşi var', st: 'zor', r: ['36:36', '51:49'],
+    q: [['36:36', 'Yerin yetiştirdiklerinden, kendilerinden ve daha bilmediklerinden çift çift yaratan Allah münezzehtir.'], ['51:49', 'Her şeyi çift çift yarattık.']],
+    o: 'Madde ve karşıt madde 1928’den beri biliniyor. “Bilmedikleri” ifadesi bunun ötesinde bir eşleşme bekletiyor.',
+    z: 'Süpersimetri ya da karanlık sektörde bir eş parçacık bulunacak.',
+    b: 'Büyük Hadron Çarpıştırıcısı (LHC) şimdiye kadar süpersimetrik bir eş bulamadı. Listedeki en riskli tez.',
+    s: [[2030, 'Yüksek ışınımlı LHC'], [2041, 'LHC’nin son verileri']],
+    c: 'Yüksek ışınımlı LHC de bir şey bulamazsa tez ciddi biçimde zayıflar.' },
+  { k: 'Hayvan dilleri', t: 'Hayvanların iletişimi dil benzeri', st: 'destek', r: ['6:38', '27:18'],
+    q: [['6:38', 'Yerde yürüyen hayvanlar ve kanatlarıyla uçan kuşlar da ancak sizin gibi birer topluluktur.'], ['27:18', 'Bir karınca: “Ey karıncalar! Yuvalarınıza girin, Süleyman’ın ordusu farkına varmadan sizi ezmesin” dedi.']],
+    o: '“Sizin gibi topluluklar” ve uyarıyı tehlikenin adıyla veren bir karınca.',
+    z: 'Balina ve kuş seslerinde birleştirilebilir bir yapı (bir tür dilbilgisi) ve belirli bireylere karşılık gelen “adlar” bulunacak.',
+    b: 'Kısmen destekleniyor. Project CETI 2024’te kaşalot seslerinde bir “ses alfabesi” yayımladı. Yunuslarda ve bazı kuşlarda ad benzeri sesler bildirildi.',
+    s: [[2028, 'Project CETI çözümlemeleri']],
+    c: 'Hayvan seslerinin yapısız, yalnız duygu belirten çağrılar olduğu gösterilirse.' },
+  { k: 'Baldaki şifa', t: 'Bal dirençli enfeksiyonlarda işe yarar', st: 'kismen', r: ['16:69'],
+    q: [['16:69', 'Karınlarından renkleri çeşitli bir içecek çıkar; onda insanlar için şifa vardır.']],
+    o: 'Ayet şifayı belirli bir hastalıkla sınırlamıyor; tez bunu ölçülebilir bir iddiaya indiriyor.',
+    z: 'Tıbbi bal, antibiyotiğe dirençli yara enfeksiyonlarında ve bakteri biyofilmlerinde standart tedaviye eşdeğer ya da daha iyi sonuç verir.',
+    b: 'Yanık ve yara tedavisinde olumlu kanıt var. Dirençli enfeksiyonlar için büyük klinik denemeler sürüyor.',
+    s: [[2028, 'Klinik deneme sonuçları']],
+    c: 'Büyük denemeler etkisiz sonuç verirse.' },
+  { k: 'Dengeleyen dağlar', t: 'Dağlar Dünya’nın sallanmasını azaltır', st: 'zor', r: ['16:15'],
+    q: [['16:15', 'Sizi sarsmasın diye yeryüzüne sabit dağlar yerleştirdi.']],
+    o: '“En temîde biküm”: sizi sallamasın diye. Okuma ya depremi ya da Dünya’nın bütün olarak yalpalamasını kastediyor.',
+    z: 'Dağlar kütle dağılımı yoluyla Dünya’nın dönme ekseninin yalpalamasını azaltır.',
+    b: 'Zorlanıyor. Depremler en çok dağ kuşaklarında olur; “depremi azaltır” okuması yanlış çıkar. Eksen yalpası okuması sınanabilir ama kanıt yok.',
+    s: [[2030, 'Uydu kütleçekim ölçümleri']],
+    c: 'Dağların eksen kararlılığına etkisinin önemsiz olduğu gösterilirse.' },
+  { k: 'Altı ay', t: 'En kısa gebelik altı aydır', st: 'kismen', r: ['46:15', '2:233'],
+    q: [['46:15', 'Taşınması ve sütten kesilmesi otuz ay sürer.'], ['2:233', 'Anneler çocuklarını tam iki sene emzirirler.']],
+    o: '30 aydan 24 ay çıkınca 6 ay kalır. Hz. Ali’ye atfedilen bu çıkarım, ayetten <b>önceden</b> üretilmiş gerçek bir tez.',
+    z: 'Bir bebek altı aydan önce doğarsa yaşayamaz.',
+    b: 'Kısmen tutuyor. Yoğun bakımda yaşatılan en erken bebek 21 haftalık doğdu (döllenmeden ~4,5 ay). Tıbbi destek olmadan doğal yaşama sınırı olarak büyük ölçüde tutuyor. Dünya Sağlık Örgütü de iki yıl emzirmeyi öneriyor.',
+    s: [], c: 'Mutlak sınır olarak okunursa tutmadı; doğal sınır olarak tutuyor.' },
+];
+const tezRefs = TEZ.flatMap(t => t.r);
+const tezTerms = () => Object.entries(TS).map(([k, [n, c]]) => ['set', TEZ.filter(t => t.st === k).flatMap(t => t.r).join(','), '', n, c]);
+const tezLabels = () => TEZ.map((t, i) => ({ r: t.r[0], t: `${i + 1} · ${t.k}`, c: TS[t.st][1] }));
+const tezLinks = TEZ.flatMap(t => t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : []);
+const tezScore = () => `<div class="tzscore">${Object.entries(TS).map(([k, [n, c]]) => `<span style="--c:${c}"><b>${TEZ.filter(t => t.st === k).length}</b>${n}</span>`).join('')}</div>`;
+function tezTimeline() {
+  const ev = TEZ.flatMap((t, i) => t.s.map(([y, w]) => ({ y, w, i, c: TS[t.st][1] }))).sort((a, b) => a.y - b.y);
+  const ys = [...new Set(ev.map(e => e.y))], now = new Date().getFullYear();
+  return `<ol class="tztl">${ys.map(y => `<li class="${y <= now ? 'past' : ''}"><b>${y}</b><div>${ev.filter(e => e.y === y).map(e => `<span style="--c:${e.c}"><i>${e.i + 1}</i>${e.w}</span>`).join('')}</div></li>`).join('')}</ol>`;
+}
+function countdown(d, w) { const n = Math.ceil((new Date(d) - new Date()) / 864e5); return n > 0 ? `<div class="tzcd"><b>${fmt(n)}</b> gün kaldı · ${w}</div>` : ''; }
+const tezCard = (t, i) => `<div class="tzcard" style="--c:${TS[t.st][1]}"><div class="tzh"><span class="tzn">${i + 1}</span><h4>${t.t}</h4><span class="tag" style="--c:${TS[t.st][1]}">${TS[t.st][0]}</span></div>
+  ${t.q.map(([r, x]) => `<div class="quote" style="--c:${TS[t.st][1]}">“${x}” <small>${vlink(r, TS[t.st][1])}</small></div>`).join('')}
+  <dl><dt>Okuma</dt><dd>${t.o}</dd><dt>Tez</dt><dd><b>${t.z}</b></dd><dt>Bugün</dt><dd>${t.b}</dd>
+  ${t.s.length ? `<dt>Sınav</dt><dd>${t.s.map(([y, w]) => `<span class="tzy">${y}</span> ${w}`).join('<br>')}</dd>` : ''}<dt>Çökerse</dt><dd>${t.c}</dd></dl>
+  ${t.cd ? countdown(...t.cd) : ''}</div>`;
+
 const STORIES = [
   { id: 'madrake', t: 'Nereden bileceksin?', icon: '؟', d: '13 soru cevaplanıyor, 3’ü açık kalıyor', steps: [
     { terms: [['ar', 'ادراك', 'affix', 'Sana ne bildirdi?', GOLD], ['ar', 'يدريك', 'affix', 'Seni ne bilgilendirecek?', VIOLET]], cam: 'fit',
@@ -128,6 +219,18 @@ const STORIES = [
     { terms: [['lemma', 'اللَّه', 'lemma', 'Allah', GOLD]], cam: 'fit', metric: true,
       text: `<b class="ar">اللَّه</b> ismi <b>2.699</b> kez geçiyor ve <b>1.821</b> ayette yer alıyor. 6.236 ayetin %29’u: <b>yaklaşık her üç ayetten biri.</b> Yanan noktalara bakın; hiçbir bölge boş kalmıyor.` },
   ] },
+  { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 10 tez, sonucu bekleniyor', nw: true, steps: [
+    { terms: tezTerms(), labels: tezLabels(), pulses: TEZ.filter(t => t.st === 'acik').map(t => t.r[0]), cam: 'fit',
+      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt tarihi: <b>${TEZ_TARIH}</b></div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}<small class="muted">Halkalar: sonucu henüz belli olmayan tezler.</small>` },
+    ...TEZ.map((t, i) => ({
+      terms: [['set', t.r.join(','), '', `Tez ${i + 1} · ${t.k}`, TS[t.st][1]]],
+      links: t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : [],
+      labels: t.r.map(r => ({ r, t: r, c: TS[t.st][1] })), pulses: t.st === 'acik' ? [t.r[0]] : [], cam: t.r,
+      text: tezCard(t, i) })),
+    { terms: tezTerms(), labels: tezLabels(), links: tezLinks, cam: 'fit',
+      text: `<h4>Sonuç takvimi</h4><p>Tezlerin çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
+      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> Bu liste ${TEZ_TARIH} tarihli.</li><li><b>Tutmayanlar da sayılır.</b> 10 tezden 3’ü tutarsa bu, yazı tura atmakla aynı başarıdır.</li></ol>` },
+  ] },
   { id: 'siklik', t: 'En çok geçen kelimeler', icon: '▤', d: 'Kelimelerin yarışı', steps: [
     { top: TOP_ALL, text: `Kur’an’da <b>77.429</b> kelime var. Edatlarla birlikte sayınca zirvede “-den” (مِن) var; <b>Allah</b> ismi ikinci sırada. Her çubuk bir kelime, her nokta bir geçiş.` },
     { top: TOP_CONTENT, text: `Edatları çıkarınca sıralama: <b>Allah</b> 2.699, “dedi” 1.618, “oldu” 1.358, <b>Rab</b> 975. Kur’an’ın en sık kullandığı fiil “dedi”: anlatının büyük kısmı konuşmalardan oluşuyor.` },
@@ -138,7 +241,7 @@ const STORIES = [
 const side = $('.side'), mapEl = $('#map');
 const disc = document.createElement('div');
 disc.className = 'explore discover'; disc.id = 'discover';
-disc.innerHTML = `<h3>Keşifler</h3><p class="muted small">Adım adım anlatılan, haritada canlanan tespitler.</p><div class="disc">${STORIES.map((s, k) => `<button data-k="${k}"><i>${s.icon}</i><b>${s.t}</b><span>${s.d}</span></button>`).join('')}</div>`;
+disc.innerHTML = `<h3>Keşifler</h3><p class="muted small">Adım adım anlatılan, haritada canlanan tespitler.</p><div class="disc">${STORIES.map((s, k) => `<button data-k="${k}"><i>${s.icon}</i><b>${s.t}${s.nw ? ' <em class="nw">Yeni</em>' : ''}</b><span>${s.d}</span></button>`).join('')}</div>`;
 side.insertBefore(disc, $('.explore'));
 disc.querySelectorAll('button').forEach(b => b.onclick = () => start(STORIES[+b.dataset.k].id, 0));
 
