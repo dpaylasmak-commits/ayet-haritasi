@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0a0a22">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
@@ -169,6 +169,20 @@
 <script src="data.js"></script>
 <script src="app.js?v=11"></script>
 <script src="kesif.js?v=6"></script>
-<script>if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+<script>
+if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => {
+  const sw = navigator.serviceWorker, had = !!sw.controller; let shown = false;
+  sw.register('sw.js').then(reg => { setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000); }).catch(() => {});
+  // yeni sürüm devreye girince (ilk kurulumda değil) yenileme çubuğu göster
+  sw.addEventListener('controllerchange', () => {
+    if (!had || shown) return; shown = true;
+    const bar = document.createElement('div'); bar.className = 'updbar'; bar.setAttribute('role', 'status');
+    bar.innerHTML = '<span><b>Yeni sürüm hazır.</b> Yenileyince güncel hâli açılır.</span><button type="button" class="gold" data-r>Yenile</button><button type="button" class="ghost icon" data-x aria-label="Kapat">✕</button>';
+    bar.querySelector('[data-r]').onclick = () => location.reload();
+    bar.querySelector('[data-x]').onclick = () => bar.remove();
+    document.body.appendChild(bar);
+  });
+});
+</script>
 </body>
 </html>

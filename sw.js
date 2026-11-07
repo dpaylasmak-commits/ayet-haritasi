@@ -1,11 +1,12 @@
 /* Ayet Haritası · çevrimdışı önbellek
    Uygulama dosyaları ilk açılışta önbelleğe alınır; mealler açıldıkça eklenir.
-   Önbellekten hemen cevap verilir, arka planda yenisi indirilir (yeni sürüm bir sonraki açılışta gelir). */
-const V = 'ayet-v12';
+   Önbellekten hemen cevap verilir, arka planda yenisi indirilir.
+   Yeni sürüm (V değişince) kurulup devreye girer; sayfa "Yeni sürüm hazır · Yenile" çubuğunu gösterir. */
+const V = 'ayet-v14';
 const CORE = ['./', 'index.html', 'rehber.html', 'style.css', 'app.js', 'kesif.js', 'data.js', 'manifest.webmanifest', 'fonts/fonts.css',
   'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(V).then(c => c.addAll(CORE.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));

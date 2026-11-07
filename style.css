@@ -405,3 +405,9 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:
   .toolbar #metricSeg{order:4;margin-left:auto}
   .toolbar #randBtn{order:5}
 }
+/* yeni sürüm çubuğu */
+.updbar{position:fixed;z-index:70;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100vw - 24px);padding:8px 8px 8px 16px;background:#2a2560;border:1px solid var(--gold);border-radius:999px;box-shadow:0 14px 40px rgba(0,0,0,.5);font-size:13.5px;animation:updIn .4s cubic-bezier(.2,.8,.2,1)}
+.updbar b{color:var(--gold2)}
+.updbar .gold{padding:6px 14px;border-radius:999px}
+@keyframes updIn{from{opacity:0;transform:translate(-50%,16px)}}
+@media (max-width:600px){.updbar{border-radius:16px;flex-wrap:wrap;width:calc(100vw - 24px)}.updbar span{flex:1 1 100%}}
