@@ -108,6 +108,8 @@ function makeTerm(mode, q, match, opts = {}) {
       const nl = opts.notLemma.map(normAr), bad = new Set(); lemNorm.forEach((x, k) => { if (nl.includes(x)) bad.add(k); });
       for (let i = 0; i < N; i++) if (counts[i]) wLem[i].forEach((l, k) => { if (bad.has(l) && t(normAr(wForm[i][k])) && counts[i]) counts[i]--; });
     }
+  } else if (mode === 'set') { // seçili ayet listesi (Keşifler)
+    for (const r of q.split(',')) { const [a, b] = r.split(':').map(Number), i = verseIndex(a, b); if (i >= 0) counts[i] = 1; }
   } else {
     const isRoot = mode === 'root';
     id = isRoot ? findId(Q.roots, rootNorm, q) : findId(Q.lemmas, lemNorm, q);
@@ -191,7 +193,7 @@ const pos = new Float32Array(N * 2); pos.set(cur.P);
 const cam = { x: 39, y: 39, s: 8 };
 let camAnim = null, needs = true, hover = -1, selected = -1;
 let intro = { t0: 0, on: true };
-let particles = null, partT = 1, partStart = 0, chartLabels = [];
+let particles = null, partT = 1, partStart = 0, chartLabels = [], overlay = null;
 
 function resize() {
   const r = map.getBoundingClientRect(); DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -361,6 +363,12 @@ function draw(now) {
     const la = Math.min(1, Math.max(0, (el - 600) / 600));
     ctx.globalAlpha = la; ctx.textAlign = 'center';
     for (const lb of chartLabels) {
+      if (lb.txt) {
+        const [x, y] = w2s(lb.x, lb.y);
+        ctx.fillStyle = lb.c || '#fff'; ctx.font = `${lb.w || 600} ${Math.max(lb.min || 9, s * lb.fs)}px ${lb.sans ? 'Inter' : '"Cormorant Garamond",serif'}`;
+        ctx.textAlign = lb.al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(lb.txt, x, y);
+        ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center'; continue;
+      }
       if (lb.h) {
         const [x, y] = w2s(lb.x, lb.y), [xe] = w2s(lb.xe, lb.y), fs = Math.max(9, Math.min(22, s * 1.9));
         ctx.textBaseline = 'middle';
@@ -379,6 +387,7 @@ function draw(now) {
     ctx.globalAlpha = 1; ctx.textAlign = 'start';
     if (!done || la < 1) moving = true;
   }
+  if (overlay && overlay(ctx, now, { s, ox, oy, r, W, H })) moving = true;
   // hover / seçili
   for (const [i, col] of [[hover, '#ffffff'], [selected, '#f6dc95']]) {
     if (i < 0) continue;
@@ -397,6 +406,7 @@ function buildChart() {
   const b = cur.b, k = T.length;
   const vals = T.map(t => { let v = 0; for (let i = 0; i < N; i++) if (passF[i] && t.counts[i]) v += state.metric === 'occ' ? t.counts[i] : 1; return v; });
   chartBounds = null;
+  if (state.shape) { buildShape(T, vals, b); return; }
   if (k > 6) { buildHChart(T, vals, b); return; }
   const gap = Math.max(3, Math.round(b.w * 0.05));
   const bw = Math.max(3, Math.min(14, Math.floor((b.w - gap * (k + 1)) / k)));
@@ -451,6 +461,17 @@ function buildHChart(T, vals, b) {
   tweenCam(fitCam(chartBounds, 0.03), 1000);
   partStart = performance.now(); partT = 0; needs = true;
 }
+// Keşifler: noktaları özel bir şekle diz (takvim, saat kadranı…). state.shape = (b, n) => ({ pts, labels, bounds })
+function buildShape(T, vals, b) {
+  const t = T[0], occ = [];
+  for (let i = 0; i < N; i++) if (passF[i] && t.counts[i]) for (let q = 0; q < t.counts[i]; q++) occ.push(i);
+  const sh = state.shape(b, occ.length);
+  chartUnit = 1; particles = [];
+  occ.forEach((i, n) => { const p = sh.pts[n]; if (p) particles.push({ i, tx: p[0], ty: p[1], c: p[2] || t.color, d: n / occ.length * 1400 }); });
+  chartLabels = sh.labels || [];
+  if (sh.bounds) { chartBounds = sh.bounds; tweenCam(fitCam(chartBounds, 0.05), 1000); }
+  partStart = performance.now(); partT = 0; needs = true;
+}
 function setChart(on) {
   state.chart = on && state.terms.length > 0;
   $('#chartBtn').classList.toggle('on', state.chart);
@@ -465,7 +486,7 @@ function termsChanged() {
   buildHash(); syncHash(); needs = true;
   if (!$('#card').hidden && selected >= 0) renderCard(selected);
 }
-const modeName = { tr: 'meal', ar: 'Arapça', root: 'kök', lemma: 'lemma' };
+const modeName = { tr: 'meal', ar: 'Arapça', root: 'kök', lemma: 'lemma', set: 'seçki' };
 function termTitle(t) {
   return (t.mode === 'tr' ? `<b>${escHtml(t.label)}</b>` : t.label !== t.q ? `<b>${escHtml(t.label)}</b> <span class="ar">${escHtml(t.ar)}</span>` : `<span class="ar">${escHtml(t.ar)}</span>`);
 }
@@ -1050,6 +1071,7 @@ $$('#presets button').forEach(b => b.onclick = () => runPreset(PRESETS[+b.datase
 let presetT = 0;
 function runPreset(p) {
   if (!card.hidden) closeVerse();
+  state.shape = null;
   clearTerms();
   for (const [m, q, mt, label, notLemma, refs] of p.terms) addTerm(m, q, mt, { label, notLemma, refs, many: true, silent: true });
   termsChanged();
@@ -1064,8 +1086,10 @@ function runPreset(p) {
 
 /* ---------- URL durumu (paylaşılabilir) ---------- */
 let hashStr = '';
+let extraHash = '';
 function buildHash() {
   const p = new URLSearchParams();
+  if (extraHash) { hashStr = extraHash; if (selected >= 0 && !card.hidden) hashStr += '&a=' + ref(selected); return; }
   state.terms.forEach(t => p.append('t', [t.mode, t.match, t.q, t.label, t.notLemma ? t.notLemma.join(',') : '', t.refs, t.meal && t.meal !== 'tr.diyanet' ? t.meal : ''].join('~').replace(/~+$/, '')));
   if (state.layout !== 'grid') p.set('l', state.layout);
   if (state.chart) p.set('g', '1');
@@ -1127,4 +1151,13 @@ if (init.chart) setTimeout(() => setChart(true), 400);
 if (init.a) { const [s, a] = init.a.split(':').map(Number); setTimeout(() => openVerse(verseIndex(s, a), { fast: true }), 300); }
 setTimeout(() => $('#hint').style.opacity = 0, 6000);
 window.__ayet = { state, openVerse, addTerm, termsChanged }; // hata ayıklama
+// Keşifler modülü (kesif.js) için arayüz
+window.AYET = {
+  Q, N, SUR, state, pos, vS, vA, wLem, wRoot, lemOcc, rootOcc, verseIndex, ref, sName, escHtml, fmt, toast, makeTerm,
+  openVerse, closeVerse, addTerm, clearTerms, termsChanged, setChart, focusSurah, buildHash, syncHash, recolor,
+  tweenCam, fitCam, w2s, cardOpen: () => !card.hidden, curBounds: () => cur.b, curP: () => cur.P, cam,
+  setOverlay(fn) { overlay = fn; needs = true; }, redraw() { needs = true; },
+  setExtraHash(h) { extraHash = h; buildHash(); syncHash(); }, LOCAL,
+  mealText: id => mealText[id]
+};
 })();
