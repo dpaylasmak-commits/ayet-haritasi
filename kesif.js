@@ -64,7 +64,7 @@ function calendarShape(b, n) {
     for (let j = 0; j < d; j++) pts.push([bx + j % bw, by + Math.floor(j / bw)]);
     k += d;
   });
-  labels.push({ txt: fmt(n), x: x0 + tw / 2, y: y0 - 7, fs: 4.2, c: '#fff', w: 700 });
+  labels.push({ txt: fmt(n), x: x0 + tw / 2, y: y0 - 7, fs: 4.2, w: 700 });
   labels.push({ txt: '“GÜN” · TEKİL · يَوْم', x: x0 + tw / 2, y: y0 - 3.6, fs: .95, c: GOLD, sans: true });
   return { pts, labels, bounds: { x0: x0 - 3, y0: y0 - 10, x1: x0 + tw + 2, y1: y0 + th + 1, w: tw + 5, h: th + 11 } };
 }
@@ -76,7 +76,7 @@ function clockShape(b, n) {
     pts.push([cx + R * Math.cos(t), cy + R * Math.sin(t)]);
     labels.push({ txt: MONTHS[k], x: cx + (R + 3.4) * Math.cos(t), y: cy + (R + 3.4) * Math.sin(t), fs: .85, c: '#c9c7ea', sans: true, w: 500 });
   }
-  labels.push({ txt: fmt(n), x: cx, y: cy - .6, fs: 5, c: '#fff', w: 700 });
+  labels.push({ txt: fmt(n), x: cx, y: cy - .6, fs: 5, w: 700 });
   labels.push({ txt: '“AY” · TEKİL · شَهْر', x: cx, y: cy + 3.4, fs: .9, c: GOLD, sans: true });
   return { pts, labels, bounds: { x0: cx - 16, y0: cy - 16, x1: cx + 16, y1: cy + 16, w: 32, h: 32 } };
 }
@@ -453,9 +453,23 @@ function showTab(k, save = true) {
   TABS.forEach(([kk, , el]) => { el.hidden = kk !== k; });
   tabs.querySelectorAll('button').forEach(b => { const on = b.dataset.tab === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
   if (save) try { sessionStorage.setItem('ayet-tab', k); } catch (_) {}
+  if (typeof bnav !== 'undefined' && bnav && sideSeen()) setBnav(k);
 }
 tabs.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
-const resBadge = () => { const n = A.state.terms.length ? A.resultCount() : 0; const b = tabs.querySelector('[data-tab=res] b'); b.textContent = n ? fmt(n) : ''; b.hidden = !n; };
+const resBadge = () => { const n = A.state.terms.length ? A.resultCount() : 0; for (const b of [tabs.querySelector('[data-tab=res] b'), $('#bnav [data-go=res] b')]) if (b) { b.textContent = n ? fmt(n) : ''; b.hidden = !n; } };
+/* telefonda alt gezinme çubuğu */
+const bnav = $('#bnav');
+const setBnav = g => bnav && bnav.querySelectorAll('button').forEach(b => { const on = b.dataset.go === g; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'true' : 'false'); });
+const sideSeen = () => side.getBoundingClientRect().top < innerHeight * .45;
+if (bnav) {
+  bnav.addEventListener('click', e => {
+    const b = e.target.closest('button[data-go]'); if (!b) return; const g = b.dataset.go;
+    if (g === 'map') scrollTo({ top: 0, behavior: 'smooth' });
+    else { showTab(g); ((g === 'kesif' && story && !panel.hidden) ? panel : side).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    setBnav(g);
+  });
+  let sT = 0; addEventListener('scroll', () => { clearTimeout(sT); sT = setTimeout(() => { const pr = panel.getBoundingClientRect(), ps = !panel.hidden && pr.top < innerHeight * .45 && pr.bottom > 120; setBnav(sideSeen() ? curTab : ps ? 'kesif' : 'map'); }, 80); }, { passive: true });
+}
 addEventListener('ayet:terms', e => { resBadge(); if (e.detail.n && !story) showTab('res'); });
 addEventListener('ayet:results', () => showTab('res'));
 addEventListener('ayet:stats', resBadge);
@@ -464,15 +478,15 @@ showTab(TABS.some(t => t[0] === t0) ? t0 : (A.state.terms.length ? 'res' : 'kesi
 
 const panel = document.createElement('section');
 panel.className = 'story'; panel.hidden = true;
-panel.innerHTML = `<div class="st-h"><span class="pill">KEŞİF</span><b id="stTitle"></b><button class="ghost icon" id="stClose" title="Kapat">✕</button></div>
+panel.innerHTML = `<div class="st-h"><span class="pill"><svg class="i"><use href="#i-sparkles"/></svg>Keşif</span><b id="stTitle"></b><button class="ghost icon" id="stClose" title="Kapat" aria-label="Kapat"><svg class="i"><use href="#i-x"/></svg></button></div>
   <div class="st-b" id="stBody"></div>
-  <div class="st-f"><button class="ghost icon" id="stPrev" title="Önceki">‹</button><span id="stDots"></span><button class="gold" id="stNext">Devam ›</button><button class="ghost" id="stShare" title="Bu adımın bağlantısını kopyala">Paylaş</button></div>`;
+  <div class="st-f"><button class="ghost icon" id="stPrev" title="Önceki" aria-label="Önceki adım"><svg class="i"><use href="#i-left"/></svg></button><span id="stDots"></span><button class="gold" id="stNext">Devam</button><button class="ghost icon" id="stShare" title="Bu adımın bağlantısını kopyala" aria-label="Paylaş"><svg class="i"><use href="#i-share"/></svg></button></div>`;
 const mq = matchMedia('(max-width:980px)');
 const place = () => mq.matches ? mapEl.after(panel) : side.prepend(panel);
 place(); mq.addEventListener('change', place);
 
 const topBtns = $('.topbtns');
-if (topBtns) { const b = document.createElement('button'); b.className = 'ghost'; b.textContent = '✦ Keşifler'; b.onclick = () => { showTab('kesif'); (mq.matches ? tabs : disc).scrollIntoView({ behavior: 'smooth', block: 'start' }); disc.animate([{ boxShadow: '0 0 0 0 rgba(233,196,106,.6)' }, { boxShadow: '0 0 0 14px rgba(233,196,106,0)' }], { duration: 900 }); }; topBtns.prepend(b); }
+if (topBtns) { const b = document.createElement('button'); b.className = 'ghost kesifbtn'; b.innerHTML = '<svg class="i"><use href="#i-sparkles"/></svg><span class="lbl">Keşifler</span>'; b.onclick = () => { showTab('kesif'); (mq.matches ? tabs : disc).scrollIntoView({ behavior: 'smooth', block: 'start' }); disc.animate([{ boxShadow: '0 0 0 0 var(--accent-soft-2)' }, { boxShadow: '0 0 0 14px transparent' }], { duration: 900 }); }; topBtns.prepend(b); }
 
 /* ---------- harita katmanı: iplikler, etiketler, nabızlar ---------- */
 let story = null, step = 0, layer = null;
@@ -502,13 +516,13 @@ function drawLayer(ctx, now, g) {
     const pt = u => [(1 - u) * (1 - u) * x1 + 2 * (1 - u) * u * cx + u * u * x2, (1 - u) * (1 - u) * y1 + 2 * (1 - u) * u * cy + u * u * y2];
     const path = () => { ctx.beginPath(); ctx.moveTo(x1, y1); for (let j = 1; j <= 48; j++) { const [x, y] = pt(e * j / 48); ctx.lineTo(x, y); } };
     ctx.setLineDash(l.dash ? [6, 6] : []);
-    path(); ctx.strokeStyle = l.c; ctx.globalAlpha = .16; ctx.lineWidth = 7; ctx.stroke();
+    path(); ctx.strokeStyle = tc(l.c); ctx.globalAlpha = .16; ctx.lineWidth = 7; ctx.stroke();
     path(); ctx.globalAlpha = .95; ctx.lineWidth = 1.7; ctx.stroke();
     ctx.setLineDash([]);
     if (t >= 1) { // cevaba akan ışık
       const u = ((now / 1700) + k * .13) % 1, [px, py] = pt(u);
-      ctx.globalAlpha = .9 * Math.sin(u * Math.PI); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 6.2832); ctx.fill();
-      if (end) { ctx.globalAlpha = 1; ctx.strokeStyle = TEAL; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x2, y2, Math.max(4, g.r * 2), 0, 6.2832); ctx.stroke(); }
+      ctx.globalAlpha = .9 * Math.sin(u * Math.PI); ctx.fillStyle = TH.ink; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 6.2832); ctx.fill();
+      if (end) { ctx.globalAlpha = 1; ctx.strokeStyle = tc(TEAL); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x2, y2, Math.max(4, g.r * 2), 0, 6.2832); ctx.stroke(); }
     }
   });
   // açık sorular: genişleyen halkalar
@@ -516,7 +530,7 @@ function drawLayer(ctx, now, g) {
     const [x, y] = sp(i);
     for (let q = 0; q < 2; q++) {
       const ph = ((now / 1600) + q * .5 + k * .2) % 1;
-      ctx.globalAlpha = (1 - ph) * .8; ctx.strokeStyle = layer.labels.find(l => l.i === i)?.c || VIOLET; ctx.lineWidth = 1.5;
+      ctx.globalAlpha = (1 - ph) * .8; ctx.strokeStyle = tc(layer.labels.find(l => l.i === i)?.c || VIOLET); ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(x, y, Math.max(4, g.r * 1.6) + ph * 22, 0, 6.2832); ctx.stroke();
     }
   });
@@ -537,11 +551,11 @@ function drawLayer(ctx, now, g) {
       }
       if (!box) continue;
       placed.push(box);
-      ctx.strokeStyle = it.c; ctx.globalAlpha = la * .5; ctx.lineWidth = 1;
+      const ic = tc(it.c); ctx.strokeStyle = ic; ctx.globalAlpha = la * .5; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(it.x, it.y + (box.y < it.y ? -rad : rad)); ctx.lineTo(box.x + box.w / 2, box.y < it.y ? box.y + box.h : box.y); ctx.stroke();
-      ctx.globalAlpha = la; ctx.fillStyle = 'rgba(12,11,38,.88)'; rr(ctx, box.x, box.y, box.w, box.h, 9); ctx.fill();
-      ctx.strokeStyle = it.c; ctx.stroke();
-      ctx.fillStyle = it.c; ctx.textAlign = 'center'; ctx.fillText(it.t, box.x + box.w / 2, box.y + box.h / 2 + .5);
+      ctx.globalAlpha = la; ctx.fillStyle = TH.plate; rr(ctx, box.x, box.y, box.w, box.h, 9); ctx.fill();
+      ctx.strokeStyle = ic; ctx.stroke();
+      ctx.fillStyle = ic; ctx.textAlign = 'center'; ctx.fillText(it.t, box.x + box.w / 2, box.y + box.h / 2 + .5);
     }
   }
   ctx.restore();
@@ -580,7 +594,7 @@ function go(k) {
   const bar = $('#stDots .stbar'); if (bar) bar.onclick = e => { const r = bar.getBoundingClientRect(); go(Math.min(N - 1, Math.floor((e.clientX - r.left) / r.width * N))); };
   $('#stPrev').disabled = k === 0;
   const last = k === story.steps.length - 1;
-  $('#stNext').textContent = last ? (nextStory() ? `Sonraki: ${nextStory().t} ›` : 'Bitir') : 'Devam ›';
+  $('#stNext').textContent = last ? (nextStory() ? `Sonraki: ${nextStory().t}` : 'Bitir') : 'Devam';
   if (A.state.metric !== 'occ') $('#metricSeg button[data-m="occ"]').click();
   if (st.eq) return runEq(st.eq, 0);
   if (st.chance) return runChance();

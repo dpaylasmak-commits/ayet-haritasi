@@ -2,7 +2,7 @@
    Uygulama dosyaları ilk açılışta önbelleğe alınır; mealler açıldıkça eklenir.
    Önbellekten hemen cevap verilir, arka planda yenisi indirilir.
    Yeni sürüm (V değişince) kurulup devreye girer; sayfa "Yeni sürüm hazır · Yenile" çubuğunu gösterir. */
-const V = 'ayet-v16';
+const V = 'ayet-v17';
 const CORE = ['./', 'index.html', 'rehber.html', 'tezler.html', 'style.css', 'app.js', 'kesif.js', 'data.js', 'manifest.webmanifest', 'fonts/fonts.css',
   'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => {

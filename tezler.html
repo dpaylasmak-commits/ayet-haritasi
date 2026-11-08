@@ -7,55 +7,58 @@
 <meta name="description" content="6.236 ayetin tam okumasında not edilen 285 tez adayı: açık tezler, bilinenler, tarih ve arkeoloji, zorlananlar.">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0a0a22">
+<meta name="theme-color" content="#0b0d12">
+<script>(()=>{const d=document.documentElement,m=matchMedia('(prefers-color-scheme: light)');let p='auto';try{p=localStorage.getItem('ayet-theme')||'auto'}catch(e){}d.dataset.mode=p==='auto'?(m.matches?'light':'dark'):p})()</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <style>
-:root{--bg0:#0a0a22;--bg1:#16153a;--bg2:#221d4d;--card0:#1f1c4a;--card1:#141238;--gold:#e9c46a;--gold2:#f6dc95;--ink:#ecebf7;--muted:#a3a1c9;--line:rgba(233,196,106,.32);--line2:rgba(255,255,255,.1);
---serif:"Cormorant Garamond",Georgia,serif;--sans:Inter,system-ui,-apple-system,sans-serif;color-scheme:dark}
+:root,[data-mode="dark"]{--bg:#0b0d12;--card:#13161e;--card2:#1a1e28;--gold:#e9b949;--gold2:#f1cd72;--soft:rgba(233,185,73,.14);--on:#241a03;--ink:#eceef4;--ink2:#c3c8d6;--muted:#8e94a7;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.07);--bar:rgba(11,13,18,.88);--cc:var(--c);
+--sans:Inter,system-ui,-apple-system,sans-serif;color-scheme:dark}
+[data-mode="light"]{--bg:#f5f1e8;--card:#fffdf9;--card2:#efe9dc;--gold:#0f6e56;--gold2:#0b5c48;--soft:rgba(15,110,86,.1);--on:#fff;--ink:#1d1b16;--ink2:#3f3b32;--muted:#6f6a5c;--line:rgba(60,45,15,.14);--line2:rgba(60,45,15,.08);--bar:rgba(245,241,232,.9);--cc:color-mix(in oklab,var(--c) 70%,#000);color-scheme:light}
 *{box-sizing:border-box}
-html,body{margin:0;background:linear-gradient(180deg,var(--bg0),var(--bg1) 55%,var(--bg2)) fixed;color:var(--ink);font:14px/1.55 var(--sans)}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
 a{color:inherit}
 .wrap{max-width:980px;margin:0 auto;padding:22px 16px 60px}
 .top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
-.pill{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:2px 12px;font:600 11px/1.6 var(--serif);letter-spacing:.16em;text-decoration:none}
-h1{margin:8px 0 4px;font:600 34px/1.1 var(--serif);color:var(--gold);text-wrap:balance}
+.pill{display:inline-block;background:var(--soft);color:var(--gold2);border-radius:999px;padding:3px 10px;font:500 12.5px/1.4 var(--sans);text-decoration:none}
+h1{margin:10px 0 6px;font:600 28px/1.15 var(--sans);letter-spacing:-.02em;color:var(--ink);text-wrap:balance}
 .lead{color:var(--muted);max-width:68ch;margin:0}
-.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px;border:1px solid var(--line2)}
-.btn:hover{border-color:var(--line)}
-.bar{position:sticky;top:0;z-index:2;margin:18px -16px 0;padding:12px 16px;background:rgba(10,10,34,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2)}
-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:10px;color:var(--ink);font:inherit;padding:10px 12px}
-input:focus{outline:2px solid var(--gold2);outline-offset:1px}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:600;font-size:14px;border:0;background:var(--card2)}
+.btn:hover{background:var(--soft)}
+.bar{position:sticky;top:0;z-index:2;margin:18px -16px 0;padding:12px 16px;background:var(--bar);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line2)}
+input{width:100%;background:var(--card);border:0;border-radius:14px;color:var(--ink);font:inherit;padding:10px 12px}
+input:focus{outline:2px solid var(--soft);outline-offset:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.chips button{font:inherit;font-size:12.5px;color:var(--ink);background:transparent;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:999px;padding:4px 10px;cursor:pointer}
-.chips button b{color:var(--c);margin-left:4px;font-variant-numeric:tabular-nums}
-.chips button.on{background:color-mix(in srgb,var(--c) 22%,transparent);border-color:var(--c)}
+.chips button{font:inherit;font-size:13px;font-weight:500;color:var(--ink2);background:var(--card);border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.chips button b{color:var(--cc);margin-left:4px;font-variant-numeric:tabular-nums}
+.chips button.on{background:color-mix(in srgb,var(--c) 22%,transparent);color:var(--ink)}
 .chips button:focus-visible{outline:2px solid var(--gold2)}
 .count{color:var(--muted);font-size:12.5px;margin:12px 0 6px}
 ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-li{border:1px solid var(--line2);border-left:3px solid var(--c);border-radius:12px;background:linear-gradient(180deg,var(--card0),var(--card1));padding:10px 14px}
+li{border:0;border-radius:14px;background:var(--card);padding:12px 16px}
+.ref::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:8px;vertical-align:1px}
 .h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
-.ref{font:600 15px var(--serif);color:var(--c);text-decoration:none;font-variant-numeric:tabular-nums}
+.ref{font:600 14px var(--sans);color:var(--cc);text-decoration:none;font-variant-numeric:tabular-nums}
 .ref:hover{text-decoration:underline}
 .ne{flex:1 1 260px}
-.tag{font-size:11px;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 50%,transparent);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.tag{font-size:12px;font-weight:500;color:var(--cc);background:color-mix(in srgb,var(--c) 16%,transparent);border:0;border-radius:999px;padding:1px 8px;white-space:nowrap}
 .tz{margin-top:4px;color:var(--muted)}
 .tz b{color:var(--ink);font-weight:600}
-.lk{display:inline-block;margin:6px 6px 0 0;font-size:12px;color:var(--gold2);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:1px 8px}
-.lk:hover{background:rgba(233,196,106,.12)}
+.lk{display:inline-block;margin:8px 6px 0 0;font-size:12.5px;font-weight:600;color:var(--gold2);text-decoration:none;background:var(--soft);border-radius:999px;padding:3px 10px}
+.lk:hover{text-decoration:underline}
 .empty{color:var(--muted);padding:20px 0}
 .foot{margin-top:28px;color:var(--muted);font-size:12.5px}
-.foot h2{font:600 20px var(--serif);color:var(--gold);margin:0 0 6px}
+.foot h2{font:600 17px var(--sans);color:var(--ink);margin:0 0 6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div><a class="pill" href="index.html">AYET HARİTASI</a>
+    <div><a class="pill" href="index.html">Ayet Haritası</a>
       <h1>Tez kataloğu: 285 aday</h1>
       <p class="lead">Türkçe meal 1:1’den 114:6’ya kadar ayet ayet okundu. Gözlemlenebilir dünya hakkında ölçülebilir bir şey söyleyen her ayet not edildi. Bu sayfa o notların tamamı: sonucu açık tezler, zaten bilinenler, zorlama okumalar dahil.</p>
     </div>
-    <a class="btn" href="index.html#k=tezler">⧗ Tezler hikâyesi</a>
+    <a class="btn" href="index.html#k=tezler">Tezler hikâyesi</a>
   </header>
   <div class="bar">
     <input id="q" type="search" placeholder="Ara: ayet (7:78), konu (deprem, süt, rüzgâr)…" aria-label="Katalogda ara" autocomplete="off">

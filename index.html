@@ -7,21 +7,50 @@
 <meta name="description" content="Kur'an'daki 6.236 ayet, her biri bir nokta. Bir kelime yazın, geçtiği ayetler yansın.">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0a0a22">
+<meta name="theme-color" content="#0b0d12">
+<script>(()=>{const d=document.documentElement,m=matchMedia('(prefers-color-scheme: light)');let p='auto';try{p=localStorage.getItem('ayet-theme')||'auto'}catch(e){}
+const set=()=>{d.dataset.theme=p;d.dataset.mode=p==='auto'?(m.matches?'light':'dark'):p;const t=document.querySelector('meta[name=theme-color]');if(t)t.content=d.dataset.mode==='light'?'#f5f1e8':'#0b0d12';dispatchEvent(new Event('ayet:theme'))};
+window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme',p)}catch(e){}set()};m.addEventListener('change',()=>{if(p==='auto')set()});set()})()</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
-<canvas id="stars" aria-hidden="true"></canvas>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2v.5a1.5 1.5 0 0 0 1.5 1.5H20"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.5M12 17h.01"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16v-4M12 16V7M17 16v-7"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7.5V19l-4-2v-4.5z"/></symbol>
+<symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M4 7h3c2 0 3 1 4 2.5l2 3c1 1.5 2 2.5 4 2.5h3M17.5 12.5L20 15l-2.5 2.5M4 17h3c1.1 0 1.9-.3 2.6-.9M14.4 7.9C15 7.3 15.9 7 17 7h3M17.5 4.5L20 7l-2.5 2.5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></symbol>
+<symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M10 3l1.7 4.8L16.5 9.5l-4.8 1.7L10 16l-1.7-4.8L3.5 9.5l4.8-1.7zM18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9z"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
+</defs></svg>
 <header class="top">
-  <div class="brand">
-    <span class="pill">AYET HARİTASI</span>
-    <h1><span id="introCount">6.236</span> <em>ayet · her nokta bir ayet</em></h1>
-  </div>
-  <div class="topbtns"><a class="ghost" href="rehber.html" id="guideLink">Kılavuz</a>
-  <button class="ghost icon" id="infoBtn" title="Nasıl çalışır?" aria-label="Nasıl çalışır">?</button></div>
+  <a class="brand" href="./" aria-label="Ayet Haritası, baştan başla">
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 22 22"><circle cx="5" cy="5" r="2"/><circle cx="11" cy="5" r="2" opacity=".55"/><circle cx="17" cy="5" r="2" opacity=".55"/><circle cx="5" cy="11" r="2" opacity=".55"/><circle cx="11" cy="11" r="2"/><circle cx="17" cy="11" r="2" opacity=".55"/><circle cx="5" cy="17" r="2" opacity=".55"/><circle cx="11" cy="17" r="2" opacity=".55"/><circle cx="17" cy="17" r="2"/></svg></span>
+    <span><h1>Ayet Haritası</h1><p><span id="introCount">6.236</span> ayet<span class="sub"> · her nokta bir ayet</span></p></span>
+  </a>
+  <div class="topbtns"><a class="ghost" href="rehber.html" id="guideLink" title="Kılavuz"><svg class="i"><use href="#i-book"/></svg><span class="lbl">Kılavuz</span></a>
+  <button class="ghost icon" id="themeBtn" title="Tema" aria-label="Temayı değiştir"><svg class="i"><use href="#i-auto"/></svg></button>
+  <button class="ghost icon" id="infoBtn" title="Nasıl çalışır?" aria-label="Nasıl çalışır"><svg class="i"><use href="#i-help"/></svg></button></div>
 </header>
 
 <section class="searchbar">
@@ -36,7 +65,7 @@
     <select id="mealSel" title="Hangi mealde aransın"></select>
     <select id="match" title="Eşleşme biçimi"></select>
     <button id="addBtn" class="gold">Ekle</button>
-    <button id="optBtn" class="ghost icon" type="button" title="Arama ayarları: meal ve eşleşme" aria-label="Arama ayarları" aria-expanded="false">⚙</button>
+    <button id="optBtn" class="ghost icon" type="button" title="Arama ayarları: meal ve eşleşme" aria-label="Arama ayarları" aria-expanded="false"><svg class="i"><use href="#i-sliders"/></svg></button>
     <ul id="suggest" class="suggest" hidden></ul>
   </div>
   <div id="chips" class="chips"></div>
@@ -51,13 +80,13 @@
         <button data-l="rev" title="Nüzul (iniş) sırasına göre">Nüzul</button>
         <button data-l="spiral" title="Ayçiçeği spirali, merkez = Fâtiha">Spiral</button>
       </div>
-      <button id="chartBtn" class="toggle" title="Bulunan noktaları sütunlarda topla (G)">▥ Grafik</button>
+      <button id="chartBtn" class="toggle" title="Bulunan noktaları sütunlarda topla (G)"><svg class="i"><use href="#i-chart"/></svg>Grafik</button>
       <div class="seg small" id="metricSeg" title="Sayım ölçüsü">
         <button data-m="occ" class="on" title="Kelimenin kaç kez geçtiği">Geçiş</button>
         <button data-m="ver" title="Kaç ayette geçtiği">Ayet</button>
       </div>
       <span class="spacer"></span>
-      <details class="filters" id="filters"><summary class="toggle" title="Sûre türü, cüz ve sûre filtresi">⚲ Filtreler <b id="fCount" hidden></b></summary>
+      <details class="filters" id="filters"><summary class="toggle" title="Sûre türü, cüz ve sûre filtresi"><svg class="i"><use href="#i-filter"/></svg><span class="lbl">Filtreler</span> <b id="fCount" hidden></b></summary>
         <div class="fpop">
           <label>Sûre türü<select id="fType" title="Sure türü"><option value="">Mekkî + Medenî</option><option value="M">Mekkî</option><option value="D">Medenî</option></select></label>
           <label>Cüz<select id="fJuz" title="Cüz"></select></label>
@@ -65,7 +94,7 @@
           <button class="ghost small" id="fClear">Filtreleri temizle</button>
         </div>
       </details>
-      <button class="ghost" id="randBtn" title="Rastgele ayet (R)" aria-label="Rastgele ayet">⟳<span class="lbl"> Rastgele</span></button>
+      <button class="ghost" id="randBtn" title="Rastgele ayet (R)" aria-label="Rastgele ayet"><svg class="i"><use href="#i-shuffle"/></svg><span class="lbl">Rastgele</span></button>
       <button class="ghost icon" id="fitBtn" title="Görünümü sıfırla (0)">⤢</button>
     </div>
     <div class="map" id="map">
@@ -100,9 +129,9 @@
     </div>
     <div class="card-nav">
       <button class="ghost icon" id="fsBtn" title="Yazı boyutu" aria-label="Yazı boyutunu değiştir">Aa</button>
-      <button class="ghost icon" id="prevBtn" title="Önceki ayet (←)">‹</button>
-      <button class="ghost icon" id="nextBtn" title="Sonraki ayet (→)">›</button>
-      <button class="ghost icon" id="closeBtn" title="Kapat (Esc)">✕</button>
+      <button class="ghost icon" id="prevBtn" title="Önceki ayet (←)" aria-label="Önceki ayet"><svg class="i"><use href="#i-left"/></svg></button>
+      <button class="ghost icon" id="nextBtn" title="Sonraki ayet (→)" aria-label="Sonraki ayet"><svg class="i"><use href="#i-right"/></svg></button>
+      <button class="ghost icon" id="closeBtn" title="Kapat (Esc)" aria-label="Kapat"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
   </header>
   <div class="card-b">
@@ -114,7 +143,7 @@
     <div class="allmeals" id="cAll" hidden></div>
     <div class="actions">
       <div class="listen">
-        <button class="gold" id="playBtn">▶ Dinle</button>
+        <button class="gold" id="playBtn"><svg class="i"><use href="#i-play"/></svg>Dinle</button>
         <select id="listenMode" title="Ne dinlensin">
           <option value="ar">Arapça tilavet</option>
           <option value="tr">Meal (Türkçe ses)</option>
@@ -124,12 +153,12 @@
         <select id="voiceSel" title="Türkçe ses" hidden></select>
         <label class="small muted chk"><input type="checkbox" id="autoNext"> sonrakine geç</label>
       </div>
-      <details class="more" id="cMore"><summary class="ghost">⋯ Diğer</summary>
+      <details class="more" id="cMore"><summary class="ghost"><svg class="i"><use href="#i-dots"/></svg>Diğer</summary>
         <div class="menu">
-          <button class="ghost" id="surahBtn">Bu sûreye odaklan</button>
-          <button class="ghost" id="copyBtn">Ayeti kopyala</button>
-          <button class="ghost" id="linkBtn">Bağlantıyı kopyala</button>
-          <a class="ghost" id="qcomLink" href="https://quran.com/1/1" target="_blank" rel="noopener">Quran.com’da aç ↗</a>
+          <button class="ghost" id="surahBtn"><svg class="i"><use href="#i-target"/></svg>Bu sûreye odaklan</button>
+          <button class="ghost" id="copyBtn"><svg class="i"><use href="#i-copy"/></svg>Ayeti kopyala</button>
+          <button class="ghost" id="linkBtn"><svg class="i"><use href="#i-link"/></svg>Bağlantıyı kopyala</button>
+          <a class="ghost" id="qcomLink" href="https://quran.com/1/1" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>Quran.com’da aç</a>
         </div>
       </details>
     </div>
@@ -142,7 +171,7 @@
 
 <div id="info" class="modal" hidden>
   <div class="modal-in">
-    <button class="ghost icon close" data-close>✕</button>
+    <button class="ghost icon close" data-close aria-label="Kapat"><svg class="i"><use href="#i-x"/></svg></button>
     <h2>Nasıl çalışır?</h2>
     <p><a class="gold" href="rehber.html" style="display:inline-block;text-decoration:none">14 kartlık görsel kılavuzu aç →</a></p>
     <p>Ekrandaki her nokta Kur'an'daki bir ayettir: <b>114 sure, 6.236 ayet</b>. Sol üstten sağ alta mushaf sırasıyla dizilir. Bir kelime aradığınızda o kelimenin geçtiği ayetler kendi rengiyle yanar. En fazla 5 kelimeyi aynı anda, farklı renklerle karşılaştırabilirsiniz.</p>
@@ -164,11 +193,18 @@
   </div>
 </div>
 
+<nav class="bnav" id="bnav" aria-label="Bölümler">
+  <button data-go="map" class="on"><svg class="i"><use href="#i-grid"/></svg>Harita</button>
+  <button data-go="res"><svg class="i"><use href="#i-list"/></svg>Sonuçlar<b></b></button>
+  <button data-go="kesif"><svg class="i"><use href="#i-sparkles"/></svg>Keşifler</button>
+  <button data-go="kesfet"><svg class="i"><use href="#i-compass"/></svg>Keşfet</button>
+</nav>
+
 <div id="loading" class="loading"><div class="spin"></div><p>6.236 ayet yükleniyor…</p></div>
 
 <script src="data.js"></script>
-<script src="app.js?v=12"></script>
-<script src="kesif.js?v=7"></script>
+<script src="app.js?v=14"></script>
+<script src="kesif.js?v=9"></script>
 <script>
 if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => {
   const sw = navigator.serviceWorker, had = !!sw.controller; let shown = false;

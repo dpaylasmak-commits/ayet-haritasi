@@ -8,6 +8,22 @@ const N = Q.verses.length;
 const SUR = Q.surahs;
 const COLORS = ['#f2c14e', '#7fb2ff', '#f08a7e', '#6fd6b0', '#c59bff'];
 const fmt = n => n.toLocaleString('tr-TR');
+/* ---------- tema: tuval renkleri CSS değişkenlerinden okunur ---------- */
+const TH = { light: false };
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement), g = k => cs.getPropertyValue(k).trim();
+  TH.light = document.documentElement.dataset.mode === 'light';
+  TH.dot = g('--dot') || 'rgb(132,138,166)'; TH.dot2 = g('--dot2') || 'rgb(172,178,204)';
+  TH.ink = g('--ink') || '#eceef4'; TH.muted = g('--muted') || '#8e94a7'; TH.accent = g('--accent') || '#e9b949';
+  TH.plate = TH.light ? 'rgba(255,253,249,.94)' : 'rgba(19,22,30,.92)'; TH.track = TH.light ? 'rgba(60,45,15,.08)' : 'rgba(255,255,255,.07)';
+}
+// açık temada parlak vurgu renkleri koyulaştırılır (açık zeminde okunsun)
+const tcCache = {};
+function tc(c) {
+  if (!TH.light || typeof c !== 'string' || c[0] !== '#' || c.length !== 7) return c;
+  return tcCache[c] || (tcCache[c] = '#' + [1, 3, 5].map(k => Math.round(parseInt(c.slice(k, k + 2), 16) * 0.74).toString(16).padStart(2, '0')).join(''));
+}
+readTheme(); window.TH = TH; window.tc = tc;
 const MEAL_TTS = false; // Türkçe meal seslendirmesi şimdilik kapalı (yalnız Arapça tilavet)
 const LOCAL = !window.ARTIFACT_BUILD; // Claude sayfası sürümünde ses ve URL durumu kapalı; normal sitede açık
 
@@ -299,7 +315,7 @@ function draw(now) {
   // taban noktalar
   const fOn = filterOn();
   for (let pass = 0; pass < 2; pass++) {
-    ctx.fillStyle = pass === 0 ? 'rgba(150,150,205,1)' : 'rgba(190,190,235,1)';
+    ctx.fillStyle = pass === 0 ? TH.dot : TH.dot2;
     ctx.beginPath();
     for (let i = 0; i < introN; i++) {
       if ((vS[i] & 1) !== pass) continue;
@@ -308,13 +324,13 @@ function draw(now) {
       if (x < -5 || y < -5 || x > W + 5 || y > H + 5) continue;
       if (r < 1.4) ctx.rect(x - r, y - r, r * 2, r * 2); else { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, 6.2832); }
     }
-    const base = chartOn ? 0.08 : anyTerm ? 0.16 : 0.42;
+    const base = (chartOn ? 0.08 : anyTerm ? 0.16 : 0.42) * (TH.light ? 1.25 : 1);
     ctx.globalAlpha = fOn ? base * 0.5 : base;
     ctx.fill();
   }
   if (fOn && !chartOn) {
     // filtreye uyanlar biraz daha parlak
-    ctx.globalAlpha = anyTerm ? 0.22 : 0.55; ctx.fillStyle = 'rgba(200,200,245,1)'; ctx.beginPath();
+    ctx.globalAlpha = anyTerm ? 0.22 : 0.55; ctx.fillStyle = TH.dot2; ctx.beginPath();
     for (let i = 0; i < introN; i++) {
       if (!passF[i] || hitTerms[i]) continue;
       const x = pos[2 * i] * s + ox, y = pos[2 * i + 1] * s + oy;
@@ -327,12 +343,12 @@ function draw(now) {
   // eşleşen noktalar
   if (anyTerm && !chartOn) {
     const gs = Math.max(6, s * 2.4);
-    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalCompositeOperation = TH.light ? 'source-over' : 'lighter';
     for (let i = 0; i < introN; i++) {
       const h = hitTerms[i]; if (!h || !passF[i] || h[h.length - 1] >= state.terms.length) continue;
       const x = pos[2 * i] * s + ox, y = pos[2 * i + 1] * s + oy;
       if (x < -20 || y < -20 || x > W + 20 || y > H + 20) continue;
-      ctx.globalAlpha = 0.5; ctx.drawImage(sprite(state.terms[h[0]].color), x - gs / 2, y - gs / 2, gs, gs);
+      ctx.globalAlpha = TH.light ? 0.28 : 0.5; ctx.drawImage(sprite(tc(state.terms[h[0]].color)), x - gs / 2, y - gs / 2, gs, gs);
     }
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
     for (let i = 0; i < introN; i++) {
@@ -342,10 +358,10 @@ function draw(now) {
       const c = state.terms[h[0]].counts[i];
       const rr = r * (1.15 + Math.min(c - 1, 4) * 0.12);
       if (h.length === 1) {
-        ctx.fillStyle = state.terms[h[0]].color; ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = tc(state.terms[h[0]].color); ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.2832); ctx.fill();
       } else {
         const seg = 6.2832 / h.length;
-        h.forEach((k, j) => { ctx.fillStyle = state.terms[k].color; ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, rr * 1.1, -1.5708 + j * seg, -1.5708 + (j + 1) * seg); ctx.closePath(); ctx.fill(); });
+        h.forEach((k, j) => { ctx.fillStyle = tc(state.terms[k].color); ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, rr * 1.1, -1.5708 + j * seg, -1.5708 + (j + 1) * seg); ctx.closePath(); ctx.fill(); });
       }
     }
   }
@@ -359,7 +375,7 @@ function draw(now) {
       const sx = pos[2 * p.i], sy = pos[2 * p.i + 1];
       const wx = sx + (p.tx - sx) * e, wy = sy + (p.ty - sy) * e;
       const x = wx * s + ox, y = wy * s + oy;
-      ctx.fillStyle = p.c; ctx.globalAlpha = 0.55 + 0.45 * e;
+      ctx.fillStyle = tc(p.c); ctx.globalAlpha = 0.55 + 0.45 * e;
       ctx.beginPath(); ctx.arc(x, y, r * 1.05, 0, 6.2832); ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -369,31 +385,31 @@ function draw(now) {
     for (const lb of chartLabels) {
       if (lb.txt) {
         const [x, y] = w2s(lb.x, lb.y);
-        ctx.fillStyle = lb.c || '#fff'; ctx.font = `${lb.w || 600} ${Math.max(lb.min || 9, s * lb.fs)}px ${lb.sans ? 'Inter' : '"Cormorant Garamond",serif'}`;
+        ctx.fillStyle = lb.c ? tc(lb.c) : TH.ink; ctx.font = `${lb.w || 600} ${Math.max(lb.min || 9, s * lb.fs)}px Inter,sans-serif`;
         ctx.textAlign = lb.al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(lb.txt, x, y);
         ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center'; continue;
       }
       if (lb.h) {
         const [x, y] = w2s(lb.x, lb.y), [xe] = w2s(lb.xe, lb.y), fs = Math.max(9, Math.min(22, s * 1.9));
         ctx.textBaseline = 'middle';
-        ctx.textAlign = 'right'; ctx.fillStyle = lb.c; ctx.font = `600 ${fs}px "Cormorant Garamond",serif`; ctx.fillText(lb.name, x, y);
-        ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = `700 ${fs * 1.05}px "Cormorant Garamond",serif`; ctx.fillText(fmt(lb.n), xe, y);
+        ctx.textAlign = 'right'; ctx.fillStyle = tc(lb.c); ctx.font = `600 ${fs * .85}px Inter,sans-serif`; ctx.fillText(lb.name, x, y);
+        ctx.textAlign = 'left'; ctx.fillStyle = TH.ink; ctx.font = `600 ${fs * .9}px Inter,sans-serif`; ctx.fillText(fmt(lb.n), xe, y);
         ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center'; continue;
       }
       const [x, y] = w2s(lb.x, lb.y);
       const fs = Math.max(11, Math.min(26, s * 2.2));
-      ctx.fillStyle = lb.c; ctx.font = `600 ${fs * 0.75}px "Cormorant Garamond",serif`;
-      ctx.fillText(lb.name.toLocaleUpperCase('tr'), x, y + fs * 1.0);
-      ctx.fillStyle = '#fff'; ctx.font = `700 ${fs * 1.5}px "Cormorant Garamond",serif`;
+      ctx.fillStyle = tc(lb.c); ctx.font = `600 ${fs * 0.62}px Inter,sans-serif`;
+      ctx.fillText(lb.name, x, y + fs * 1.0);
+      ctx.fillStyle = TH.ink; ctx.font = `600 ${fs * 1.25}px Inter,sans-serif`;
       ctx.fillText(fmt(lb.n), x, y + fs * 2.45);
     }
-    if (chartUnit > 1) { ctx.fillStyle = '#9a98c2'; ctx.font = '12px Inter'; const [x, y] = w2s(cur.b.x0 + cur.b.w / 2, cur.b.y0); ctx.fillText(`her nokta = ${chartUnit} ${state.metric === 'occ' ? 'geçiş' : 'ayet'}`, x, y - 8); }
+    if (chartUnit > 1) { ctx.fillStyle = TH.muted; ctx.font = '12px Inter'; const [x, y] = w2s(cur.b.x0 + cur.b.w / 2, cur.b.y0); ctx.fillText(`her nokta = ${chartUnit} ${state.metric === 'occ' ? 'geçiş' : 'ayet'}`, x, y - 8); }
     ctx.globalAlpha = 1; ctx.textAlign = 'start';
     if (!done || la < 1) moving = true;
   }
   if (overlay && overlay(ctx, now, { s, ox, oy, r, W, H })) moving = true;
   // hover / seçili
-  for (const [i, col] of [[hover, '#ffffff'], [selected, '#f6dc95']]) {
+  for (const [i, col] of [[hover, TH.ink], [selected, TH.accent]]) {
     if (i < 0) continue;
     const [x, y] = w2s(pos[2 * i], pos[2 * i + 1]);
     ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, Math.max(5, r * 2.2), 0, 6.2832); ctx.stroke();
@@ -629,16 +645,16 @@ function renderHisto() {
     const sel = state.fSurah === s;
     if (!T.length) {
       const bh = Math.max(1, (SUR[s - 1].c / max) * (h - 6));
-      hx.fillStyle = SUR[s - 1].t === 'M' ? 'rgba(190,190,235,.55)' : 'rgba(233,196,106,.5)';
-      hx.fillRect(x + .5, y - bh, Math.max(1, bw - 1), bh);
+      hx.fillStyle = SUR[s - 1].t === 'M' ? TH.dot : TH.accent; hx.globalAlpha = SUR[s - 1].t === 'M' ? .6 : .75;
+      hx.fillRect(x + .5, y - bh, Math.max(1, bw - 1), bh); hx.globalAlpha = 1;
     } else {
-      T.forEach((t, k) => { const v = per[k][s]; if (!v) return; const bh = Math.max(1.5, v / max * (h - 6)); hx.fillStyle = t.color; hx.fillRect(x + .5, y - bh, Math.max(1, bw - 1), bh); y -= bh; });
-      hx.fillStyle = 'rgba(255,255,255,.07)'; hx.fillRect(x + .5, h - 2, Math.max(1, bw - 1), 2);
+      T.forEach((t, k) => { const v = per[k][s]; if (!v) return; const bh = Math.max(1.5, v / max * (h - 6)); hx.fillStyle = tc(t.color); hx.fillRect(x + .5, y - bh, Math.max(1, bw - 1), bh); y -= bh; });
+      hx.fillStyle = TH.track; hx.fillRect(x + .5, h - 2, Math.max(1, bw - 1), 2);
     }
-    if (sel) { hx.strokeStyle = '#f6dc95'; hx.strokeRect(x, 0.5, bw, h - 1); }
+    if (sel) { hx.strokeStyle = TH.accent; hx.strokeRect(x, 0.5, bw, h - 1); }
     histBars.push({ s, x, w: bw, v: T.length ? per.map(p => p[s]) : [SUR[s - 1].c] });
   }
-  $('#histoInfo').textContent = T.length ? 'renkli: bulunan · tıklayın: sûreye odaklan' : 'yükseklik: ayet sayısı · gri Mekkî, altın Medenî';
+  $('#histoInfo').textContent = T.length ? 'renkli: bulunan · tıklayın: sûreye odaklan' : `yükseklik: ayet sayısı · gri Mekkî, ${TH.light ? 'yeşil' : 'altın'} Medenî`;
 }
 function histHover(e) {
   const r = hc.getBoundingClientRect(), s = Math.min(114, Math.max(1, Math.floor((e.clientX - r.left) / (r.width / 114)) + 1));
@@ -963,7 +979,7 @@ async function playVerse() {
 }
 function stopMedia() { if (audio) audio.pause(); if (tts) tts.cancel(); }
 function stopAudio() { playTok++; stopMedia(); playing = false; setPlay(false); if (selected >= 0 && mealText[state.cardMeal]) markSpoken(selected, -1); }
-function setPlay(on) { $('#playBtn').textContent = on ? '❚❚ Durdur' : '▶ Dinle'; }
+function setPlay(on) { $('#playBtn').innerHTML = on ? '<svg class="i"><use href="#i-pause"/></svg>Durdur' : '<svg class="i"><use href="#i-play"/></svg>Dinle'; }
 $('#playBtn').onclick = () => playing ? stopAudio() : playVerse();
 $('#listenMode').onchange = () => { if (playing) playVerse(); };
 $('#prevBtn').onclick = () => openVerse(selected - 1);
@@ -1042,7 +1058,7 @@ function setMode(m) {
   mEl.innerHTML = MATCHES[m].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
   mEl.hidden = MATCHES[m].length < 2;
   $('#mealSel').hidden = m !== 'tr';
-  qEl.placeholder = { tr: 'Mealde bir kelime: sabır, rahmet, dünya…  (Enter = ekle · 2:255 = ayete git)', ar: 'Arapça kelime: الدنيا ، قل ، شهر', root: 'Kök yazın: رحم ، صبر ، علم', lemma: 'Lemma yazın: دنيا ، موسى ، يوم' }[m];
+  qEl.placeholder = { tr: 'Bir kelime ya da ayet yazın: sabır, rahmet, 2:255', ar: 'Arapça kelime: الدنيا ، قل ، شهر', root: 'Kök yazın: رحم ، صبر ، علم', lemma: 'Lemma yazın: دنيا ، موسى ، يوم' }[m];
   qEl.dir = m === 'tr' ? 'ltr' : 'auto';
   updateSuggest();
 }
@@ -1228,7 +1244,7 @@ function readHash() {
 
 /* ---------- yıldızlar ---------- */
 function stars() {
-  const c = $('#stars'), g = c.getContext('2d'), d = Math.min(devicePixelRatio || 1, 2);
+  const c = $('#stars'); if (!c) return; const g = c.getContext('2d'), d = Math.min(devicePixelRatio || 1, 2);
   c.width = innerWidth * d; c.height = innerHeight * d; g.scale(d, d);
   for (let k = 0; k < 160; k++) { g.fillStyle = `rgba(255,255,255,${Math.random() * .5 + .1})`; const r = Math.random() * 1.1 + .2; g.beginPath(); g.arc(Math.random() * innerWidth, Math.random() * innerHeight, r, 0, 6.28); g.fill(); }
 }
@@ -1255,6 +1271,12 @@ $('#loading').classList.add('done');
 setTimeout(() => $('#loading').remove(), 700);
 intro.t0 = performance.now(); intro.on = !init.a; needs = true;
 requestAnimationFrame(loop);
+/* tema düğmesi: otomatik → koyu → açık */
+const THEMES = { auto: ['auto', 'Tema: telefonun ayarı'], dark: ['moon', 'Tema: koyu'], light: ['sun', 'Tema: açık'] };
+function themeBtn() { const b = $('#themeBtn'); if (!b || !window.ayetTheme) return; const [ic, t] = THEMES[ayetTheme()] || THEMES.auto; b.innerHTML = `<svg class="i"><use href="#i-${ic}"/></svg>`; b.title = t; b.setAttribute('aria-label', t); }
+if ($('#themeBtn')) $('#themeBtn').onclick = () => { const o = ['auto', 'dark', 'light'], n = o[(o.indexOf(ayetTheme()) + 1) % 3]; ayetTheme(n); toast(THEMES[n][1]); };
+addEventListener('ayet:theme', () => { readTheme(); renderHisto(); themeBtn(); needs = true; });
+themeBtn();
 if (init.chart) setTimeout(() => setChart(true), 400);
 if (init.a) { const [s, a] = init.a.split(':').map(Number); setTimeout(() => openVerse(verseIndex(s, a), { fast: true }), 300); }
 $('#hint').textContent = TOUCH ? 'Dokunun: yakınlaşır · tekrar dokunun: ayet açılır · iki parmakla yakınlaşın' : 'Sürükleyerek gezin · Ctrl + tekerlek ya da +/− ile yakınlaşın · noktaya tıklayın';

@@ -7,80 +7,80 @@
 <meta name="description" content="Ayet Haritası nasıl kullanılır: 14 kartta arama, karşılaştırma, grafik ve ayet kartı.">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0a0a22">
+<meta name="theme-color" content="#0b0d12">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <style>
 /* Düzen: dikey (9:16) bilgi kartları — masaüstünde ızgara, telefonda kaydırmalı şerit */
 :root{
-  --bg0:#0a0a22; --bg1:#16153a; --bg2:#221d4d;
-  --card0:#1f1c4a; --card1:#141238;
-  --gold:#e9c46a; --gold2:#f6dc95; --ink:#ecebf7; --muted:#9a98c2; --line:rgba(233,196,106,.32); --line2:rgba(255,255,255,.09);
+  --bg0:#0b0d12; --bg1:#0b0d12; --bg2:#0b0d12;
+  --card0:#13161e; --card1:#13161e; --surface-2:#1a1e28;
+  --gold:#e9b949; --gold2:#f1cd72; --ink:#eceef4; --muted:#8e94a7; --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.07);
   --c1:#f2c14e; --c2:#7fb2ff; --c3:#f08a7e; --c4:#6fd6b0; --c5:#c59bff;
-  --serif:"Cormorant Garamond",Georgia,serif; --sans:Inter,system-ui,-apple-system,sans-serif; --ar:"Amiri Quran","Amiri","Geeza Pro",serif;
+  --serif:Inter,system-ui,-apple-system,sans-serif; --sans:Inter,system-ui,-apple-system,sans-serif; --ar:"Amiri Quran","Amiri","Geeza Pro",serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:linear-gradient(180deg,var(--bg0),var(--bg1) 55%,var(--bg2)) fixed;color:var(--ink);font:14px/1.5 var(--sans)}
-#stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+html,body{margin:0;background:var(--bg0);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+#stars{display:none}
 a{color:inherit}
 .top{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:20px clamp(16px,3vw,40px) 4px}
-.top h1{margin:6px 0 0;font:600 32px/1.1 var(--serif);color:var(--gold);text-wrap:balance}
+.top h1{margin:8px 0 0;font:600 28px/1.15 var(--sans);letter-spacing:-.02em;color:var(--ink);text-wrap:balance}
 .top p{margin:2px 0 0;color:var(--muted)}
-.pill{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:2px 12px;font:600 11px/1.6 var(--serif);letter-spacing:.16em}
+.pill{display:inline-block;background:rgba(233,185,73,.14);color:var(--gold2);border-radius:999px;padding:3px 10px;font:500 12.5px/1.4 var(--sans)}
 .btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px}
-.btn.gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1b1640}
-.btn.ghost{border:1px solid var(--line2);color:var(--ink)}
+.btn.gold{background:var(--gold);color:#241a03}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
 .btn.ghost:hover{border-color:var(--line)}
 .btn:focus-visible,.card a:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 
 .deck{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;padding:20px clamp(16px,3vw,40px) 48px}
-.card{position:relative;aspect-ratio:9/16;max-width:100%;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:24px;background:radial-gradient(ellipse at 50% 30%,rgba(90,80,170,.25),transparent 70%),linear-gradient(180deg,var(--card0),var(--card1));padding:22px 22px 18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.card{position:relative;aspect-ratio:9/16;max-width:100%;display:flex;flex-direction:column;border:0;border-radius:24px;background:var(--card0);padding:22px 22px 18px;overflow:hidden}
 .card .no{display:flex;justify-content:space-between;align-items:center}
-.card .no span{font:600 12px var(--serif);color:var(--muted);letter-spacing:.12em;font-variant-numeric:tabular-nums}
-.card h2{margin:14px 0 4px;font:700 30px/1.05 var(--serif);color:var(--gold);text-wrap:balance;letter-spacing:.01em}
-.card h2 small{display:block;font:italic 500 17px/1.3 var(--serif);color:var(--ink);opacity:.85;margin-top:4px}
+.card .no span{font:500 12.5px var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.card h2{margin:14px 0 4px;font:600 24px/1.2 var(--sans);color:var(--ink);text-wrap:balance;letter-spacing:-.02em}
+.card h2 small{display:block;font:400 15px/1.4 var(--sans);color:var(--muted);margin-top:6px;letter-spacing:0}
 .viz{flex:1;min-height:0;display:grid;place-items:center;margin:10px 0}
 .viz canvas{width:100%;height:100%;max-height:260px;display:block}
 .card ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}
 .card li{display:grid;grid-template-columns:18px 1fr;gap:6px;font-size:13px;line-height:1.45}
-.card li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);margin-top:6px;box-shadow:0 0 10px var(--gold)}
+.card li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);margin-top:7px}
 .card li b{color:var(--gold2);font-weight:600}
-.card .try{margin-top:12px;align-self:flex-start;font-size:12px;color:var(--gold2);text-decoration:none;border-bottom:1px dotted var(--gold)}
+.card .try{margin-top:12px;align-self:flex-start;font-size:13px;font-weight:600;color:var(--gold2);text-decoration:none;background:rgba(233,185,73,.14);padding:6px 12px;border-radius:999px}
 .ar{font-family:var(--ar);font-size:1.25em;unicode-bidi:isolate}
 kbd{display:inline-block;min-width:20px;text-align:center;border:1px solid var(--line);border-radius:5px;padding:0 5px;font:11px/1.6 var(--sans);background:rgba(255,255,255,.04)}
 
 /* mini arayüz parçaları */
 .mock{width:100%;display:grid;gap:10px}
-.seg{display:inline-flex;gap:2px;background:rgba(20,19,52,.8);border:1px solid var(--line2);border-radius:10px;padding:3px;justify-self:center;flex-wrap:wrap;justify-content:center}
+.seg{display:inline-flex;gap:2px;background:var(--surface-2);border:0;border-radius:10px;padding:3px;justify-self:center;flex-wrap:wrap;justify-content:center}
 .seg i{font-style:normal;padding:4px 10px;border-radius:7px;color:var(--muted);font-size:12px}
-.seg i.on{background:rgba(233,196,106,.18);color:var(--gold2)}
-.field{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:rgba(20,19,52,.8);font-size:14px}
+.seg i.on{background:rgba(233,185,73,.2);color:var(--gold2)}
+.field{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--surface-2);font-size:14px}
 .field .caret{width:1px;height:16px;background:var(--gold2);animation:bl 1s steps(2) infinite}
 @keyframes bl{50%{opacity:0}}
-.field em{margin-left:auto;font-style:normal;font-size:11px;background:var(--gold);color:#1b1640;border-radius:7px;padding:2px 8px;font-weight:600}
+.field em{margin-left:auto;font-style:normal;font-size:11px;background:var(--gold);color:#241a03;border-radius:7px;padding:2px 8px;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c);border-radius:999px;padding:2px 10px;font-size:12px;background:color-mix(in srgb,var(--c) 14%,transparent)}
 .chip b{color:var(--c)}
 .chip small{color:var(--muted)}
-.big{font:700 64px/1 var(--serif);color:#fff;text-align:center;text-shadow:0 0 30px rgba(233,196,106,.4);font-variant-numeric:tabular-nums}
+.big{font:700 64px/1 var(--serif);color:#fff;text-align:center;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .eq{display:flex;align-items:baseline;justify-content:center;gap:14px;font:700 44px/1 var(--serif);font-variant-numeric:tabular-nums}
 .eq span:nth-child(2){color:var(--gold);font-size:32px}
-.versecard{width:100%;border:1px solid var(--gold);border-radius:16px;padding:12px;background:linear-gradient(180deg,#25215a,#18163f);box-shadow:0 0 40px rgba(233,196,106,.15)}
-.versecard .r{font:600 11px var(--serif);letter-spacing:.12em;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:0 8px;display:inline-block}
+.versecard{width:100%;border:0;border-radius:16px;padding:12px;background:var(--surface-2)}
+.versecard .r{font:500 11.5px var(--sans);color:var(--gold2);background:rgba(233,185,73,.14);border-radius:999px;padding:1px 8px;display:inline-block}
 .versecard .a{font:20px/1.9 var(--ar);text-align:right;direction:rtl;margin:4px 0}
-.versecard .a .h{color:var(--c2);text-shadow:0 0 14px var(--c2)}
-.versecard .a .h1{color:var(--c1);text-shadow:0 0 14px var(--c1)}
+.versecard .a .h{color:var(--c2);}
+.versecard .a .h1{color:var(--c1);}
 .versecard .t{font:500 14px/1.4 var(--serif)}
 .versecard .t mark{background:transparent;color:#fff;border-bottom:2px solid var(--c1)}
 .versecard .w{margin:6px 0;font-size:11px;color:var(--muted);border-left:2px solid var(--line);padding-left:8px}
 .keys{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;font-size:13px}
-.note{font:italic 500 16px/1.45 var(--serif);text-align:center;color:var(--ink);padding:0 6px}
+.note{font:400 15px/1.5 var(--sans);text-align:center;color:var(--ink);padding:0 6px}
 .note b{color:var(--gold2);font-style:normal}
 
 /* kapak */
-.cover h2{font-size:46px;margin-top:22px}
-.cover .sub{font:italic 500 19px/1.35 var(--serif);text-align:center}
+.cover h2{font-size:36px;margin-top:22px}
+.cover .sub{font:400 16px/1.45 var(--sans);color:var(--muted);text-align:center}
 .cover .sub b{color:var(--gold2);font-style:normal}
 
 /* telefon: kaydırmalı şerit */
@@ -100,17 +100,17 @@ kbd{display:inline-block;min-width:20px;text-align:center;border:1px solid var(-
 <canvas id="stars" aria-hidden="true"></canvas>
 <header class="top">
   <div>
-    <span class="pill">AYET HARİTASI · KILAVUZ</span>
+    <span class="pill">Kılavuz</span>
     <h1>14 kartta Ayet Haritası</h1>
     <p>Her kartın altındaki bağlantı, anlatılanı sitede hazır olarak açar.</p>
   </div>
-  <a class="btn gold" href="./">Haritayı aç →</a>
+  <a class="btn gold" href="./">Haritayı aç</a>
 </header>
 
 <main class="deck" id="deck">
 
   <article class="card cover">
-    <div class="no"><span class="pill">KULLANIM KILAVUZU</span><span>01 / 14</span></div>
+    <div class="no"><span class="pill">Kullanım kılavuzu</span><span>01 / 14</span></div>
     <h2>Bütün Kur'an, tek ekranda</h2>
     <div class="viz"><canvas data-viz="cover" aria-label="6.236 noktalık ızgara"></canvas></div>
     <div class="big" data-count>6.236</div>
@@ -353,7 +353,7 @@ const viz = {
   calendar(g, w, h){
     const days = [31,28,31,30,31,30,31,31,30,31,30,31], cols = 4, bw = 7, bh = 5, gx = 2.4, gy = 2.6;
     const s = Math.min(w / (cols * bw + (cols - 1) * gx + 1), (h - 40) / (3 * bh + 2 * gy + 1)), tw = (cols * bw + (cols - 1) * gx) * s, x0 = (w - tw) / 2, y0 = 40;
-    g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = '700 30px "Cormorant Garamond",serif'; g.fillText('365', w / 2, 30);
+    g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = '700 30px Inter,sans-serif'; g.fillText('365', w / 2, 30);
     days.forEach((d, m) => {
       const bx = x0 + (m % cols) * (bw + gx) * s, by = y0 + Math.floor(m / cols) * (bh + gy) * s;
       for (let j = 0; j < d; j++) { g.fillStyle = C[0]; g.beginPath(); g.arc(bx + (j % bw) * s + s / 2, by + Math.floor(j / bw) * s + s / 2, s * .34, 0, 6.283); g.fill(); }
@@ -365,7 +365,7 @@ const viz = {
     const lens = [7,60,50,44,30,40,46,20,30,25,30,25,10,12,22,30,22,22,20,20,18,16,14,12,12,10,10,9,8,8];
     let k = 0, acc = lens[0];
     dotGrid(g, w, h, cols, rows, i => { while (i >= acc && k < lens.length - 1) { k++; acc += lens[k]; } if (i >= acc) { if ((i - acc) % 8 === 0) k++; } return BASE + (k % 2 ? .25 : .5) + ')'; });
-    g.font = '600 12px "Cormorant Garamond",serif'; g.fillStyle = css('--gold2');
+    g.font = '600 12px Inter,sans-serif'; g.fillStyle = css('--gold2');
     g.fillText('Fâtiha', 4, 12); g.textAlign = 'right'; g.fillText('Nâs', w - 4, h - 4);
   },
   search(g, w, h){ seed = 11; dotGrid(g, w, h, 60, 22, () => rnd() < .025 ? C[0] : BASE + '.22)'); },
@@ -384,8 +384,8 @@ const viz = {
     vals.forEach((v, j) => {
       const x0 = j * gap + (gap - bw * s) / 2, base = h * .8;
       for (let n = 0; n < v; n++) { g.fillStyle = C[j]; g.beginPath(); g.arc(x0 + (n % bw) * s + s / 2, base - Math.floor(n / bw) * s, s * .36, 0, 6.283); g.fill(); }
-      g.textAlign = 'center'; g.fillStyle = C[j]; g.font = '600 10px "Cormorant Garamond",serif'; g.fillText(names[j], j * gap + gap / 2, base + 16);
-      g.fillStyle = '#fff'; g.font = '700 17px "Cormorant Garamond",serif'; g.fillText(v, j * gap + gap / 2, base + 34);
+      g.textAlign = 'center'; g.fillStyle = C[j]; g.font = '600 10px Inter,sans-serif'; g.fillText(names[j], j * gap + gap / 2, base + 16);
+      g.fillStyle = '#fff'; g.font = '700 17px Inter,sans-serif'; g.fillText(v, j * gap + gap / 2, base + 34);
     });
   },
   layouts(g, w, h){
