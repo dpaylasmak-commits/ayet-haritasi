@@ -558,3 +558,24 @@ body.has-mini .updbar{bottom:96px}
   body:has(.card:not([hidden])) .mini-pl{display:none}
 }
 .npar::-webkit-scrollbar,.nptr::-webkit-scrollbar{display:none}
+
+/* günün ayeti */
+.gunun{display:grid;gap:10px;padding:16px;margin-bottom:16px;border-radius:var(--r);background:linear-gradient(160deg,var(--accent-soft),transparent 70%),var(--surface-2)}
+.gunun .ph{margin:0}.gunun h3{display:flex;align-items:center;gap:8px}.gunun h3 .i{color:var(--accent-text)}
+.gnar{margin:0;font-family:var(--ar);font-size:1.45rem;line-height:2;text-align:right;color:var(--ink)}
+.gntr{margin:0;line-height:1.6;color:var(--ink-2)}
+.gnft{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.gnft b{color:var(--accent-text)}
+.gnbtn{margin-left:auto;display:flex;gap:6px}
+/* uygulama bildirim ayarları */
+.bild{display:grid;gap:10px;margin-top:16px;padding:14px;border-radius:var(--r);background:var(--surface-2)}
+.bild .row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.bild .chips{display:flex;flex-wrap:wrap;gap:6px}
+.bild .chips button{min-height:32px;padding:0 12px;border-radius:99px;background:var(--surface-3);color:var(--muted);font-size:.85rem}
+.bild .chips button.on{background:var(--accent-soft-2);color:var(--accent-text)}
+.bild input[type=time]{background:var(--surface-3);border:0;border-radius:var(--r-sm);min-height:36px;padding:0 10px;color:var(--ink);font:inherit}
+.sw{position:relative;width:46px;height:28px;flex:none;border-radius:99px;background:var(--surface-3);transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.sw.on{background:var(--accent)}.sw.on::after{transform:translateX(18px);background:var(--on-accent)}
+.bild .chips button{border:0}
+.bild select{width:auto;min-width:140px}
+.bild .row .ghost{white-space:nowrap;flex:none}

@@ -13,7 +13,7 @@ const set=()=>{d.dataset.theme=p;d.dataset.mode=p==='auto'?(m.matches?'light':'d
 window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme',p)}catch(e){}set()};m.addEventListener('change',()=>{if(p==='auto')set()});set()})()</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 
@@ -202,7 +202,7 @@ window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme
   <button data-go="map" class="on"><svg class="i"><use href="#i-grid"/></svg>Harita</button>
   <button data-go="res"><svg class="i"><use href="#i-list"/></svg>Sonuçlar<b></b></button>
   <button data-go="dinle"><svg class="i"><use href="#i-headphones"/></svg>Dinle</button>
-  <button data-go="vakit"><svg class="i"><use href="#i-clock"/></svg>Vakitler</button>
+  <button data-go="vakit"><svg class="i"><use href="#i-clock"/></svg>Bugün</button>
   <button data-go="kesif"><svg class="i"><use href="#i-sparkles"/></svg>Keşifler</button>
 </nav>
 
@@ -210,8 +210,8 @@ window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme
 
 <script src="data.js"></script>
 <script src="app.js?v=15"></script>
-<script src="ozellik.js?v=2"></script>
-<script src="kesif.js?v=10"></script>
+<script src="ozellik.js?v=5"></script>
+<script src="kesif.js?v=11"></script>
 <script>
 if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => {
   const sw = navigator.serviceWorker, had = !!sw.controller; let shown = false;

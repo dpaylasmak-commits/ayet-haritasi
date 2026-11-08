@@ -441,7 +441,7 @@ side.insertBefore(disc, $('.explore'));
 disc.querySelectorAll('button').forEach(b => b.onclick = () => start(STORIES[+b.dataset.k].id, 0));
 
 /* ---------- yan sütun sekmeleri: Sonuçlar · Keşifler · Keşfet ---------- */
-const TABS = [['res', 'Sonuçlar', $('#stats')], ['dinle', 'Dinle', $('#dinle')], ['vakit', 'Vakitler', $('#vakit')], ['kesif', 'Keşifler', disc], ['kesfet', 'Keşfet', $('.explore:not(.discover)')]].filter(t => t[2]);
+const TABS = [['res', 'Sonuçlar', $('#stats')], ['dinle', 'Dinle', $('#dinle')], ['vakit', 'Bugün', $('#vakit')], ['kesif', 'Keşifler', disc], ['kesfet', 'Keşfet', $('.explore:not(.discover)')]].filter(t => t[2]);
 const tabs = document.createElement('nav');
 tabs.className = 'sidetabs'; tabs.setAttribute('role', 'tablist');
 tabs.innerHTML = TABS.map(([k, l]) => `<button role="tab" data-tab="${k}" aria-controls="tab-${k}">${l}<b></b></button>`).join('');

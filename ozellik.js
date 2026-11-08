@@ -241,6 +241,7 @@ let LOC = store.get('konum', null);
 const vk = document.createElement('section');
 vk.className = 'panel vakit'; vk.id = 'vakit';
 vk.innerHTML = `
+  <div class="gunun" id="gunun"></div>
   <div class="ph"><h3>Namaz vakitleri</h3><button class="ghost small" id="vkLocBtn">${I('pin')}<span id="vkLocName">Konum seç</span></button></div>
   <div class="vkpick" id="vkPick" hidden>
     <button class="gold" id="vkGps">${I('target')}Konumumu kullan</button>
@@ -260,7 +261,7 @@ vk.innerHTML = `
     <button class="ghost" id="kbStart">${I('compass')}Pusulayı aç</button>
     <p class="muted small" id="kbNote">Telefonu yere paralel tutun. Metal eşyalar ve mıknatıslı kılıflar pusulayı saptırabilir; sapma görürseniz telefonu havada 8 çizerek kalibre edin.</p>
   </div>
-  <p class="muted small vknote">Vakitler cihazda, Diyanet’in kullandığı açılar ve temkin süreleriyle hesaplanır; resmî takvimden 1–2 dakika sapabilir. Vakit bildirimleri Android uygulamasına ekleniyor.</p>`;
+  <p class="muted small vknote">Vakitler cihazda, Diyanet’in kullandığı açılar ve temkin süreleriyle hesaplanır; resmî takvimden 1–2 dakika sapabilir. Vakit bildirimleri ve ana ekran widget’ı Android uygulamasında.</p>`;
 side.insertBefore(vk, anchor);
 
 function dateParts(ms, tz) {
@@ -271,6 +272,24 @@ const hm = (ms, tz) => ms == null ? '—' : new Intl.DateTimeFormat('tr-TR', { t
 function dayTimes(off = 0) {
   const { y, m, d } = dateParts(Date.now() + off * 864e5, LOC.tz);
   return vakitler(y, m, d, LOC.lat, LOC.lng);
+}
+const HAY = ['Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir', 'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban', 'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'];
+function hicriTarih(tz) {
+  // tarayıcı Ümmülkura takvimini biliyorsa onu, bilmiyorsa (bazı Android WebView'lar) hesaplı takvimi kullan
+  try {
+    const f = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-umalqura', { timeZone: tz, day: 'numeric', month: 'numeric', year: 'numeric' });
+    if (/^islamic/.test(f.resolvedOptions().calendar)) {
+      const p = Object.fromEntries(f.formatToParts(new Date()).map(x => [x.type, x.value]));
+      const d = +p.day, m = +p.month, y = parseInt(p.year, 10);
+      if (d && m >= 1 && m <= 12 && y > 1400) return `${d} ${HAY[m - 1]} ${y}`;
+    }
+  } catch (_) {}
+  const { y, m, d } = dateParts(Date.now(), tz), jd = Math.floor(julian(y, m, d) + .5);
+  let l = jd - 1948440 + 10632; const n = Math.floor((l - 1) / 10631); l = l - 10631 * n + 354;
+  const j = Math.floor((10985 - l) / 5316) * Math.floor(50 * l / 17719) + Math.floor(l / 5670) * Math.floor(43 * l / 15238);
+  l = l - Math.floor((30 - j) / 15) * Math.floor(17719 * j / 50) - Math.floor(j / 16) * Math.floor(15238 * j / 43) + 29;
+  const hm_ = Math.floor(24 * l / 709), hd = l - Math.floor(709 * hm_ / 24), hy = 30 * n + j - 30;
+  return `${hd} ${HAY[hm_ - 1]} ${hy}`;
 }
 function renderVakit() {
   $('#vkLocName').textContent = LOC ? LOC.name : 'Konum seç';
@@ -284,16 +303,17 @@ function renderVakit() {
   if (nextK) nextMs = T[nextK[0]]; else { nextK = VN[0]; nextMs = dayTimes(1).imsak; }
   const passed = VN.filter(([x]) => T[x] <= now); curK = passed.length ? passed[passed.length - 1][0] : 'yatsi';
   const left = Math.max(0, nextMs - now), hh = Math.floor(left / 3600e3), mm = Math.floor(left % 3600e3 / 60e3), ss = Math.floor(left % 60e3 / 1e3);
-  let hicri = ''; try { hicri = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-umalqura', { timeZone: LOC.tz, day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()); } catch (_) {}
+  const hicri = hicriTarih(LOC.tz);
   const miladi = new Intl.DateTimeFormat('tr-TR', { timeZone: LOC.tz, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
   $('#vkBody').innerHTML = `
-    <div class="vknext"><small>${nextK[1]} vaktine</small><b>${hh ? `${hh} sa ` : ''}${String(mm).padStart(hh ? 2 : 1, '0')} dk <span>${String(ss).padStart(2, '0')} sn</span></b><small>${hm(nextMs, LOC.tz)} · ${miladi}${hicri ? ' · ' + hicri.replace(/ AH$/, '') : ''}</small></div>
+    <div class="vknext"><small>${nextK[1]} vaktine</small><b>${hh ? `${hh} sa ` : ''}${String(mm).padStart(hh ? 2 : 1, '0')} dk <span>${String(ss).padStart(2, '0')} sn</span></b><small>${hm(nextMs, LOC.tz)} · ${miladi}${hicri ? ' · ' + hicri : ''}</small></div>
     <ol class="vklist">${VN.map(([x, n]) => `<li class="${x === curK ? 'cur' : ''}${x === nextK[0] ? ' next' : ''}"><span>${n}</span><b>${hm(T[x], LOC.tz)}</b></li>`).join('')}</ol>`;
   const q = qibla(LOC.lat, LOC.lng);
   $('#kbTxt').textContent = `${Math.round(q)}° · ${YON[Math.round(q / 45) % 8]} · Kâbe’ye ${fmt(Math.round(distKm(LOC.lat, LOC.lng)))} km`;
   rotate();
 }
-function setLoc(l) { LOC = l; store.set('konum', l); $('#vkPick').hidden = true; renderVakit(); }
+const locCbs = [];
+function setLoc(l) { LOC = l; store.set('konum', l); $('#vkPick').hidden = true; renderVakit(); locCbs.forEach(f => f(l)); }
 $('#vkLocBtn').onclick = () => { $('#vkPick').hidden = !$('#vkPick').hidden; };
 $('#vkIl').onchange = e => { const c = IL[+e.target.value]; if (c) setLoc({ name: c.n, lat: c.lat, lng: c.lng, tz: 'Europe/Istanbul' }); };
 $('#vkGps').onclick = () => {
@@ -346,4 +366,73 @@ $('#kbStart').onclick = async () => {
 if (!('DeviceOrientationEvent' in window)) $('#kbStart').hidden = true;
 
 renderVakit();
+
+/* =================================================================
+   4) GÜNÜN AYETİ · her gün aynı ayet herkese; paylaşım görseli
+   ================================================================= */
+const GL = [51,158,159,161,162,192,207,222,267,269,300,318,323,384,426,431,451,465,477,482,492,520,578,676,842,847,950,976,1009,1152,1158,1205,1285,1363,1420,1425,1478,1560,1587,1659,1682,1717,1734,1756,1773,1790,1850,1918,1953,1990,1997,2025,2027,2028,2051,2052,2064,2108,2110,2149,2185,2248,2393,2461,2478,2517,2565,2569,2589,2768,2787,2812,2912,2917,2928,3220,3275,3339,3341,3384,3408,3429,3485,3486,3535,3573,3661,3674,4066,4067,4110,4176,4192,4251,4311,4617,4621,4623,4624,4645,4730,4913,4960,5078,5096,5114,5143,5147,5186,5209,5214,5242,5274,6020,6081,6083,6094,6095,6178,6221,214,2167,550,2874,396,89,627,2065,3487];
+const dayNum = (d = new Date()) => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
+const gunIdx = (d = new Date()) => GL[(dayNum(d) * 53) % GL.length];
+const trDate = (d = new Date()) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+function renderGunun() {
+  const i = gunIdx(), v = A.Q.verses[i];
+  $('#gunun').innerHTML = `
+    <div class="ph"><h3>${I('sparkles')}Günün ayeti</h3><span class="muted small">${trDate()}</span></div>
+    <p class="gnar" dir="rtl" lang="ar">${esc(v[2])}</p>
+    <p class="gntr">${esc(v[4])}</p>
+    <div class="gnft"><b>${SUR[vS[i] - 1].tr} ${vA[i]}</b><span class="muted small">${vS[i]}:${vA[i]}</span>
+      <span class="gnbtn"><button class="ghost small" id="gnOku">${I('book')}Oku</button><button class="gold small" id="gnPay">${I('share')}Paylaş</button></span></div>`;
+  $('#gnOku').onclick = () => A.openVerse(i);
+  $('#gnPay').onclick = () => shareGunun(i);
+}
+function wrap(c, text, maxW) {
+  const out = []; let line = '';
+  for (const w of text.split(/\s+/)) { const t = line ? line + ' ' + w : w; if (line && c.measureText(t).width > maxW) { out.push(line); line = w; } else line = t; }
+  if (line) out.push(line); return out;
+}
+async function ayetImage(i, label = 'Günün ayeti') {
+  const v = A.Q.verses[i], W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  try { await Promise.all([document.fonts.load('64px "Amiri Quran"', v[2]), document.fonts.load('500 44px Inter'), document.fonts.load('600 44px Inter')]); } catch (_) {}
+  c.fillStyle = '#0b0d12'; c.fillRect(0, 0, W, H);
+  const g = c.createRadialGradient(W / 2, H * .42, 40, W / 2, H * .42, H * .7); g.addColorStop(0, 'rgba(233,185,73,.16)'); g.addColorStop(1, 'rgba(233,185,73,0)');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  let seed = i + 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let k = 0; k < 520; k++) { const x = rnd() * W, y = rnd() * H, r = rnd() < .08 ? 3 : 1.6; c.fillStyle = rnd() < .1 ? 'rgba(233,185,73,.55)' : 'rgba(180,190,215,.16)'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
+  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  c.fillStyle = '#e9b949'; c.font = '600 30px Inter'; c.letterSpacing = '8px'; c.fillText('AYET HARİTASI', W / 2, 170); c.letterSpacing = '0px';
+  c.fillStyle = '#8e94a7'; c.font = '500 32px Inter'; c.fillText(label + ' · ' + trDate(), W / 2, 226);
+  const mw = W - 180; let arS = 66, trS = 46, arL, trL, hgt;
+  for (;;) {
+    c.font = `${arS}px "Amiri Quran"`; c.direction = 'rtl'; arL = wrap(c, v[2], mw); c.direction = 'ltr';
+    c.font = `500 ${trS}px Inter`; trL = wrap(c, v[4], mw);
+    hgt = arL.length * arS * 1.9 + 90 + trL.length * trS * 1.42;
+    if (hgt < 1240 || trS < 30) break; arS -= 4; trS -= 3;
+  }
+  let y = (H - hgt) / 2 + arS * 1.2;
+  c.fillStyle = '#f4f1ea'; c.font = `${arS}px "Amiri Quran"`; c.direction = 'rtl';
+  for (const l of arL) { c.fillText(l, W / 2, y); y += arS * 1.9; }
+  c.direction = 'ltr'; y += 10 - arS * .7;
+  c.fillStyle = '#e9b949'; c.fillRect(W / 2 - 40, y, 80, 4); y += 70 + trS * .3;
+  c.fillStyle = '#d9dce6'; c.font = `500 ${trS}px Inter`;
+  for (const l of trL) { c.fillText(l, W / 2, y); y += trS * 1.42; }
+  c.fillStyle = '#f1cd72'; c.font = '600 44px Inter'; c.fillText(`${SUR[vS[i] - 1].tr} Sûresi · ${vS[i]}:${vA[i]}`, W / 2, H - 250);
+  c.fillStyle = '#8e94a7'; c.font = '500 28px Inter'; c.fillText('Diyanet meali · dpaylasmak-commits.github.io/ayet-haritasi', W / 2, H - 150);
+  return new Promise(r => cv.toBlob(r, 'image/png'));
+}
+async function shareGunun(i) {
+  const b = $('#gnPay'); if (b) b.disabled = true;
+  try {
+    const blob = await ayetImage(i), name = `ayet-${vS[i]}-${vA[i]}.png`, text = `${SUR[vS[i] - 1].tr} ${vS[i]}:${vA[i]} · Ayet Haritası`;
+    if (window.AYET_NATIVE_SHARE) { await AYET_NATIVE_SHARE(blob, name, text); return; }
+    const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], text }); } catch (_) {} return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    A.toast('Görsel indirildi');
+  } finally { if (b) b.disabled = false; }
+}
+renderGunun();
+let gunDay = dayNum(); setInterval(() => { if (dayNum() !== gunDay) { gunDay = dayNum(); renderGunun(); } }, 60e3);
+window.GUNUN = { idx: gunIdx, image: ayetImage, share: shareGunun };
+window.VAKIT = { vakitler, VN, loc: () => LOC, onLoc: f => locCbs.push(f), dateParts, hm };
 })();
