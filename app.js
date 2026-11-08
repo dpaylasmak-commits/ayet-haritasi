@@ -414,6 +414,13 @@ function draw(now) {
     const [x, y] = w2s(pos[2 * i], pos[2 * i + 1]);
     ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, Math.max(5, r * 2.2), 0, 6.2832); ctx.stroke();
   }
+  // dinlenen ayet: nabız atan halka
+  if (playI >= 0) {
+    const [x, y] = w2s(pos[2 * playI], pos[2 * playI + 1]), ph = (now % 1400) / 1400;
+    ctx.fillStyle = TH.accent; ctx.beginPath(); ctx.arc(x, y, Math.max(2.5, r * 1.4), 0, 6.2832); ctx.fill();
+    ctx.strokeStyle = TH.accent; ctx.lineWidth = 2; ctx.globalAlpha = 1 - ph; ctx.beginPath(); ctx.arc(x, y, Math.max(6, r * 2.2) + ph * 16, 0, 6.2832); ctx.stroke(); ctx.globalAlpha = 1;
+    moving = true;
+  }
   needs = moving || camAnim || intro.on;
 }
 function loop(now) { if (needs) draw(now); requestAnimationFrame(loop); }
@@ -776,7 +783,7 @@ function focusSurah(s) {
 
 /* ---------- ayet kartı (yakınlaşma animasyonu) ---------- */
 const card = $('#card'), veil = $('#veil');
-let camBefore = null, audio = null;
+let camBefore = null, audio = null, playI = -1;
 // geniş ekranda kart harita sütununa yerleşir; sağdaki açıklama paneli görünür ve kullanılabilir kalır
 function placeCard() {
   const side = $('.side');
@@ -962,6 +969,7 @@ function markSpoken(i, at, len) {
 }
 async function playVerse() {
   const i = selected; if (i < 0) return;
+  dispatchEvent(new Event('ayet:cardplay'));
   const tok = ++playTok; stopMedia(); playing = true; setPlay(true);
   const mode = $('#listenMode').value;
   try {
@@ -1287,9 +1295,11 @@ window.AYET = {
   Q, N, SUR, state, pos, vS, vA, wLem, wRoot, lemOcc, rootOcc, verseIndex, ref, sName, escHtml, fmt, toast, makeTerm,
   openVerse, closeVerse, addTerm, clearTerms, termsChanged, setChart, focusSurah, buildHash, syncHash, recolor,
   resultCount: () => resultIds().length,
+  resultIds: () => resultIds(),
   tweenCam, fitCam, w2s, cardOpen: () => !card.hidden, curBounds: () => cur.b, curP: () => cur.P, cam,
   setOverlay(fn) { overlay = fn; needs = true; }, redraw() { needs = true; },
   setExtraHash(h) { extraHash = h; buildHash(); syncHash(); }, LOCAL,
-  mealText: id => mealText[id]
+  mealText: id => mealText[id], stopAudio: () => { if (playing) stopAudio(); },
+  setPlaying(i) { playI = i; needs = true; }, juz: i => Q.verses[i][5]
 };
 })();

@@ -441,7 +441,7 @@ side.insertBefore(disc, $('.explore'));
 disc.querySelectorAll('button').forEach(b => b.onclick = () => start(STORIES[+b.dataset.k].id, 0));
 
 /* ---------- yan sütun sekmeleri: Sonuçlar · Keşifler · Keşfet ---------- */
-const TABS = [['res', 'Sonuçlar', $('#stats')], ['kesif', 'Keşifler', disc], ['kesfet', 'Keşfet', $('.explore:not(.discover)')]];
+const TABS = [['res', 'Sonuçlar', $('#stats')], ['dinle', 'Dinle', $('#dinle')], ['vakit', 'Vakitler', $('#vakit')], ['kesif', 'Keşifler', disc], ['kesfet', 'Keşfet', $('.explore:not(.discover)')]].filter(t => t[2]);
 const tabs = document.createElement('nav');
 tabs.className = 'sidetabs'; tabs.setAttribute('role', 'tablist');
 tabs.innerHTML = TABS.map(([k, l]) => `<button role="tab" data-tab="${k}" aria-controls="tab-${k}">${l}<b></b></button>`).join('');
@@ -450,11 +450,13 @@ TABS.forEach(([k, , el]) => { el.id = el.id || 'tab-' + k; el.setAttribute('role
 let curTab = '';
 function showTab(k, save = true) {
   curTab = k;
-  TABS.forEach(([kk, , el]) => { el.hidden = kk !== k; });
+  const phone = matchMedia('(max-width:600px)').matches;
+  TABS.forEach(([kk, , el]) => { el.hidden = kk !== k && !(phone && k === 'kesif' && kk === 'kesfet'); });
   tabs.querySelectorAll('button').forEach(b => { const on = b.dataset.tab === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
   if (save) try { sessionStorage.setItem('ayet-tab', k); } catch (_) {}
   if (typeof bnav !== 'undefined' && bnav && sideSeen()) setBnav(k);
 }
+addEventListener('ayet:tab', e => { showTab(e.detail); (mq.matches ? side : tabs).scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 tabs.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
 const resBadge = () => { const n = A.state.terms.length ? A.resultCount() : 0; for (const b of [tabs.querySelector('[data-tab=res] b'), $('#bnav [data-go=res] b')]) if (b) { b.textContent = n ? fmt(n) : ''; b.hidden = !n; } };
 /* telefonda alt gezinme çubuğu */
