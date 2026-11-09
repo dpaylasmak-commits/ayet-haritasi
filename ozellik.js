@@ -369,7 +369,7 @@ $('#vkGps').onclick = () => {
   }, err => { $('#vkGps').disabled = false; A.toast(err.code === 1 ? 'Konum izni verilmedi; il seçebilirsiniz' : 'Konum alınamadı; il seçin'); }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 6 * 3600e3 });
 };
 setInterval(() => { if (LOC && !vk.hidden) renderVakit(); }, 1000);
-/* ---------- özel günler, Cuma/Kehf, imsakiye ---------- */
+/* ---------- özel günler, imsakiye ---------- */
 // akşamı kandil olan günler ve bayramlar (Ümmülkura hesabı; 2026–2027 Diyanet takvimiyle aynı)
 const OZ_N = { y: ['Hicrî yılbaşı', 'Muharrem’in ilk günü'], a: ['Âşûrâ günü', '10 Muharrem'], m: ['Mevlid Kandili', 'Hz. Peygamber’in doğumu · akşamı', 1], u: ['Üç ayların başlangıcı', 'Recep ayının ilk günü'],
   r: ['Regaib Kandili', 'Recep’in ilk Cuma gecesi · akşamı', 1], i: ['Miraç Kandili', '27 Recep gecesi · akşamı', 1], b: ['Berat Kandili', '15 Şaban gecesi · akşamı', 1], s: ['Ramazan başlıyor', 'İlk oruç; teravih bir önceki akşam'],
@@ -380,15 +380,6 @@ const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz',
 const gTxt = t => { const d = new Date(t); return `${d.getUTCDate()} ${AYLAR[d.getUTCMonth()]} ${d.getUTCFullYear()} ${GUNLER[d.getUTCDay()]}`; };
 const tz0 = () => LOC ? LOC.tz : localTz();
 const today0 = () => { const { y, m, d } = dateParts(Date.now(), tz0()); return utcDay(y, m, d); };
-function kehfCard() {
-  // Cuma gecesi Perşembe akşamı başlar, Cuma akşamı biter
-  const t0 = today0(), wd = new Date(t0).getUTCDay(), now = Date.now();
-  const aksam = LOC ? dayTimes(0).aksam : null, afterAksam = aksam ? now >= aksam : new Date().getHours() >= 18;
-  const on = (wd === 4 && afterAksam) || (wd === 5 && !afterAksam);
-  if (!on) return '';
-  return `<div class="kehf"><div><b>Cuma · Kehf sûresi</b><p>Hz. Peygamber’in, Cuma günü Kehf sûresini okuyan için iki Cuma arasının aydınlık olacağını söylediği rivayet edilir (Hâkim, Beyhakî). Bu yüzden Perşembe akşamından Cuma akşamına kadar Kehf okunur. Sûre 110 ayet, okunuşu yaklaşık 40 dakika.</p></div>
-    <div class="kehfb"><button class="gold small" id="kehfDinle">${I('play')}Dinle</button><button class="ghost small" id="kehfOku">Oku</button></div></div>`;
-}
 function renderOzel() {
   const el = $('#ozel'); if (!el) return;
   const t0 = today0(), D = 864e5;
@@ -396,12 +387,10 @@ function renderOzel() {
   const cur = OZ.filter(o => t0 >= o.t && t0 < o.t + span(o.k) * D);
   const next = OZ.filter(o => o.t > t0).slice(0, 4), year = OZ.filter(o => o.t > t0 && o.t < t0 + 366 * D);
   const row = o => { const n = OZ_N[o.k], dd = Math.round((o.t - t0) / D); return `<li><span><b>${n[0]}</b><small>${gTxt(o.t)} · ${n[1]}</small></span><em>${dd === 1 ? 'yarın' : dd + ' gün'}</em></li>`; };
-  el.innerHTML = ramCard() + tehCard() + kehfCard() + cur.map(o => { const n = OZ_N[o.k], day = Math.round((t0 - o.t) / D) + 1; return `<div class="ozbugun"><small>Bugün</small><b>${n[0]}${span(o.k) > 1 ? ` · ${day}. gün` : ''}</b><span>${n[2] ? 'Kandil gecesi bu akşam, akşam ezanıyla başlar.' : n[1]}</span></div>`; }).join('') +
+  el.innerHTML = ramCard() + tehCard() + cur.map(o => { const n = OZ_N[o.k], day = Math.round((t0 - o.t) / D) + 1; return `<div class="ozbugun"><small>Bugün</small><b>${n[0]}${span(o.k) > 1 ? ` · ${day}. gün` : ''}</b><span>${n[2] ? 'Kandil gecesi bu akşam, akşam ezanıyla başlar.' : n[1]}</span></div>`; }).join('') +
     `<div class="ph"><h3>Yaklaşan günler</h3><span class="muted small">${hicriTarih(tz0())}</span></div><ol class="ozlist">${next.map(row).join('')}</ol>
     <details class="ozall"><summary>Önümüzdeki 12 ay</summary><ol class="ozlist">${year.map(row).join('')}</ol></details>
     <p class="muted small">Kandiller, tarihi verilen günün akşamı başlar. Tarihler Ümmülkura takvimiyle hesaplanır; 2026–2027 için Diyanet’in açıkladığı tarihlerle aynıdır, sonraki yıllarda bir gün sapabilir.</p>`;
-  const kd = $('#kehfDinle'); if (kd) kd.onclick = () => { if (window.DINLE) { window.DINLE.sure(18); dispatchEvent(new CustomEvent('ayet:tab', { detail: 'dinle' })); } };
-  const ko = $('#kehfOku'); if (ko) ko.onclick = () => A.openVerse(A.verseIndex(18, 1));
 }
 /* imsakiye: seçilen ayın ya da Ramazan’ın vakit cetveli */
 function imOptions() {
@@ -456,46 +445,46 @@ function tehCard() {
   const n = nightThird(); if (!n) return '';
   const now = Date.now(), on = now >= n.start && now < n.end;
   return `<div class="teh${on ? ' on' : ''}"><div class="tehh"><b>${on ? 'Şu an gecenin son üçte biri' : 'Teheccüd vakti'}</b><span>${hm(n.start, LOC.tz)} – ${hm(n.end, LOC.tz)}</span></div>
-    <p>Gecenin son üçte biri, akşamdan imsaka kadar olan sürenin son kısmıdır. Hz. Peygamber, Rabbimizin her gece bu vakitte “Bana dua eden yok mu, kabul edeyim; benden isteyen yok mu, vereyim” buyurduğunu haber vermiştir (Buhârî, Müslim). Kur’an da gece namazını över: <a href="#" class="vref" data-r="17:79">İsrâ 79</a>, <a href="#" class="vref" data-r="51:17">Zâriyât 17–18</a>.</p></div>`;
+    <p>Gecenin son üçte biri, akşamdan imsaka kadar olan sürenin son kısmıdır. Kur’an gece kalkıp namaz kılmayı ve Kur’an okumayı över: “Gece kalkışı daha etkilidir” (<a href="#" class="vref" data-r="73:6">Müzzemmil 6</a>), “Geceleri az uyurlar, seher vakitlerinde bağışlanma dilerlerdi” (<a href="#" class="vref" data-r="51:17">Zâriyât 17–18</a>). Ayrıca <a href="#" class="vref" data-r="17:79">İsrâ 79</a>, <a href="#" class="vref" data-r="32:16">Secde 16</a>, <a href="#" class="vref" data-r="3:17">Âl-i İmrân 17</a>.</p></div>`;
 }
 
 /* ---------- Ramazan: her güne orucun bir faydası ---------- */
 const RAM = [
   ['Ayet', 'Orucun amacı: takvâ', 'Kur’an orucun neden farz kılındığını söyler: “sakınasınız diye.” Takvâ, Allah’a karşı sorumluluk bilinciyle yaşamaktır; oruç bunun her gün tekrarlanan bir alıştırmasıdır.', '2:183'],
-  ['Hadis', 'Oruç bir kalkandır', 'Hz. Peygamber orucu bir kalkana benzetmiştir: insanı kötü sözden, kötü davranıştan ve günahtan korur (Buhârî, Müslim).'],
+  ['Ayet', 'Tan yerinden geceye', 'Kur’an orucun sınırını açıkça çizer: tan yerinde beyaz iplik siyah iplikten ayırt edilinceye kadar yiyip içmek, sonra orucu geceye kadar tamamlamak. Günü ikiye bölen bu çizgi, her gün aynı bilinçle yeniden başlamayı öğretir.', '2:187'],
   ['Sağlık', 'Vücut depolarını kullanır', 'Uzun süre yemek yenmeyince vücut enerji için depoladığı yağı kullanmaya başlar. Ramazan üzerine yapılan çalışmalar ortalama hafif bir kilo ve yağ kaybı bildiriyor; iftar ve sahurda aşırı yenirse bu etki kaybolur.'],
-  ['Hadis', 'Geçmiş günahların bağışlanması', '“Kim inanarak ve karşılığını yalnız Allah’tan bekleyerek Ramazan orucunu tutarsa geçmiş günahları bağışlanır” (Buhârî, Müslim).'],
+  ['Ayet', 'Bağışlanma ve büyük ödül', 'Ahzâb sûresi Allah’ın bağışlanma ve büyük bir ödül hazırladığı insanları sayar; aralarında “oruç tutan erkekler ve oruç tutan kadınlar” da vardır.', '33:35'],
   ['Nefis', 'İrade eğitimi', 'Oruçlu, helal olan yemeyi içmeyi bile belli bir süre bırakır. Helalden uzak durabilen, haramdan uzak durmayı daha kolay öğrenir.'],
   ['Ayet', 'Kur’an ayı', 'Ramazan, Kur’an’ın indirildiği aydır. Bu yüzden Ramazan’da mukabele okunur; her gün bir cüz okuyan, ay bitince hatmi tamamlamış olur.', '2:185'],
-  ['Hadis', 'Oruçlunun iki sevinci', '“Oruçlunun iki sevinci vardır: biri iftar ettiği zaman, diğeri Rabbine kavuştuğu zaman” (Buhârî, Müslim).'],
+  ['Ayet', 'Oruç bir telafi yoludur', 'Kur’an orucu hatayı telafi etmenin yolu olarak da gösterir: bile bile edilen bir yemini bozan, yoksulları doyuramıyorsa üç gün oruç tutar. Oruç, sözünü tutmanın ciddiyetini hatırlatır.', '5:89'],
   ['Toplum', 'Açın hâlini anlamak', 'Bir gün boyunca aç ve susuz kalmak, her gün yeterince yiyemeyenlerin hâlini insana bizzat yaşatır. Bu tecrübe sadakayı ve yardımlaşmayı kendiliğinden artırır.'],
-  ['Ayet', 'Ben yakınım', 'Oruç ayetlerinin tam ortasında bir dua ayeti yer alır: “Kullarım beni sorarsa, ben yakınım; dua edenin duasını kabul ederim.” Hadiste de oruçlunun iftar edinceye kadarki duasının geri çevrilmediği bildirilir (Tirmizî).', '2:186'],
-  ['Hadis', 'Sahurda bereket', '“Sahur yapın, çünkü sahurda bereket vardır” (Buhârî, Müslim). Lifli ve proteinli bir sahur tokluğu uzatır, gün içinde kan şekerinin dengeli kalmasına yardım eder.'],
-  ['Hadis', 'Dilin orucu', '“Kim yalan sözü ve yalanla iş görmeyi bırakmazsa, Allah’ın onun yemesini içmesini bırakmasına ihtiyacı yoktur” (Buhârî). Oruç yalnız mideyle değil, dille de tutulur.'],
+  ['Ayet', 'Ben yakınım', 'Oruç ayetlerinin tam ortasında bir dua ayeti yer alır: “Kullarım beni sorarsa, ben yakınım; dua edenin duasını kabul ederim.” Oruç günleri dua için en uygun zamanlardandır.', '2:186'],
+  ['Sağlık', 'Sahuru atlamayın', 'Sahur, günün tek öğünüdür. Lifli ve proteinli bir sahur (yumurta, peynir, tam tahıl, sebze) tokluğu uzatır ve gün içinde kan şekerinin dengeli kalmasına yardım eder; yalnız su içip yatmak günü zorlaştırır.'],
+  ['Ayet', 'Dilin orucu', 'Kur’an’da Meryem’e “Rahman için oruç adadım, bugün hiçbir insanla konuşmayacağım de” denir. Oruç yalnız yemeyi içmeyi değil, sözü de kapsayabilir: Ramazan, dile sahip olmanın da ayıdır.', '19:26'],
   ['Sağlık', 'Kan şekeri ve insülin', 'Aralıklı oruç üzerine yapılan bazı çalışmalar insülin duyarlılığının arttığını gösteriyor; sonuçlar kişiden kişiye değişiyor. Şeker hastaları ve ilaç kullananlar oruçtan önce mutlaka doktoruna danışmalı.'],
-  ['Hadis', 'Reyyân kapısı', 'Hz. Peygamber cennette “Reyyân” adlı bir kapı olduğunu ve oradan yalnız oruç tutanların gireceğini bildirmiştir (Buhârî, Müslim).'],
-  ['Hadis', 'Öfkeyi yenmek', '“Biri size sataşır ya da sövecek olursa ‘Ben oruçluyum’ deyin” (Buhârî, Müslim). Oruç, öfke anında durup kendini hatırlamayı öğretir.'],
-  ['Hadis', 'İftar ettirmenin sevabı', '“Kim bir oruçluya iftar ettirirse, onun sevabı kadar sevap kazanır; oruçlunun sevabından da hiçbir şey eksilmez” (Tirmizî).'],
+  ['Ayet', 'Önceki ümmetlerin orucu', 'Kur’an orucun yeni bir ibadet olmadığını söyler: “sizden öncekilere farz kılındığı gibi.” Oruç, peygamberlerin ümmetlerini birbirine bağlayan ortak bir ibadettir.', '2:183'],
+  ['Ayet', 'Öfkeyi yenmek', 'Açlık ve yorgunluk insanı çabuk öfkelendirebilir. Kur’an bollukta da darlıkta da infak edenleri, öfkelerini yenenleri ve insanları affedenleri över. Oruç, öfke anında durmayı öğrenmek için iyi bir fırsattır.', '3:134'],
+  ['Ayet', 'Yemeği paylaşmak', 'Kur’an iyileri şöyle anlatır: canları çektiği hâlde yemeği yoksula, yetime ve esire yedirirler ve “sizi yalnız Allah rızası için doyuruyoruz, karşılık beklemiyoruz” derler. İftar sofrasını paylaşmak bu ayetin günlük karşılığıdır.', '76:8'],
   ['Sağlık', 'Hücrelerin temizliği', 'Uzun açlıkta hücreler yıpranmış parçalarını parçalayıp yeniden kullanır (otofaji). Bu mekanizmanın keşfi 2016’da Nobel ödülü aldı. İnsanlarda Ramazan orucunun bu süreci ne kadar etkilediği henüz iyi ölçülmedi.'],
   ['Ayet', 'Oruç sizin için hayırlıdır', '“Oruç tutmanız sizin için daha hayırlıdır, eğer bilirseniz.” Kur’an orucu bir yük olarak değil, insanın kendi iyiliği olarak anlatır.', '2:184'],
   ['Sağlık', 'Alışkanlıkları kırmak', 'Gün boyu sigara, çay ve kahve olmadan geçirmek, bu alışkanlıkların insanı ne kadar yönettiğini gösterir. Ramazan, sigarayı bırakmak için iyi bir başlangıçtır.'],
-  ['Hadis', 'Miskten güzel', '“Oruçlunun ağız kokusu Allah katında miskin kokusundan daha güzeldir” (Buhârî, Müslim). Allah için katlanılan küçük bir sıkıntı bile değerlidir.'],
-  ['Hadis', 'Cömertlik ayı', 'Hz. Peygamber insanların en cömerdiydi; en cömert olduğu zaman da Ramazan’dı (Buhârî). Ramazan’ın sonunda bayramdan önce fitre verilir.'],
-  ['Ayet', 'Bin aydan hayırlı gece', 'Kadir gecesi bin aydan hayırlıdır. Hz. Peygamber bu geceyi Ramazan’ın son on gecesinde, özellikle tek gecelerde aramayı tavsiye etmiştir (Buhârî).', '97:3'],
+  ['Ayet', 'Sabırla yardım dilemek', '“Sabır ve namazla yardım dileyin.” Oruç sabrın en somut hâlidir: istenen şeyin önünde durup beklemek. Ramazan sabrı her gün biraz daha büyütür.', '2:45'],
+  ['Ayet', 'İyilik nedir?', 'Kur’an iyiliği tarif ederken önce imanı, hemen ardından malı sevgisine rağmen yakınlara, yetimlere, yoksullara, yolculara ve isteyenlere vermeyi sayar. Ramazan bu tarifin her gün yaşandığı aydır.', '2:177'],
+  ['Ayet', 'Bin aydan hayırlı gece', 'Kadir gecesi bin aydan hayırlıdır. O gece melekler iner ve gece tan yerinin ağarmasına kadar esenlik içinde geçer.', '97:3'],
   ['Nefis', 'Vakit bilinci', 'İmsak ve iftar saatine göre yaşamak günü düzene sokar. Oruçlu, günü namaz vakitleriyle birlikte yaşamaya alışır.'],
-  ['Hadis', 'İftarda acele', '“İnsanlar iftarı acele yaptıkları sürece hayır içindedir” (Buhârî, Müslim). Hz. Peygamber orucunu hurma ya da su ile açardı (Ebû Dâvûd, Tirmizî); hafif bir başlangıç mideyi yormaz.'],
+  ['Sağlık', 'İftarı hafif açın', 'Uzun açlıktan sonra mideyi bir anda doldurmak hazımsızlık yapar. Su ve az bir şeyle açıp biraz ara vermek, sonra yemeğe geçmek hem mideyi hem uykuyu rahatlatır.'],
   ['Toplum', 'Aynı sofrada', 'İftar ve sahur, aileyi ve komşuları aynı saatte aynı sofrada toplar. Ramazan, yalnız yaşayanları iftara davet etmek için de bir fırsattır.'],
   ['Sağlık', 'Suyu ihmal etmeyin', 'İftar ile sahur arasına yayılmış 8–10 bardak su baş ağrısını ve kabızlığı önlemeye yardım eder. Çok tuzlu ve çok şekerli yiyecekler gün içinde susuzluğu artırır.'],
-  ['Hadis', 'İtikâf', 'Hz. Peygamber Ramazan’ın son on gününde itikâfa girer, kendini ibadete verirdi (Buhârî, Müslim). Son on gün, ayın en yoğun ibadet zamanıdır.'],
+  ['Ayet', 'İtikâf', 'Kur’an oruç ayetlerinin sonunda itikâftan, yani mescide çekilip kendini ibadete vermekten söz eder: “mescitlerde itikâfta iken…” Ramazan’ın son günleri bu çekilme için en uygun zamandır.', '2:187'],
   ['Ayet', 'Kolaylık', '“Allah sizin için kolaylık ister, zorluk istemez.” Hasta ve yolcu oruç tutmayıp sonra kaza eder; tutamayacak durumda olan fidye verir.', '2:185'],
   ['Nefis', 'Şükür', 'İftar vakti içilen bir bardak su, her gün sahip olunan nimetlerin değerini hatırlatır. Ramazan ayetleri de “şükredesiniz diye” sözüyle biter.'],
-  ['Hadis', 'Kapılar açılır', '“Ramazan girince cennetin kapıları açılır, cehennemin kapıları kapanır, şeytanlar bağlanır” (Buhârî, Müslim).'],
-  ['Hadis', 'Bayram ve Şevval orucu', 'Ramazan’ın sonu bayramdır. “Kim Ramazan orucunu tutar, ardından Şevval’den altı gün oruç tutarsa bütün yılı oruçlu geçirmiş gibi olur” (Müslim).'],
+  ['Ayet', 'Kutlu gece', 'Duhân sûresi Kur’an’ın “kutlu bir gecede” indirildiğini söyler; Kadr sûresi bu gecenin adını verir, Bakara 185 de hangi ayda olduğunu. Ramazan’ı değerli kılan, Kur’an’ın onda inmesidir.', '44:3'],
+  ['Ayet', 'Sayıyı tamamlamak', 'Oruç ayeti şöyle biter: “sayıyı tamamlamanız, sizi doğru yola ilettiği için Allah’ı yüceltmeniz ve şükretmeniz için.” Ramazan’ın sonu bir bitiş değil, bir şükür ve yüceltme anıdır.', '2:185'],
 ];
 const ramDay = () => { const t0 = today0(), D = 864e5; const s = OZ.filter(o => o.k === 's' && o.t <= t0).pop(); if (!s) return 0; const f = OZ.find(o => o.k === 'F' && o.t > s.t); return f && t0 < f.t ? Math.round((t0 - s.t) / D) + 1 : 0; };
 const ramItem = (r, n) => `<span class="rtag">${r[0]}</span><b>${r[1]}</b><p>${r[2]}${r[3] ? ` <a href="#" class="vref" data-r="${r[3]}">${r[3]}</a>` : ''}</p>`;
 function ramCard() { const n = ramDay(); if (!n || n > 30) return ''; return `<div class="ramcard"><small>Ramazan · ${n}. gün</small>${ramItem(RAM[n - 1], n)}</div>`; }
-const ramAll = () => `<details class="ramall"><summary>Ramazan’da her güne orucun bir faydası</summary><ol>${RAM.map((r, j) => `<li><em>${j + 1}. gün</em>${ramItem(r, j + 1)}</li>`).join('')}</ol><p class="muted small">Ayet ve hadisler kaynağıyla verildi. Sağlıkla ilgili bilgiler genel bilgidir, tıbbi tavsiye değildir; hastalar oruç için doktoruna danışmalı.</p></details>`;
+const ramAll = () => `<details class="ramall"><summary>Ramazan’da her güne orucun bir faydası</summary><ol>${RAM.map((r, j) => `<li><em>${j + 1}. gün</em>${ramItem(r, j + 1)}</li>`).join('')}</ol><p class="muted small">Ayetler kaynağıyla verildi; dokunarak açabilirsiniz. Sağlıkla ilgili bilgiler genel bilgidir, tıbbi tavsiye değildir; hastalar oruç için doktoruna danışmalı.</p></details>`;
 vk.addEventListener('click', e => { const a = e.target.closest('.vref[data-r]'); if (!a || !vk.contains(a)) return; e.preventDefault(); const [s, v] = a.dataset.r.split(':').map(Number); A.openVerse(A.verseIndex(s, v)); });
 
 /* ---------- yakındaki camiler (OpenStreetMap) ---------- */

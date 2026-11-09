@@ -605,12 +605,6 @@ body.has-mini .updbar{bottom:96px}
 .dnmore-b .chk{grid-column:1/-1;display:flex;flex-direction:row;color:var(--ink-2);margin:0}
 /* Bugün: Kehf, özel günler, imsakiye */
 .ozel{display:flex;flex-direction:column;gap:10px}
-.kehf{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:var(--r-md,14px);background:var(--accent-soft,var(--surface-2));border:1px solid var(--line-2)}
-.kehf b{font:600 15px var(--sans);color:var(--ink)}
-.kehf p{margin:4px 0 0;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
-.kehfb{display:flex;gap:8px}
-.kehfb button{display:inline-flex;align-items:center;gap:6px}
-.kehfb svg.i{width:14px;height:14px}
 .ozbugun{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:3px solid var(--accent)}
 .ozbugun small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .ozbugun b{font:600 16px var(--sans);color:var(--ink)}
