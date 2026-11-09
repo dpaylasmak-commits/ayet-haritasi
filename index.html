@@ -13,7 +13,7 @@ const set=()=>{d.dataset.theme=p;d.dataset.mode=p==='auto'?(m.matches?'light':'d
 window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme',p)}catch(e){}set()};m.addEventListener('change',()=>{if(p==='auto')set()});set()})()</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 
@@ -117,8 +117,8 @@ window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme
   <aside class="side">
     <div id="stats" class="stats"></div>
     <div class="explore">
-      <h3>Keşfet</h3>
-      <p class="muted small">Kur’an’da sıkça anılan kelime çiftleri ve sayımlar. Her sayı gözünüzün önünde hesaplanır; sayma yöntemini değiştirince sonuç da değişir.</p>
+      <h3>Hazır aramalar</h3>
+      <p class="muted small">Bir dokunuşla haritaya yüklenen kelime çiftleri ve sayımlar. Sayılar tarayıcınızda, bütün Kur’an üzerinden hesaplanır; sayma yöntemini değiştirince sonuç da değişir.</p>
       <div id="presets" class="presets"></div>
     </div>
   </aside>
@@ -209,9 +209,9 @@ window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme
 <div id="loading" class="loading"><div class="spin"></div><p>6.236 ayet yükleniyor…</p></div>
 
 <script src="data.js"></script>
-<script src="app.js?v=16"></script>
-<script src="ozellik.js?v=7"></script>
-<script src="kesif.js?v=11"></script>
+<script src="app.js?v=17"></script>
+<script src="ozellik.js?v=8"></script>
+<script src="kesif.js?v=12"></script>
 <script>
 if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => {
   const sw = navigator.serviceWorker, had = !!sw.controller; let shown = false;

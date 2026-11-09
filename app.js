@@ -117,7 +117,8 @@ function makeTerm(mode, q, match, opts = {}) {
   if (mode === 'tr') {
     const re = trRegex(q, match), meal = opts.meal || 'tr.diyanet';
     const lists = (meal === 'all' ? MEALS.map(m => m[0]) : [meal]).map(normOf);
-    for (let i = 0; i < N; i++) { let c = 0; for (const L of lists) { const m = L[i].match(re); if (m && m.length > c) c = m.length; } counts[i] = c; }
+    // bazı mealler art arda ayetleri tek cümlede çevirip aynı metni her birine yazar: o metni yalnız ilk ayette say
+    for (let i = 0; i < N; i++) { let c = 0; for (const L of lists) { if (i && L[i] === L[i - 1] && vS[i] === vS[i - 1]) continue; const m = L[i].match(re); if (m && m.length > c) c = m.length; } counts[i] = c; }
   } else if (mode === 'ar') {
     const t = arTest(q, match); ar = q;
     for (let i = 0; i < N; i++) { let c = 0; for (const w of clnTok[i]) if (t(w)) c++; counts[i] = c; }
@@ -143,6 +144,14 @@ function makeTerm(mode, q, match, opts = {}) {
   return { mode, q, match, counts, ver, occ, label, ar, id, notLemma: opts.notLemma || null, refs: opts.refs || '', meal: mode === 'tr' ? (opts.meal || 'tr.diyanet') : '' };
 }
 const usedColors = () => state.terms.map(t => t.color);
+/* son aramalar (bu cihazda) */
+const RK = 'ayet-son';
+function recentList() { try { const v = JSON.parse(localStorage.getItem(RK) || '[]'); return Array.isArray(v) ? v : []; } catch (_) { return []; } }
+function saveRecent(r) {
+  const key = x => [x.mode, x.q, x.match, x.meal || ''].join('|');
+  const l = [r, ...recentList().filter(x => key(x) !== key(r))].slice(0, 8);
+  try { localStorage.setItem(RK, JSON.stringify(l)); } catch (_) {}
+}
 function addTerm(mode, q, match, opts = {}) {
   if (state.terms.length >= (opts.many ? 30 : 5)) { toast('En fazla 5 kelime karşılaştırılabilir'); return false; }
   if (mode === 'tr' && !opts.meal) opts.meal = 'tr.diyanet';
@@ -153,6 +162,7 @@ function addTerm(mode, q, match, opts = {}) {
   if (opts.label) t.label = opts.label;
   t.color = COLORS.find(c => !usedColors().includes(c)) || '#ffffff';
   state.terms.push(t);
+  if (!opts.silent && !opts.many && mode !== 'set') saveRecent({ mode, q, match, meal: t.meal, label: opts.label || '' });
   if (state.terms.length > 5) recolor();
   if (!opts.silent) termsChanged();
   return true;
@@ -577,6 +587,12 @@ function renderStats() {
     el.innerHTML = `<div class="empty"><h3>Bütün Kur'an, tek ekranda</h3><div class="big">${fmt(nv)}</div><p class="muted">nokta · her nokta bir ayet</p>${fl}
     <p>Yukarıya bir kelime yazın; geçtiği ayetler yanar. İkinci bir kelime ekleyerek karşılaştırın, <b>Grafik</b> ile noktaları sütunlarda toplayın.</p>
     <p class="small muted">114 sûre · ${fmt(Q.lemmas.length)} lemma · ${fmt(Q.roots.length)} kök · ${fmt(wForm.reduce((a, w) => a + w.length, 0))} kelime</p></div>`;
+    const rc = recentList();
+    if (rc.length) {
+      el.insertAdjacentHTML('beforeend', `<div class="recent"><div class="rch"><h4>Son aramalarınız</h4><button class="ghost small" id="rcClear">Temizle</button></div><div class="rcl">${rc.map((r, k) => `<button data-k="${k}">${escHtml(r.label || r.q)}<small>${r.mode === 'tr' ? mealShort(r.meal) : modeName[r.mode]}</small></button>`).join('')}</div></div>`);
+      el.querySelectorAll('.rcl button').forEach(b => b.onclick = () => { const r = rc[+b.dataset.k]; addTerm(r.mode, r.q, r.match, { meal: r.meal, ...(r.label ? { label: r.label } : {}) }); });
+      el.querySelector('#rcClear').onclick = () => { try { localStorage.removeItem(RK); } catch (_) {} renderStats(); };
+    }
     return;
   }
   const m = state.metric, ST = state.terms.map(termStats);
@@ -612,17 +628,22 @@ function renderStats() {
 }
 /* sonuç listesi: haritadaki noktaların okunabilir karşılığı */
 let resN = 25;
+let resSort = 'mushaf';
 function resultIds() {
   const out = [];
   for (let i = 0; i < N; i++) if (passF[i] && hitTerms[i]) out.push(i);
+  if (resSort === 'rev') out.sort((a, b) => SUR[vS[a] - 1].rev - SUR[vS[b] - 1].rev || a - b);
   return out;
 }
+// birleşik çevrilmiş ayet grubunun son ayeti (meal metni aynı kalan ardışık ayetler)
+const grpEnd = (mid, i) => { const T = mealText[mid]; if (!T) return i; let j = i; while (j + 1 < N && vS[j + 1] === vS[i] && T[j + 1] === T[i]) j++; return j; };
 function resultList() {
   const ids = resultIds(); if (!ids.length) return '<div class="reslist"><h4>Ayetler</h4><p class="muted small">Bu aramayla eşleşen ayet yok.</p></div>';
   const trT = state.terms.find(t => t.mode === 'tr' && mealText[t.meal]);
   const mid = trT ? trT.meal : (mealText[state.cardMeal] ? state.cardMeal : 'tr.diyanet');
-  const items = ids.slice(0, resN).map(i => `<li data-i="${i}" tabindex="0"><div class="rh"><span class="dots">${hitTerms[i].slice(0, 5).map(k => `<i style="--c:${state.terms[k].color}"></i>`).join('')}</span><b>${SUR[vS[i] - 1].tr} ${vA[i]}</b><span class="muted">${ref(i)}</span></div><p>${highlightTr(mealText[mid][i], i, mid)}</p></li>`).join('');
-  return `<div class="reslist"><h4>Ayetler <span class="muted">${fmt(ids.length)}</span></h4><ol>${items}</ol>${ids.length > resN ? `<button class="ghost small" id="resMore">${fmt(Math.min(25, ids.length - resN))} ayet daha göster</button>` : ''}</div>`;
+  const items = ids.slice(0, resN).map(i => `<li data-i="${i}" tabindex="0"><div class="rh"><span class="dots">${hitTerms[i].slice(0, 5).map(k => `<i style="--c:${state.terms[k].color}"></i>`).join('')}</span><b>${SUR[vS[i] - 1].tr} ${vA[i]}${grpEnd(mid, i) > i ? '–' + vA[grpEnd(mid, i)] : ''}</b><span class="muted">${ref(i)}${grpEnd(mid, i) > i ? '–' + vA[grpEnd(mid, i)] : ''}</span></div><p>${i && hitTerms[i - 1] && passF[i - 1] && vS[i] === vS[i - 1] && mealText[mid][i] === mealText[mid][i - 1] ? `<span class="muted small">${mealName(mid)} meali bu ayeti bir önceki ayetle birlikte çeviriyor.</span>` : highlightTr(mealText[mid][i], i, mid)}</p></li>`).join('');
+  const tools = `<div class="restools"><div class="seg small" role="group" aria-label="Sıralama"><button data-sort="mushaf" class="${resSort === 'mushaf' ? 'on' : ''}" title="Mushaftaki sırayla">Mushaf</button><button data-sort="rev" class="${resSort === 'rev' ? 'on' : ''}" title="Sûrelerin iniş (nüzul) sırasıyla">Nüzul</button></div><span class="spacer"></span><button class="ghost small" id="resPlay" title="Bulunan ayetleri sırayla dinle"><svg class="i"><use href="#i-play"/></svg>Dinle</button><button class="ghost small" id="resCopy" title="Bulunan ayetleri mealleriyle kopyala"><svg class="i"><use href="#i-copy"/></svg>Kopyala</button></div>`;
+  return `<div class="reslist"><h4>Ayetler <span class="muted">${fmt(ids.length)}</span></h4>${tools}<ol>${items}</ol>${ids.length > resN ? `<button class="ghost small" id="resMore">${fmt(Math.min(25, ids.length - resN))} ayet daha göster</button>` : ''}</div>`;
 }
 function bindResults(el) {
   el.querySelectorAll('.reslist li').forEach(li => {
@@ -633,6 +654,15 @@ function bindResults(el) {
     li.onkeydown = e => { if (e.key === 'Enter') openVerse(i); };
   });
   const more = el.querySelector('#resMore'); if (more) more.onclick = () => { resN += 25; renderStats(); };
+  el.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { resSort = b.dataset.sort; resN = 25; renderStats(); });
+  const pl = el.querySelector('#resPlay'); if (pl) pl.onclick = () => { if (window.DINLE) { window.DINLE.setList(resultIds()); window.dispatchEvent(new CustomEvent('ayet:tab', { detail: 'dinle' })); } };
+  const cp = el.querySelector('#resCopy'); if (cp) cp.onclick = () => {
+    const ids = resultIds(), trT = state.terms.find(t => t.mode === 'tr' && mealText[t.meal]), mid = trT ? trT.meal : (mealText[state.cardMeal] ? state.cardMeal : 'tr.diyanet');
+    const inR = new Set(ids), T = mealText[mid], lines = [];
+    for (const i of ids) { const e = grpEnd(mid, i); if (i && inR.has(i - 1) && vS[i] === vS[i - 1] && T[i] === T[i - 1]) continue; lines.push(`${SUR[vS[i] - 1].tr} ${vA[i]}${e > i ? '–' + vA[e] : ''} (${ref(i)}${e > i ? '–' + vA[e] : ''}): ${mealText[mid][i]}`); }
+    const head = state.terms.map(t => t.label).join(' · ') + ` · ${fmt(ids.length)} ayet · ${mealName(mid)} meali`;
+    navigator.clipboard.writeText(head + '\n\n' + lines.join('\n\n') + '\n\nAyet Haritası · ' + location.href).then(() => toast(`${fmt(lines.length)} ayet kopyalandı`), () => toast('Kopyalanamadı'));
+  };
 }
 
 /* ---------- sûre dağılımı ---------- */

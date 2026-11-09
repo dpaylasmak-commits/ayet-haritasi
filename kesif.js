@@ -1,5 +1,5 @@
 /* Ayet Haritası · Keşifler
-   Haritanın üstünde adım adım anlatılan keşifler: soru → cevap iplikleri, canlı terazi, sayıların şekli, kelime yarışı. */
+   Haritanın üstünde adım adım anlatılan keşifler: soru → cevap iplikleri, ayeti ayet açar, canlı terazi, sayıların şekli, tezler. */
 (() => {
 const A = window.AYET; if (!A) return;
 const $ = s => document.querySelector(s);
@@ -22,13 +22,21 @@ const SORUYOR = [['2:189', 'Hilâller', 'İnsanlar ve hac için vakit ölçüsü
   ['2:219', 'İçki, kumar · ne infak edelim?', 'Günahı faydasından büyük · ihtiyaçtan artanı'], ['2:220', 'Yetimler', 'Onları iyilikle gözetmek hayırlı'], ['2:222', 'Hayız', 'Bir eziyettir'],
   ['5:4', 'Helâl olanlar', 'Temiz şeyler helâl kılındı'], ['7:187', 'Kıyamet ne zaman? (2 kez)', 'Bilgisi Rabbimin katındadır'], ['8:1', 'Ganimetler', 'Allah’a ve Resûlüne aittir'],
   ['17:85', 'Ruh', 'Rabbimin emrindendir'], ['18:83', 'Zülkarneyn', 'Size ondan bir haber okuyacağım'], ['20:105', 'Dağlar', 'Rabbim onları ufalayıp savuracak'], ['79:42', 'Kıyamet ne zaman?', 'Sonu Rabbine varır']];
+// Kur'an'ın Kur'an'la tefsiri. self: Kur'an'ın kendisi başka bir yere gönderiyor · dash: bağlantı bir rivayetten · diğerleri: tefsir geleneği
+// "self" olanlar şu kalıplar bütün Kur'an'da taranarak bulundu: مَا يُتْلَى عَلَيْكُمْ · قَصَصْنَا عَلَيْكَ مِنْ قَبْلُ · نَزَّلَ عَلَيْكُمْ فِي الْكِتَابِ · فَصَّلَ لَكُمْ · صُحُف
 const UZAK = [
   { q: '1:7', a: '4:69', t: 'Nimet verilenler kim?', d: 'Fâtiha’da her namazda istenen “nimet verdiklerinin yolu” açıklanmıyor. Nisâ sûresi onları tek tek sayıyor: peygamberler, sıddıklar, şehitler, sâlihler.' },
+  { q: '44:3', a: '97:1', a2: '2:185', a2t: 'Ramazan', t: 'Mübarek gece hangisi?', d: 'Duhân “onu mübarek bir gecede indirdik” der. Kadr sûresi o gecenin adını verir: Kadir gecesi. Bakara 185 de hangi ayda olduğunu söyler: Ramazan. Üç sûre, tek cevap.' },
   { q: '2:37', a: '7:23', t: 'Âdem’in aldığı kelimeler', d: 'Bakara 37 “Âdem Rabbinden kelimeler aldı, tövbesi kabul edildi” der, kelimeleri söylemez. A‘râf 23 o duayı verir: “Rabbimiz, kendimize zulmettik…”' },
-  { q: '5:1', a: '5:3', t: 'Size okunacak olanlar', d: '“Size okunacaklar dışında hayvanlar helâl kılındı.” İki ayet sonra liste geliyor: leş, kan, domuz eti, Allah’tan başkası adına kesilen…' },
-  { q: '44:3', a: '97:1', a2: '2:185', t: 'Mübarek gece hangisi?', d: 'Duhân “onu mübarek bir gecede indirdik” der. Kadr sûresi o gecenin adını verir: Kadir gecesi. Bakara 185 de hangi ayda olduğunu söyler: Ramazan. Üç sûre, tek cevap.' },
-  { q: '16:118', a: '6:146', t: '“Daha önce anlattıklarımız”', d: 'Burada bağlantıyı Kur’an’ın kendisi kuruyor: Nahl 118 “sana daha önce anlattıklarımızı Yahudilere haram kıldık” der ve okuru En‘âm 146’daki listeye gönderir.', self: true },
-  { q: '4:140', a: '6:68', t: '“Size Kitap’ta indirmişti ki…”', d: 'Nisâ 140, daha önce indirilmiş bir hükmü hatırlatır: ayetler alaya alınınca o meclisten kalkmak. O hüküm En‘âm 68’de.', self: true },
+  { q: '2:40', a: '5:12', t: 'Hangi ahit?', d: 'Bakara 40 İsrailoğullarına “ahdimi yerine getirin ki ben de sizinkini yerine getireyim” der. Mâide 12 iki tarafın sözünü de açar: namaz, zekât, peygamberlere iman; karşılığında günahların örtülmesi ve cennet.' },
+  { q: '5:1', a: '5:3', a2: '6:145', a2t: 'En‘âm 145', t: 'Size okunacak olanlar', d: '“Size okunacaklar dışında hayvanlar helâl kılındı.” Liste iki ayet sonra geliyor: leş, kan, domuz eti, Allah’tan başkası adına kesilen… Aynı dört madde Mekke’de inen En‘âm 145’te de var.', self: true },
+  { q: '22:30', a: '6:145', a2: '5:3', a2t: 'Mâide 3', t: '“Size okunanlar dışında”', d: 'Hac sûresi aynı ifadeyi kullanır: “Haram olduğu size okunanlar dışındaki hayvanlar helâl kılındı.” Okunan liste En‘âm 145 ve Mâide 3’te.', self: true },
+  { q: '6:119', a: '6:145', t: '“Haram olanları açıklamışken”', d: 'En‘âm 119 “Allah haram kıldıklarını size ayrıntılı anlatmışken…” der. Tefsirlere göre işaret edilen açıklama aynı sûrenin 145. ayeti.', self: true },
+  { q: '16:118', a: '6:146', t: '“Daha önce anlattıklarımız”', d: 'Nahl 118 “sana daha önce anlattıklarımızı Yahudilere haram kıldık” der ve okuru En‘âm 146’daki listeye gönderir: tırnaklı hayvanlar, sığır ve koyunun iç yağı…', self: true },
+  { q: '4:140', a: '6:68', t: '“Size Kitap’ta indirmişti ki…”', d: 'Nisâ 140, daha önce indirilmiş bir hükmü hatırlatır: ayetler alaya alınınca o meclisten kalkmak. O hüküm Mekke’de inen En‘âm 68’de.', self: true },
+  { q: '4:127', a: '4:3', t: '“Kitap’ta size okunanlar”', d: 'Nisâ 127 yetim kızlar hakkında “Kitap’ta size okunanlar”dan söz eder. Hz. Âişe bunun aynı sûrenin 3. ayeti olduğunu açıklamıştır (Buhârî). Soru ile cevap arasında 124 ayet var.', self: true },
+  { q: '87:18', a: '53:36', a2: '53:38', a2t: 'Necm 38–41', t: 'İbrahim ve Musa’nın sayfaları', d: 'A‘lâ sûresi “bunlar ilk sayfalarda, İbrahim ve Musa’nın sayfalarında da var” der. Necm sûresi aynı sayfaları anar ve içindekileri sayar: kimse kimsenin yükünü taşımaz, insan için çalıştığından başkası yoktur.', self: true },
+  { q: '4:176', a: '4:12', t: 'Kelâle', d: 'Nisâ 12 çocuğu ve babası olmayan kişinin (kelâle) mirasını anne bir kardeşler için belirler. Sûrenin son ayeti “senden fetva istiyorlar” diye konuya döner ve öz kardeşlerin payını verir.' },
   { q: '6:82', a: '31:13', t: 'Hangi zulüm?', d: '“İmanlarına zulüm karıştırmayanlar” ayeti sahâbeyi korkutunca, Hz. Peygamber Lokmân 13’ü okudu: “Şirk büyük zulümdür.” Bağlantıyı hadis kuruyor (Buhârî).', dash: true },
   { q: '25:60', a: '55:1', t: '“Rahman da nedir?”', d: 'Müşrikler “Rahman da nedir?” diye sordu. Tefsir geleneği cevabı Rahmân sûresinin açılışına bağlar: “Rahman, Kur’an’ı öğretti.” Bu bağlantı bir rivayettir, ayetin kendisi işaret etmez.', dash: true },
 ];
@@ -49,8 +57,6 @@ const EQ = [
     ['Lemma', ['lemma', 'حَياة', 'lemma'], ['lemma', 'مَوْت', 'lemma'], 'Yalnız isim hâli'],
     ['Yazılış', ['ar', 'الحياة', 'affix'], ['ar', 'الموت', 'affix'], 'Arapça yazılışı']] },
 ];
-const TOP_ALL = [['مِن', '-den'], ['اللَّه', 'Allah'], ['ما', 'ne / şey'], ['فِي', 'içinde'], ['لا', 'hayır, yok'], ['إِنّ', 'şüphesiz'], ['قالَ', 'dedi'], ['الذي', 'o ki'], ['عَلَى', 'üzerine'], ['كانَ', 'oldu']];
-const TOP_CONTENT = [['اللَّه', 'Allah'], ['قالَ', 'dedi'], ['كانَ', 'oldu'], ['رَبّ', 'Rab'], ['آمَنَ', 'iman etti'], ['يَوْم', 'gün'], ['أَرْض', 'yer'], ['قَوْم', 'kavim'], ['عَلِمَ', 'bildi'], ['آيَة', 'âyet']];
 const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'], MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 // takvim: 365 nokta, 12 ay bloğu (7 sütun)
@@ -368,9 +374,9 @@ const tezCard = (t, i) => `<div class="tzcard" style="--c:${TS[t.st][1]}"><div c
   ${t.cd ? countdown(...t.cd) : ''}</div>`;
 
 const STORIES = [
-  { id: 'madrake', t: 'Nereden bileceksin?', icon: '؟', d: '13 soru cevaplanıyor, 3’ü açık kalıyor', steps: [
+  { id: 'madrake', t: 'Nereden bileceksin?', icon: '؟', d: '“Ve mâ edrâke” 13 kez cevaplanıyor, “ve mâ yudrîke” 3 kez açık kalıyor', steps: [
     { terms: [['ar', 'ادراك', 'affix', 'Sana ne bildirdi?', GOLD], ['ar', 'يدريك', 'affix', 'Seni ne bilgilendirecek?', VIOLET]], cam: 'fit',
-      text: `Kur’an’da birbirine çok benzeyen iki soru kalıbı var.<div class="pair"><span style="--c:${GOLD}"><b class="ar">وَمَا أَدْرَاكَ</b>“Sana ne bildirdi ki…?” <em>13 kez</em></span><span style="--c:${VIOLET}"><b class="ar">وَمَا يُدْرِيكَ</b>“Seni ne bilgilendirecek?” <em>3 kez</em></span></div>Altın noktalar birinci, mor noktalar ikinci kalıp. Neredeyse hepsi son cüzde toplanmış.` },
+      text: `Kur’an’da birbirine çok benzeyen iki soru kalıbı var.<div class="pair"><span style="--c:${GOLD}"><b class="ar">وَمَا أَدْرَاكَ</b>“Sana ne bildirdi ki…?” <em>13 kez</em></span><span style="--c:${VIOLET}"><b class="ar">وَمَا يُدْرِيكَ</b>“Seni ne bilgilendirecek?” <em>3 kez</em></span></div>Altın noktalar birinci, mor noktalar ikinci kalıp. Neredeyse hepsi son cüzde toplanmış.<br><br><small class="muted">Sayım bütün Kur’an’ın Arapça metninde yapıldı; bu iki kalıbın geçtiği yerlerin hepsi bunlar. Yûnus 16’daki “ve lâ edrâküm bihî” (“size onu bildirmezdi”) soru değil, sayılmadı. Kur’an’da başka soru biçimleri de çok; bu keşif yalnız bu iki kalıba bakıyor.</small>` },
     { terms: [['ar', 'ادراك', 'affix', 'Soru · 13', GOLD], ['set', MADRAKE.map(x => x[1]).join(','), '', 'Cevap', TEAL]], links: MADRAKE.map(([q, a]) => ({ a: q, b: a, c: GOLD })),
       labels: MADRAKE.map(([q, , t]) => ({ r: q, t, c: GOLD })), cam: MADRAKE.flat().filter(x => /:\d/.test(x)),
       text: `<b>13 sorunun 13’ü de cevaplanıyor.</b> Her “sana ne bildirdi ki?” sorusunun cevabı hemen ardından gelen ayette veriliyor. İplikler soruyu (altın) cevabına (yeşil) bağlıyor.`,
@@ -381,9 +387,9 @@ const STORIES = [
     { terms: [['ar', 'ادراك', 'affix', 'Sana ne bildirdi?', GOLD], ['ar', 'يدريك', 'affix', 'Seni ne bilgilendirecek?', VIOLET]], links: MADRAKE.map(([q, a]) => ({ a: q, b: a, c: GOLD })), pulses: YUDRIKE.map(x => x[0]), cam: 'fit',
       text: `Bu ayrımı ilk fark edenlerden Süfyân b. Uyeyne’dir, Buhârî de aktarır: <i>“Kur’an’da ‘mâ edrâke’ denen her şeyi Allah bildirmiştir; ‘mâ yudrîke’ denenleri bildirmemiştir.”</i><br><br>Verideki sayım bu kuralı birebir doğruluyor: <b>13 iplik kapanıyor, 3 soru açık kalıyor.</b>` },
   ] },
-  { id: 'soruyorlar', t: 'Sana soruyorlar', icon: '❝', d: '15 soru, 15 cevap ve bir istisna', steps: [
+  { id: 'soruyorlar', t: 'Sana soruyorlar', icon: '❝', d: '“Yes’elûneke” kalıbının 15 geçişi ve bir istisna', steps: [
     { terms: [['ar', 'يسألونك', 'affix', 'Sana soruyorlar', GOLD]], labels: SORUYOR.filter(x => !x[0].startsWith('2:')).map(([r, t]) => ({ r, t, c: GOLD })), cam: 'fit',
-      text: `<b class="ar">يَسْأَلُونَكَ</b> “Sana soruyorlar” kalıbı <b>13 ayette 15 kez</b> geçiyor (2:219 ve 7:187’de ikişer soru var). Neredeyse her birinde cevap <b>“De ki…”</b> diye başlıyor ve aynı ayette veriliyor.`,
+      text: `<b class="ar">يَسْأَلُونَكَ</b> “Sana soruyorlar” kalıbı <b>13 ayette 15 kez</b> geçiyor (2:219 ve 7:187’de ikişer soru var). Neredeyse her birinde cevap <b>“De ki…”</b> diye başlıyor ve aynı ayette veriliyor.<br><br><small class="muted">Bu, bütün Kur’an’da bu kalıbın geçtiği yerlerin tamamı. Benzer başka kalıplar sayıma girmedi: tekil “yes’elüke” (sana soruyor; ör. Nisâ 153, Ahzâb 63) ve “yesteftûneke” (senden fetva istiyorlar; Nisâ 127, 176).</small>`,
       list: SORUYOR.map(([r, t, c]) => `<li>${vlink(r, GOLD)} <b>${t}</b> → <span>${c}</span></li>`) },
     { terms: [['ar', 'يسألونك', 'affix', 'Sana soruyorlar', GOLD], ['set', '2:186', '', 'Kullarım Beni sorarsa', ROSE]],
       labels: [...SORUYOR.filter(x => x[0].startsWith('2:')).map(([r, t]) => ({ r, t, c: GOLD })), { r: '2:186', t: '“Ben yakınım”', c: ROSE }], pulses: ['2:186'], cam: ['2:184', '2:189', '2:222', '2:224'],
@@ -393,22 +399,22 @@ const STORIES = [
       labels: [{ r: '7:187', t: 'Ne zaman?', c: GOLD }, { r: '79:42', t: 'Ne zaman?', c: GOLD }, { r: '33:63', t: 'Ne zaman?', c: GOLD }, { r: '31:34', t: 'Allah katında', c: TEAL }, { r: '6:59', t: 'Gaybın anahtarları', c: BLUE }], cam: 'fit',
       text: `Tek bir soruya üç ayrı yerde aynı cevap veriliyor: <b>Kıyamet ne zaman?</b> Cevap kasten verilmiyor: “Onun bilgisi yalnız Rabbimin katındadır.” Üç iplik de Lokmân 34’te birleşiyor: <i>“Kıyamet saatinin bilgisi Allah katındadır.”</i><br><br><small class="muted">Kesikli mavi iplik: Hz. Peygamber “gaybın anahtarları beştir” deyip (6:59) bu ayeti okumuştur (Buhârî).</small>` },
   ] },
-  { id: 'uzak', t: 'Uzak cevaplar', icon: '⌒', d: 'Sorusu bir sûrede, cevabı başka sûrede', steps: [
+  { id: 'uzak', t: 'Ayeti ayet açar', icon: '⌒', d: 'Bir ayetin kapalı bıraktığını başka bir ayet açıyor', steps: [
+    { terms: [['set', UZAK.map(u => u.q).join(','), '', 'Kapalı bırakılan', GOLD], ['set', UZAK.flatMap(u => [u.a, u.a2]).filter(Boolean).join(','), '', 'Açan', TEAL]],
+      links: UZAK.flatMap(u => [{ a: u.q, b: u.a, c: u.self ? GOLD : u.dash ? BLUE : VIOLET, dash: u.dash }, ...(u.a2 ? [{ a: u.a, b: u.a2, c: TEAL }] : [])]), cam: 'fit',
+      text: `Bazı ayetler bir şeyi anar ama açmaz: “nimet verdiklerin”, “size okunacak olanlar”, “Âdem’in aldığı kelimeler”. Açıklama bazen hemen sonra, bazen yüz ayet ötede, bazen başka bir sûrede gelir. Âlimler buna <b>“Kur’an’ın Kur’an’la tefsiri”</b> der.<div class="legend3"><span style="--c:${GOLD}"><b>Kur’an kendisi işaret ediyor</b> ${UZAK.filter(u => u.self).length} bağlantı</span><span style="--c:${VIOLET}"><b>Tefsir geleneği bağlıyor</b> ${UZAK.filter(u => !u.self && !u.dash).length}</span><span style="--c:${BLUE}" class="dash"><b>Rivayetle bağlanıyor</b> ${UZAK.filter(u => u.dash).length}</span></div><small class="muted">Kur’an’ın kendisinin başka bir yere gönderdiği ifadeler (“size okunanlar”, “daha önce anlattıklarımız”, “size Kitap’ta indirmişti”, “ayrıntılı açıkladı”, “sayfalar”) bütün Kur’an’da tarandı; bulunanların hepsi burada. Yalnız Nisâ 164 ve Mü’min 78’deki “kıssalarını sana anlattığımız peygamberler” tek bir ayete değil, bütün kıssalara gönderdiği için listede yok. Tefsir geleneğinin kurduğu bağlantılar ise binlercedir; burada en bilinenler var.</small>`,
+      list: UZAK.map(u => `<li>${vlink(u.q, GOLD)} → ${vlink(u.a, TEAL)}${u.a2 ? ' · ' + vlink(u.a2, TEAL) : ''} <b>${u.t}</b></li>`) },
     ...UZAK.map(u => ({
-      terms: [['set', u.q, '', 'Soru', GOLD], ['set', [u.a, u.a2].filter(Boolean).join(','), '', 'Cevap', TEAL]],
-      links: [{ a: u.q, b: u.a, c: u.self ? GOLD : u.dash ? BLUE : GOLD, dash: u.dash }, ...(u.a2 ? [{ a: u.a, b: u.a2, c: TEAL }] : [])],
-      labels: [{ r: u.q, t: u.q, c: GOLD }, { r: u.a, t: u.a, c: TEAL }, ...(u.a2 ? [{ r: u.a2, t: u.a2 + ' · Ramazan', c: TEAL }] : [])], cam: [u.q, u.a, u.a2].filter(Boolean),
-      text: `<h4>${u.t}</h4>${u.self ? '<span class="tag">Kur’an kendisi işaret ediyor</span>' : u.dash ? '<span class="tag soft">Rivayetle bağlanıyor</span>' : ''}<p>${u.d}</p>${qa(u.q, u.a)}${u.a2 ? `<div class="qa one"><div style="--c:${TEAL}"><small>Ve · ${vlink(u.a2, TEAL)} Bakara</small><p>${esc(short(meal(u.a2), 170))}</p></div></div>` : ''}`,
+      terms: [['set', u.q, '', 'Kapalı bırakılan', GOLD], ['set', [u.a, u.a2].filter(Boolean).join(','), '', 'Açan', TEAL]],
+      links: [{ a: u.q, b: u.a, c: u.self ? GOLD : u.dash ? BLUE : VIOLET, dash: u.dash }, ...(u.a2 ? [{ a: u.a, b: u.a2, c: TEAL }] : [])],
+      labels: [{ r: u.q, t: u.q, c: GOLD }, { r: u.a, t: u.a, c: TEAL }, ...(u.a2 ? [{ r: u.a2, t: u.a2t || u.a2, c: TEAL }] : [])], cam: [u.q, u.a, u.a2].filter(Boolean),
+      text: `<h4>${u.t}</h4>${u.self ? '<span class="tag">Kur’an kendisi işaret ediyor</span>' : u.dash ? '<span class="tag soft">Rivayetle bağlanıyor</span>' : '<span class="tag mid">Tefsir geleneği bağlıyor</span>'}<p>${u.d}</p>${qa(u.q, u.a)}${u.a2 ? `<div class="qa one"><div style="--c:${TEAL}"><small>Ve · ${vlink(u.a2, TEAL)} ${A.SUR[+u.a2.split(':')[0] - 1].tr}</small><p>${esc(short(meal(u.a2), 170))}</p></div></div>` : ''}`,
     })),
-    { terms: [['set', UZAK.map(u => u.q).join(','), '', 'Soru', GOLD], ['set', UZAK.flatMap(u => [u.a, u.a2]).filter(Boolean).join(','), '', 'Cevap', TEAL]],
-      links: UZAK.flatMap(u => [{ a: u.q, b: u.a, c: u.dash ? BLUE : GOLD, dash: u.dash }, ...(u.a2 ? [{ a: u.a, b: u.a2, c: TEAL }] : [])]), cam: 'fit',
-      text: `Hepsi bir arada. Âlimler buna <b>“Kur’an’ın Kur’an’la tefsiri”</b> der: bir ayetin kapalı bıraktığını başka bir ayet açar. Düz iplikler ayetlerin kendisinden, kesikli iplikler rivayetten gelen bağlantılar.`,
-      list: UZAK.map(u => `<li>${vlink(u.q, GOLD)} → ${vlink(u.a, TEAL)}${u.a2 ? ' → ' + vlink(u.a2, TEAL) : ''} <b>${u.t}</b></li>`) },
   ] },
-  { id: 'terazi', t: 'Canlı terazi', icon: '⚖', d: 'Eşitlikler hangi yöntemde tutuyor?', steps: EQ.map(e => ({ eq: e })).concat([{ chance: true }]) },
+  { id: 'terazi', t: 'Canlı terazi', icon: '⚖', d: '“Eşit geçer” denen çiftler, her sayma yönteminde', steps: EQ.map(e => ({ eq: e })).concat([{ chance: true }]) },
   { id: 'sayilar', t: 'Sayıların şekli', icon: '◷', d: '365 gün, 12 ay, her üç ayetten biri', steps: [
     { terms: [['ar', 'يوم', 'affix', 'Gün (يوم)', GOLD]], shape: calendarShape,
-      text: `<b class="ar">يَوْم</b> “gün” kelimesi <b>tekil</b> hâliyle tam <b>365</b> kez geçiyor. Noktalar haritadan kalkıp bir yıllık takvime diziliyor; her nokta bir geçiş.<br><br><small class="muted">Yöntem: yalnız tekil “yevm”, ön ekleriyle (و ف ب ل ال). İkil (يومين) ve çoğul (أيام) sayılmıyor. Yöntem değişirse sayı da değişir.</small>` },
+      text: `<b class="ar">يَوْم</b> “gün” kelimesi <b>tekil</b> hâliyle tam <b>365</b> kez geçiyor. Noktalar haritadan kalkıp bir yıllık takvime diziliyor; her nokta bir geçiş.<br><br><small class="muted">Yöntem: yalnız tekil “yevm”, ön ekleriyle (و ف ب ل ال). İkil (يومين) ve çoğul (أيام) sayılmıyor. Yöntem değişirse sayı da değişir.<br><br>Takvim şekli bizim seçimimiz: 365 nokta, miladi ayların gün sayısına (31, 28, 31, 30…) göre sırayla dizildi. Kur’an’da böyle bir ay bölümü yok; şekil yalnız sayıyı gözle görülür kılmak için. Noktaların hangi aya düştüğünün bir anlamı yok.</small>` },
     { terms: [['ar', 'شهر', 'affix', 'Ay (شهر)', BLUE]], shape: clockShape,
       text: `<b class="ar">شَهْر</b> “ay” kelimesi tekil hâliyle <b>12</b> kez geçiyor; bir yılın ay sayısı kadar.<div class="quote" style="--c:${BLUE}">“Allah katında ayların sayısı on ikidir.” <small>${vlink('9:36', BLUE)}</small></div>` },
     { terms: [['lemma', 'اللَّه', 'lemma', 'Allah', GOLD]], cam: 'fit', metric: true,
@@ -426,10 +432,6 @@ const STORIES = [
       text: `<h4>Sonuç takvimi</h4><p>${TEZ.length} tezin açık kalanlarının çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
       <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> 1–${TEZ_ILK}. tezler ${TEZ_TARIH}, sonrakiler ${TEZ_TARIH2} tarihli.</li><li><b>Önceden bilinenler ayrı sayılır.</b> Mavi tezlerin sonucu biz yazmadan önce zaten biliniyordu; bu yüzden “öngörü” sayılmazlar. Yalnız tamlık için listedeler.</li><li><b>Tutmayanlar da sayılır.</b> Yalnız tutanları anlatmak, “keşiften sonra yorum” yöntemine geri dönmek olur. Zorlanan tezler de listede kalıyor.</li></ol><p><a class="tzall" href="tezler.html">285 adayın tam kataloğu →</a><br><small class="muted">Tam okumada not edilen her aday: tezler, bilinen bilgiler, zorlananlar ve elenenler.</small></p>` },
   ] },
-  { id: 'siklik', t: 'En çok geçen kelimeler', icon: '▤', d: 'Kelimelerin yarışı', steps: [
-    { top: TOP_ALL, text: `Kur’an’da <b>77.429</b> kelime var. Edatlarla birlikte sayınca zirvede “-den” (مِن) var; <b>Allah</b> ismi ikinci sırada. Her çubuk bir kelime, her nokta bir geçiş.` },
-    { top: TOP_CONTENT, text: `Edatları çıkarınca sıralama: <b>Allah</b> 2.699, “dedi” 1.618, “oldu” 1.358, <b>Rab</b> 975. Kur’an’ın en sık kullandığı fiil “dedi”: anlatının büyük kısmı konuşmalardan oluşuyor.` },
-  ] },
 ];
 
 /* ---------- kurulum: panel ve keşif kartları ---------- */
@@ -440,8 +442,12 @@ disc.innerHTML = `<h3>Keşifler</h3><p class="muted small">Adım adım anlatıla
 side.insertBefore(disc, $('.explore'));
 disc.querySelectorAll('button').forEach(b => b.onclick = () => start(STORIES[+b.dataset.k].id, 0));
 
-/* ---------- yan sütun sekmeleri: Sonuçlar · Keşifler · Keşfet ---------- */
-const TABS = [['res', 'Sonuçlar', $('#stats')], ['dinle', 'Dinle', $('#dinle')], ['vakit', 'Bugün', $('#vakit')], ['kesif', 'Keşifler', disc], ['kesfet', 'Keşfet', $('.explore:not(.discover)')]].filter(t => t[2]);
+/* ---------- yan sütun sekmeleri: Sonuçlar · Dinle · Bugün · Keşifler ---------- */
+const TABS = [['res', 'Sonuçlar', $('#stats')], ['dinle', 'Dinle', $('#dinle')], ['vakit', 'Bugün', $('#vakit')], ['kesif', 'Keşifler', disc]].filter(t => t[2]);
+// hazır karşılaştırmalar: arama yokken Sonuçlar sekmesinde görünür
+const presetBox = $('.explore:not(.discover)');
+if (presetBox) $('#stats').after(presetBox);
+const syncPresets = () => { if (presetBox) presetBox.hidden = curTab !== 'res' || A.state.terms.length > 0; };
 const tabs = document.createElement('nav');
 tabs.className = 'sidetabs'; tabs.setAttribute('role', 'tablist');
 tabs.innerHTML = TABS.map(([k, l]) => `<button role="tab" data-tab="${k}" aria-controls="tab-${k}">${l}<b></b></button>`).join('');
@@ -450,8 +456,7 @@ TABS.forEach(([k, , el]) => { el.id = el.id || 'tab-' + k; el.setAttribute('role
 let curTab = '';
 function showTab(k, save = true) {
   curTab = k;
-  const phone = matchMedia('(max-width:600px)').matches;
-  TABS.forEach(([kk, , el]) => { el.hidden = kk !== k && !(phone && k === 'kesif' && kk === 'kesfet'); });
+  TABS.forEach(([kk, , el]) => { el.hidden = kk !== k; }); syncPresets();
   tabs.querySelectorAll('button').forEach(b => { const on = b.dataset.tab === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
   if (save) try { sessionStorage.setItem('ayet-tab', k); } catch (_) {}
   if (typeof bnav !== 'undefined' && bnav && sideSeen()) setBnav(k);
@@ -472,7 +477,7 @@ if (bnav) {
   });
   let sT = 0; addEventListener('scroll', () => { clearTimeout(sT); sT = setTimeout(() => { const pr = panel.getBoundingClientRect(), ps = !panel.hidden && pr.top < innerHeight * .45 && pr.bottom > 120; setBnav(sideSeen() ? curTab : ps ? 'kesif' : 'map'); }, 80); }, { passive: true });
 }
-addEventListener('ayet:terms', e => { resBadge(); if (e.detail.n && !story) showTab('res'); });
+addEventListener('ayet:terms', e => { resBadge(); syncPresets(); if (e.detail.n && !story) showTab('res'); });
 addEventListener('ayet:results', () => showTab('res'));
 addEventListener('ayet:stats', resBadge);
 let t0 = ''; try { t0 = sessionStorage.getItem('ayet-tab') || ''; } catch (_) {}
@@ -509,10 +514,12 @@ function drawLayer(ctx, now, g) {
       segs.push([l, k, ax, ay, ax + df * g.s * 1.6, ay, false], [l, k, bx - df * g.s * 1.6, by, bx, by, true]);
     } else segs.push([l, k, ax, ay, bx, by, true]);
   });
-  segs.forEach(([l, k, x1, y1, x2, y2, end]) => {
+  segs.forEach(([l, k, x1, y1, x2, y2, end]) => { const ex = x2, ey = y2;
+    const tr = Math.min(g.r + 1.5, Math.hypot(x2 - x1, y2 - y1) / 3), d0 = Math.hypot(x2 - x1, y2 - y1) || 1;
+    x1 += (x2 - x1) / d0 * tr; y1 += (y2 - y1) / d0 * tr; if (end) { x2 -= (x2 - x1) / d0 * tr; y2 -= (y2 - y1) / d0 * tr; }
     const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy) || 1;
     let nx = -dy / d, ny = dx / d; if (ny > 0 || (ny === 0 && nx > 0)) { nx = -nx; ny = -ny; }
-    const h = Math.max(16, Math.min(d * .32, 260)), cx = (x1 + x2) / 2 + nx * h, cy = (y1 + y2) / 2 + ny * h;
+    const h = d < 60 ? Math.max(3, d * .42) : Math.max(16, Math.min(d * .32, 260)), cx = (x1 + x2) / 2 + nx * h, cy = (y1 + y2) / 2 + ny * h;
     const t = Math.max(0, Math.min(1, (el - 250 - k * Math.min(160, 1600 / n)) / 900)), e = 1 - Math.pow(1 - t, 3);
     if (t <= 0) return;
     const pt = u => [(1 - u) * (1 - u) * x1 + 2 * (1 - u) * u * cx + u * u * x2, (1 - u) * (1 - u) * y1 + 2 * (1 - u) * u * cy + u * u * y2];
@@ -524,7 +531,7 @@ function drawLayer(ctx, now, g) {
     if (t >= 1) { // cevaba akan ışık
       const u = ((now / 1700) + k * .13) % 1, [px, py] = pt(u);
       ctx.globalAlpha = .9 * Math.sin(u * Math.PI); ctx.fillStyle = TH.ink; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 6.2832); ctx.fill();
-      if (end) { ctx.globalAlpha = 1; ctx.strokeStyle = tc(TEAL); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x2, y2, Math.max(4, g.r * 2), 0, 6.2832); ctx.stroke(); }
+      if (end) { ctx.globalAlpha = 1; ctx.strokeStyle = tc(TEAL); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(ex, ey, g.r + 3.5, 0, 6.2832); ctx.stroke(); }
     }
   });
   // açık sorular: genişleyen halkalar
@@ -533,14 +540,14 @@ function drawLayer(ctx, now, g) {
     for (let q = 0; q < 2; q++) {
       const ph = ((now / 1600) + q * .5 + k * .2) % 1;
       ctx.globalAlpha = (1 - ph) * .8; ctx.strokeStyle = tc(layer.labels.find(l => l.i === i)?.c || VIOLET); ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(x, y, Math.max(4, g.r * 1.6) + ph * 22, 0, 6.2832); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, g.r + 3 + ph * 22, 0, 6.2832); ctx.stroke();
     }
   });
   // etiketler (çakışmayı önleyerek)
   const la = Math.max(0, Math.min(1, (el - 500) / 500));
   if (la > 0 && layer.labels.length) {
     ctx.globalAlpha = la; ctx.font = '500 11.5px Inter'; ctx.textBaseline = 'middle';
-    const placed = [], rad = Math.max(5, g.r * 2);
+    const placed = [], rad = g.r + 3;
     const items = layer.labels.map(l => { const [x, y] = sp(l.i); return { ...l, x, y, w: ctx.measureText(l.t).width + 14 }; }).sort((a, b) => a.y - b.y || a.x - b.x);
     const hit = r => placed.some(p => r.x < p.x + p.w + 3 && r.x + r.w + 3 > p.x && r.y < p.y + p.h + 2 && r.y + r.h + 2 > p.y);
     for (const it of items) {

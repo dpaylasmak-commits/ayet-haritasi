@@ -6,14 +6,13 @@ const A = window.AYET; if (!A) return;
 const $ = s => document.querySelector(s);
 const side = $('.side'), anchor = $('.explore');
 const I = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
-const fmt = A.fmt, SUR = A.SUR, N = A.N, vS = A.vS, vA = A.vA;
+const fmt = A.fmt, SUR = A.SUR, N = A.N, vS = A.vS, vA = A.vA, esc = A.escHtml;
 const store = {
   get(k, d) { try { const v = localStorage.getItem('ayet-' + k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
   set(k, v) { try { localStorage.setItem('ayet-' + k, JSON.stringify(v)); } catch (_) {} }
 };
 const pad3 = n => String(n).padStart(3, '0');
 const vi = (s, a) => SUR[s - 1].start + a - 1;
-const esc = A.escHtml;
 const goTab = t => dispatchEvent(new CustomEvent('ayet:tab', { detail: t }));
 
 /* =================================================================
@@ -63,10 +62,12 @@ el.innerHTML = `
   <div class="dnopts">
     <label>Okuma<select id="dnOkuma">${OKUMA.map(([v, n]) => `<option value="${v}">${n}</option>`).join('')}</select></label>
     <label>Hâfız<select id="dnHafiz"></select></label>
+    <details class="dnmore" id="dnMore"><summary><svg class="i"><use href="#i-sliders"/></svg>Ayarlar<small id="dnMoreSum"></small></summary><div class="dnmore-b">
     <label>Hız<select id="dnRate"><option value="0.75">0,75×</option><option value="1">1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option></select></label>
     <label>Her ayet<select id="dnRep"><option value="1">1 kez</option><option value="2">2 kez</option><option value="3">3 kez</option><option value="5">5 kez</option><option value="10">10 kez</option></select></label>
     <label>Uyku<select id="dnSleep"><option value="0">Kapalı</option><option value="15">15 dk</option><option value="30">30 dk</option><option value="60">60 dk</option><option value="-1">Bitince dur</option></select></label>
     <label class="chk"><input type="checkbox" id="dnLoop"> Aralığı baştan tekrarla</label>
+    </div></details>
   </div>
   <p class="muted small dnnote">Arapça tilavet everyayah.com'dan, Türkçe meal sesi (Diyanet Vakfı meali) alquran.cloud'dan gelir; dinlemek için internet gerekir. Ekran kapanınca da çalmaya devam eder; telefonun kilit ekranından yönetebilirsiniz.</p>`;
 side.insertBefore(el, anchor);
@@ -91,8 +92,10 @@ function syncUI() {
   $('#dnSure').value = P.s; $('#dnFrom').value = P.from; $('#dnTo').value = P.to; $('#dnFrom').max = $('#dnTo').max = SUR[P.s - 1].c;
   $('#dnJuz').value = P.juz; $('#dnHafiz').value = P.hafiz; $('#dnRate').value = String(P.rate); $('#dnRep').value = String(P.rep); $('#dnLoop').checked = P.loop; $('#dnOkuma').value = okuma(); $('#dnHafiz').disabled = okuma() === 'tr';
   const n = A.resultIds().length;
-  $('#dnRes').textContent = n ? `Aramada bulunan ${fmt(n)} ayet mushaf sırasıyla çalınır.` : 'Önce yukarıdan bir kelime arayın; bulunan ayetler burada sırayla çalınır.';
+  $('#dnRes').textContent = n ? `Aramada bulunan ${fmt(n)} ayet, Sonuçlar listesindeki sırayla çalınır.` : 'Önce yukarıdan bir kelime arayın; bulunan ayetler burada sırayla çalınır.';
   $('#dnCount').textContent = list.length ? `${fmt(list.length)} ayet` : '';
+  const sl = +$('#dnSleep').value;
+  $('#dnMoreSum').textContent = [String(P.rate).replace('.', ',') + '×', P.rep > 1 ? `her ayet ${P.rep} kez` : '', sl > 0 ? `uyku ${sl} dk` : sl < 0 ? 'bitince dur' : '', P.loop ? 'tekrar' : ''].filter(Boolean).join(' · ');
   showNow();
 }
 function showNow() {
@@ -184,6 +187,7 @@ $('#dnRate').onchange = e => { P.rate = +e.target.value; au.playbackRate = P.rat
 $('#dnRep').onchange = e => { P.rep = +e.target.value; store.set('dinle', P); };
 $('#dnLoop').onchange = e => { P.loop = e.target.checked; store.set('dinle', P); };
 $('#dnSleep').onchange = e => setSleep(+e.target.value);
+$('#dnMore').addEventListener('change', () => setTimeout(syncUI));
 $('#dnPlay').onclick = toggle; $('#dnPrev').onclick = () => go(-1); $('#dnNext').onclick = () => go(1);
 $('#dnOpen').onclick = e => { e.preventDefault(); if (list[k] != null) A.openVerse(list[k]); };
 addEventListener('ayet:cardplay', () => { if (playing) pause(); });
@@ -217,7 +221,8 @@ if (resumeK && resumeK.key === key() && resumeK.k > 0 && resumeK.k < list.length
   r.innerHTML = `Kaldığınız yer: <b>${A.sName(list[k])} ${vA[list[k]]}</b> · <a href="#" id="dnFromStart">baştan başlat</a>`;
   $('#dnFromStart').onclick = e => { e.preventDefault(); k = 0; r.hidden = true; showNow(); };
 }
-window.DINLE = { play, pause, toggle, go, setList(ids, i0 = 0) { P.src = 'sonuc'; list = ids; k = i0; syncUI(); play(); } };
+window.DINLE = { play, pause, toggle, go, setList(ids, i0 = 0) { P.src = 'sonuc'; list = ids; k = i0; syncUI(); play(); },
+  sure(n) { P.src = 'sure'; P.s = n; P.from = 1; P.to = SUR[n - 1].c; k = 0; stopAll(); buildList(); play(); } };
 
 /* =================================================================
    2) NAMAZ VAKİTLERİ  (Diyanet yöntemine yakın hesap, cihazda)
@@ -265,6 +270,11 @@ vk.innerHTML = `
     <p class="muted small">Konumunuz yalnız bu cihazda saklanır, hiçbir yere gönderilmez.</p>
   </div>
   <div id="vkBody"></div>
+  <div class="ozel" id="ozel"></div>
+  <details class="imsakiye" id="imsakiye"><summary><b>İmsakiye</b><small>Aylık vakit cetveli</small></summary>
+    <div class="imh"><select id="imSel" aria-label="Ay"></select><button class="ghost small" id="imCopy">${I('copy')}Kopyala</button></div>
+    <div class="imwrap" id="imBody"></div>
+  </details>
   <div class="kible" id="kible">
     <div class="ph"><h3>Kıble</h3><span class="muted small" id="kbTxt"></span></div>
     <div class="kbdial" id="kbDial" aria-hidden="true">
@@ -290,7 +300,18 @@ function dayTimes(off = 0) {
   return vakitler(y, m, d, LOC.lat, LOC.lng);
 }
 const HAY = ['Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir', 'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban', 'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'];
+// Hicrî ay başları (Ümmülkura; 2026–2027 Diyanet takvimiyle karşılaştırıldı). yyAAgg:yıl.ay
+const HST = '260616:1448.1 260715:1448.2 260814:1448.3 260912:1448.4 261012:1448.5 261111:1448.6 261210:1448.7 270109:1448.8 270208:1448.9 270309:1448.10 270408:1448.11 270507:1448.12 270606:1449.1 270705:1449.2 270803:1449.3 270902:1449.4 271001:1449.5 271031:1449.6 271129:1449.7 271229:1449.8 280128:1449.9 280226:1449.10 280327:1449.11 280426:1449.12 280525:1450.1 280624:1450.2 280723:1450.3 280822:1450.4 280920:1450.5 281019:1450.6 281118:1450.7 281217:1450.8 290116:1450.9 290214:1450.10 290316:1450.11 290415:1450.12 290514:1451.1 290613:1451.2 290713:1451.3 290812:1451.4 290910:1451.5 291009:1451.6 291108:1451.7 291207:1451.8 300105:1451.9 300204:1451.10 300306:1451.11 300404:1451.12 300504:1452.1 300603:1452.2 300702:1452.3 300801:1452.4 300831:1452.5 300929:1452.6 301028:1452.7 301127:1452.8 301226:1452.9'
+  .split(' ').map(x => { const [g, h] = x.split(':'), [y, m] = h.split('.').map(Number); return { t: Date.UTC(2000 + +g.slice(0, 2), +g.slice(2, 4) - 1, +g.slice(4, 6)), y, m }; });
+const utcDay = (y, m, d) => Date.UTC(y, m - 1, d);
+function hicriOf(y, m, d) { // miladi gün → { y, m, d } ya da tablo dışındaysa null
+  const t = utcDay(y, m, d); let r = null;
+  for (const x of HST) { if (x.t <= t) r = x; else break; }
+  if (!r || t - r.t > 30 * 864e5) return null;
+  return { y: r.y, m: r.m, d: Math.round((t - r.t) / 864e5) + 1 };
+}
 function hicriTarih(tz) {
+  { const { y, m, d } = dateParts(Date.now(), tz), h = hicriOf(y, m, d); if (h) return `${h.d} ${HAY[h.m - 1]} ${h.y}`; }
   // tarayıcı Ümmülkura takvimini biliyorsa onu, bilmiyorsa (bazı Android WebView'lar) hesaplı takvimi kullan
   try {
     const f = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-umalqura', { timeZone: tz, day: 'numeric', month: 'numeric', year: 'numeric' });
@@ -343,6 +364,80 @@ $('#vkGps').onclick = () => {
   }, err => { $('#vkGps').disabled = false; A.toast(err.code === 1 ? 'Konum izni verilmedi; il seçebilirsiniz' : 'Konum alınamadı; il seçin'); }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 6 * 3600e3 });
 };
 setInterval(() => { if (LOC && !vk.hidden) renderVakit(); }, 1000);
+/* ---------- özel günler, Cuma/Kehf, imsakiye ---------- */
+// akşamı kandil olan günler ve bayramlar (Ümmülkura hesabı; 2026–2027 Diyanet takvimiyle aynı)
+const OZ_N = { y: ['Hicrî yılbaşı', 'Muharrem’in ilk günü'], a: ['Âşûrâ günü', '10 Muharrem'], m: ['Mevlid Kandili', 'Hz. Peygamber’in doğumu · akşamı', 1], u: ['Üç ayların başlangıcı', 'Recep ayının ilk günü'],
+  r: ['Regaib Kandili', 'Recep’in ilk Cuma gecesi · akşamı', 1], i: ['Miraç Kandili', '27 Recep gecesi · akşamı', 1], b: ['Berat Kandili', '15 Şaban gecesi · akşamı', 1], s: ['Ramazan başlıyor', 'İlk oruç; teravih bir önceki akşam'],
+  k: ['Kadir Gecesi', '27 Ramazan gecesi · akşamı', 1], f: ['Ramazan Bayramı arifesi', '30 Ramazan'], F: ['Ramazan Bayramı', '3 gün'], z: ['Kurban Bayramı arifesi', '9 Zilhicce · Arafat günü'], K: ['Kurban Bayramı', '4 gün'] };
+const OZ = '261210u 261210r 270104i 270122b 270208s 270305k 270308f 270309F 270515z 270516K 270606y 270615a 270813m 271129u 271202r 271224i 280111b 280128s 280222k 280225f 280226F 280504z 280505K 280525y 280603a 280802m 281118u 281123r 281213i 281230b 290116s 290210k 290213f 290214F 290423z 290424K 290514y 290523a 290723m 291108u 291108r 291203i 291220b 300105s 300130k 300203f 300204F 300412z 300413K 300504y 300513a 300712m 301028u 301031r 301122i 301210b 301226s'
+  .split(' ').map(x => ({ t: Date.UTC(2000 + +x.slice(0, 2), +x.slice(2, 4) - 1, +x.slice(4, 6)), k: x[6] }));
+const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'], GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'], GKISA = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'], HKISA = ['Muh', 'Saf', 'R.evvel', 'R.âhir', 'C.evvel', 'C.âhir', 'Recep', 'Şaban', 'Ram', 'Şevval', 'Zilk', 'Zilh'];
+const gTxt = t => { const d = new Date(t); return `${d.getUTCDate()} ${AYLAR[d.getUTCMonth()]} ${d.getUTCFullYear()} ${GUNLER[d.getUTCDay()]}`; };
+const tz0 = () => LOC ? LOC.tz : localTz();
+const today0 = () => { const { y, m, d } = dateParts(Date.now(), tz0()); return utcDay(y, m, d); };
+function kehfCard() {
+  // Cuma gecesi Perşembe akşamı başlar, Cuma akşamı biter
+  const t0 = today0(), wd = new Date(t0).getUTCDay(), now = Date.now();
+  const aksam = LOC ? dayTimes(0).aksam : null, afterAksam = aksam ? now >= aksam : new Date().getHours() >= 18;
+  const on = (wd === 4 && afterAksam) || (wd === 5 && !afterAksam);
+  if (!on) return '';
+  return `<div class="kehf"><div><b>Cuma · Kehf sûresi</b><p>Hz. Peygamber’in, Cuma günü Kehf sûresini okuyan için iki Cuma arasının aydınlık olacağını söylediği rivayet edilir (Hâkim, Beyhakî). Bu yüzden Perşembe akşamından Cuma akşamına kadar Kehf okunur. Sûre 110 ayet, okunuşu yaklaşık 40 dakika.</p></div>
+    <div class="kehfb"><button class="gold small" id="kehfDinle">${I('play')}Dinle</button><button class="ghost small" id="kehfOku">Oku</button></div></div>`;
+}
+function renderOzel() {
+  const el = $('#ozel'); if (!el) return;
+  const t0 = today0(), D = 864e5;
+  const span = k => k === 'F' ? 3 : k === 'K' ? 4 : 1;
+  const cur = OZ.filter(o => t0 >= o.t && t0 < o.t + span(o.k) * D);
+  const next = OZ.filter(o => o.t > t0).slice(0, 4), year = OZ.filter(o => o.t > t0 && o.t < t0 + 366 * D);
+  const row = o => { const n = OZ_N[o.k], dd = Math.round((o.t - t0) / D); return `<li><span><b>${n[0]}</b><small>${gTxt(o.t)} · ${n[1]}</small></span><em>${dd === 1 ? 'yarın' : dd + ' gün'}</em></li>`; };
+  el.innerHTML = kehfCard() + cur.map(o => { const n = OZ_N[o.k], day = Math.round((t0 - o.t) / D) + 1; return `<div class="ozbugun"><small>Bugün</small><b>${n[0]}${span(o.k) > 1 ? ` · ${day}. gün` : ''}</b><span>${n[2] ? 'Kandil gecesi bu akşam, akşam ezanıyla başlar.' : n[1]}</span></div>`; }).join('') +
+    `<div class="ph"><h3>Yaklaşan günler</h3><span class="muted small">${hicriTarih(tz0())}</span></div><ol class="ozlist">${next.map(row).join('')}</ol>
+    <details class="ozall"><summary>Önümüzdeki 12 ay</summary><ol class="ozlist">${year.map(row).join('')}</ol></details>
+    <p class="muted small">Kandiller, tarihi verilen günün akşamı başlar. Tarihler Ümmülkura takvimiyle hesaplanır; 2026–2027 için Diyanet’in açıkladığı tarihlerle aynıdır, sonraki yıllarda bir gün sapabilir.</p>`;
+  const kd = $('#kehfDinle'); if (kd) kd.onclick = () => { if (window.DINLE) { window.DINLE.sure(18); dispatchEvent(new CustomEvent('ayet:tab', { detail: 'dinle' })); } };
+  const ko = $('#kehfOku'); if (ko) ko.onclick = () => A.openVerse(A.verseIndex(18, 1));
+}
+/* imsakiye: seçilen ayın ya da Ramazan’ın vakit cetveli */
+function imOptions() {
+  const t0 = today0(), d0 = new Date(t0), opts = [];
+  const ram = OZ.find(o => o.k === 's' && o.t + 30 * 864e5 > t0);
+  if (ram) { const f = OZ.find(o => o.k === 'f' && o.t > ram.t); opts.push([`r${ram.t}-${f ? f.t : ram.t + 29 * 864e5}`, `Ramazan ${new Date(ram.t).getUTCFullYear()} imsakiyesi`]); }
+  for (let j = 0; j < 12; j++) { const y = d0.getUTCFullYear() + Math.floor((d0.getUTCMonth() + j) / 12), m = (d0.getUTCMonth() + j) % 12; opts.push([`m${y}-${m + 1}`, `${AYLAR[m]} ${y}`]); }
+  $('#imSel').innerHTML = opts.map(([v, n], j) => `<option value="${v}"${j === (ram && ram.t <= t0 ? 0 : ram ? 1 : 0) ? ' selected' : ''}>${n}</option>`).join('');
+}
+function imDays() {
+  const v = $('#imSel').value || '', out = [];
+  if (v[0] === 'r') { const [a, b] = v.slice(1).split('-').map(Number); for (let t = a; t <= b; t += 864e5) out.push(t); }
+  else { const [y, m] = v.slice(1).split('-').map(Number), n = new Date(Date.UTC(y, m, 0)).getUTCDate(); for (let d = 1; d <= n; d++) out.push(Date.UTC(y, m - 1, d)); }
+  return out;
+}
+function renderImsak() {
+  if (!$('#imsakiye').open) return;
+  const body = $('#imBody');
+  if (!LOC) { body.innerHTML = '<p class="muted small">Önce yukarıdan konum seçin.</p>'; return; }
+  const t0 = today0(), ram = ($('#imSel').value || '')[0] === 'r';
+  const rows = imDays().map((t, j) => {
+    const d = new Date(t), T = vakitler(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), LOC.lat, LOC.lng), h = hicriOf(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+    return `<tr class="${t === t0 ? 'today' : ''}${d.getUTCDay() === 5 ? ' cuma' : ''}"><th>${ram ? `<b>${j + 1}</b>` : ''}${d.getUTCDate()} ${AYLAR[d.getUTCMonth()].slice(0, 3)}<small>${GKISA[d.getUTCDay()]}${h ? ' · ' + h.d + ' ' + HKISA[h.m - 1] : ''}</small></th>${VN.map(([x]) => `<td>${hm(T[x], LOC.tz)}</td>`).join('')}</tr>`;
+  }).join('');
+  body.innerHTML = `<table class="imtab"><thead><tr><th>${ram ? 'Gün' : 'Tarih'}</th>${VN.map(([, n]) => `<th>${n}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table><p class="muted small">${esc(LOC.name)} için. ${ram ? 'Oruç imsak vaktinde başlar, akşam vaktinde biter.' : ''}</p>`;
+  const tr = body.querySelector('tr.today'); if (tr) tr.scrollIntoView({ block: 'nearest' });
+}
+$('#imsakiye').addEventListener('toggle', () => { if ($('#imsakiye').open) { if (!$('#imSel').options.length) imOptions(); renderImsak(); } });
+$('#imSel').onchange = renderImsak;
+$('#imCopy').onclick = () => {
+  if (!LOC) return;
+  const lines = [`${$('#imSel').selectedOptions[0].textContent} · ${LOC.name}`, ['Tarih', ...VN.map(v => v[1])].join('\t')];
+  for (const t of imDays()) { const d = new Date(t), T = vakitler(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), LOC.lat, LOC.lng); lines.push([gTxt(t), ...VN.map(([x]) => hm(T[x], LOC.tz))].join('\t')); }
+  navigator.clipboard.writeText(lines.join('\n') + '\n\nAyet Haritası · Diyanet açılarıyla hesaplanmıştır.').then(() => A.toast('İmsakiye kopyalandı'), () => A.toast('Kopyalanamadı'));
+};
+locCbs.push(() => { renderOzel(); renderImsak(); });
+renderOzel(); setInterval(() => { if (!vk.hidden) renderOzel(); }, 60000);
+// masaüstünde pusula yok: yalnız yön ve mesafe
+const NOCOMPASS = !matchMedia('(pointer:coarse)').matches;
+if (NOCOMPASS) { vk.classList.add('nocompass'); $('#kbStart').hidden = true; $('#kbNote').textContent = 'Kıble açısı kuzeyden saat yönünde ölçülür. Pusula telefonda çalışır; bilgisayarda yönü bir pusula ya da harita uygulamasıyla bulabilirsiniz.'; }
+
 
 /* =================================================================
    3) KIBLE PUSULASI
