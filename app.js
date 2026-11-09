@@ -1345,7 +1345,7 @@ window.AYET = {
   tweenCam, fitCam, w2s, cardOpen: () => !card.hidden, curBounds: () => cur.b, curP: () => cur.P, cam,
   setOverlay(fn) { overlay = fn; needs = true; }, redraw() { needs = true; },
   setExtraHash(h) { extraHash = h; buildHash(); syncHash(); }, LOCAL,
-  mealText: id => mealText[id], stopAudio: () => { if (playing) stopAudio(); },
+  mealText: id => mealText[id], mealName, cardIndex: () => selected, cardMeal: () => state.cardMeal, stopAudio: () => { if (playing) stopAudio(); },
   setPlaying(i) { playI = i; needs = true; }, juz: i => Q.verses[i][5]
 };
 })();

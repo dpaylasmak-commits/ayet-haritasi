@@ -615,10 +615,16 @@ function wrap(c, text, maxW) {
   for (const w of text.split(/\s+/)) { const t = line ? line + ' ' + w : w; if (line && c.measureText(t).width > maxW) { out.push(line); line = w; } else line = t; }
   if (line) out.push(line); return out;
 }
-async function ayetImage(i, label = 'Günün ayeti') {
+// meal birkaç ayeti birlikte çeviriyorsa (aynı metin) görselde ayet aralığını göster
+function mealSpan(i, T) { let a = i, b = i; while (a > 0 && vS[a - 1] === vS[i] && T[a - 1] === T[i]) a--; while (b + 1 < N && vS[b + 1] === vS[i] && T[b + 1] === T[i]) b++; return [a, b]; }
+async function ayetImage(i, label = 'Günün ayeti', mid = 'tr.diyanet', dated = true) {
+  const T = (A.mealText && A.mealText(mid)) || null, tr = T ? T[i] : A.Q.verses[i][4], [ia, ib] = T ? mealSpan(i, T) : [i, i];
+  const mn = (A.mealName && A.mealName(T ? mid : 'tr.diyanet')) || 'Diyanet İşleri';
+  const arDig = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const arTxt = ib > ia ? Array.from({ length: ib - ia + 1 }, (_, k) => `${A.Q.verses[ia + k][2]} ﴿${arDig(vA[ia + k])}﴾`).join(' ') : A.Q.verses[i][2];
   const v = A.Q.verses[i], W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
-  try { await Promise.all([document.fonts.load('64px "Amiri Quran"', v[2]), document.fonts.load('500 44px Inter'), document.fonts.load('600 44px Inter')]); } catch (_) {}
+  try { await Promise.all([document.fonts.load('64px "Amiri Quran"', arTxt), document.fonts.load('500 44px Inter'), document.fonts.load('600 44px Inter')]); } catch (_) {}
   c.fillStyle = '#0b0d12'; c.fillRect(0, 0, W, H);
   const g = c.createRadialGradient(W / 2, H * .42, 40, W / 2, H * .42, H * .7); g.addColorStop(0, 'rgba(233,185,73,.16)'); g.addColorStop(1, 'rgba(233,185,73,0)');
   c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -626,11 +632,11 @@ async function ayetImage(i, label = 'Günün ayeti') {
   for (let k = 0; k < 520; k++) { const x = rnd() * W, y = rnd() * H, r = rnd() < .08 ? 3 : 1.6; c.fillStyle = rnd() < .1 ? 'rgba(233,185,73,.55)' : 'rgba(180,190,215,.16)'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
   c.textAlign = 'center'; c.textBaseline = 'alphabetic';
   c.fillStyle = '#e9b949'; c.font = '600 30px Inter'; c.letterSpacing = '8px'; c.fillText('AYET HARİTASI', W / 2, 170); c.letterSpacing = '0px';
-  c.fillStyle = '#8e94a7'; c.font = '500 32px Inter'; c.fillText(label + ' · ' + trDate(), W / 2, 226);
+  c.fillStyle = '#8e94a7'; c.font = '500 32px Inter'; c.fillText(dated ? label + ' · ' + trDate() : label, W / 2, 226);
   const mw = W - 180; let arS = 66, trS = 46, arL, trL, hgt;
   for (;;) {
-    c.font = `${arS}px "Amiri Quran"`; c.direction = 'rtl'; arL = wrap(c, v[2], mw); c.direction = 'ltr';
-    c.font = `500 ${trS}px Inter`; trL = wrap(c, v[4], mw);
+    c.font = `${arS}px "Amiri Quran"`; c.direction = 'rtl'; arL = wrap(c, arTxt, mw); c.direction = 'ltr';
+    c.font = `500 ${trS}px Inter`; trL = wrap(c, tr, mw);
     hgt = arL.length * arS * 1.9 + 90 + trL.length * trS * 1.42;
     if (hgt < 1240 || trS < 30) break; arS -= 4; trS -= 3;
   }
@@ -641,21 +647,29 @@ async function ayetImage(i, label = 'Günün ayeti') {
   c.fillStyle = '#e9b949'; c.fillRect(W / 2 - 40, y, 80, 4); y += 70 + trS * .3;
   c.fillStyle = '#d9dce6'; c.font = `500 ${trS}px Inter`;
   for (const l of trL) { c.fillText(l, W / 2, y); y += trS * 1.42; }
-  c.fillStyle = '#f1cd72'; c.font = '600 44px Inter'; c.fillText(`${SUR[vS[i] - 1].tr} Sûresi · ${vS[i]}:${vA[i]}`, W / 2, H - 250);
-  c.fillStyle = '#8e94a7'; c.font = '500 28px Inter'; c.fillText('Diyanet meali · dpaylasmak-commits.github.io/ayet-haritasi', W / 2, H - 150);
+  c.fillStyle = '#f1cd72'; c.font = '600 44px Inter'; c.fillText(`${SUR[vS[i] - 1].tr} Sûresi · ${vS[i]}:${vA[ia]}${ib > ia ? '–' + vA[ib] : ''}`, W / 2, H - 250);
+  c.fillStyle = '#8e94a7'; c.font = '500 28px Inter'; c.fillText(`${mn} meali · dpaylasmak-commits.github.io/ayet-haritasi`, W / 2, H - 150);
   return new Promise(r => cv.toBlob(r, 'image/png'));
 }
-async function shareGunun(i) {
-  const b = $('#gnPay'); if (b) b.disabled = true;
+// paylaş: uygulamada Android paylaşım penceresi, tarayıcıda Web Share, olmazsa görseli indir
+const PUBLIC = 'https://dpaylasmak-commits.github.io/ayet-haritasi/';
+async function shareAyet(i, { label = 'Günün ayeti', mid = 'tr.diyanet', dated = true, btn = null } = {}) {
+  if (btn) btn.disabled = true;
   try {
-    const blob = await ayetImage(i), name = `ayet-${vS[i]}-${vA[i]}.png`, text = `${SUR[vS[i] - 1].tr} ${vS[i]}:${vA[i]} · Ayet Haritası`;
+    const blob = await ayetImage(i, label, mid, dated), name = `ayet-${vS[i]}-${vA[i]}.png`;
+    const T = A.mealText && A.mealText(mid), [ia, ib] = T ? mealSpan(i, T) : [i, i];
+    const text = `${SUR[vS[i] - 1].tr} ${vS[i]}:${vA[ia]}${ib > ia ? '–' + vA[ib] : ''} · Ayet Haritası\n${PUBLIC}#a=${vS[ia]}:${vA[ia]}`;
     if (window.AYET_NATIVE_SHARE) { await AYET_NATIVE_SHARE(blob, name, text); return; }
     const file = new File([blob], name, { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], text }); } catch (_) {} return; }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     A.toast('Görsel indirildi');
-  } finally { if (b) b.disabled = false; }
+  } catch (_) { A.toast('Görsel hazırlanamadı'); }
+  finally { if (btn) btn.disabled = false; }
 }
+const shareGunun = i => shareAyet(i, { btn: $('#gnPay') });
+const shb = $('#shareBtn');
+if (shb) shb.onclick = () => { const i = A.cardIndex ? A.cardIndex() : -1; if (i >= 0) shareAyet(i, { label: 'Kur’an-ı Kerim', mid: A.cardMeal ? A.cardMeal() : 'tr.diyanet', dated: false, btn: shb }); };
 renderGunun();
 let gunDay = dayNum(); setInterval(() => { if (dayNum() !== gunDay) { gunDay = dayNum(); renderGunun(); } }, 60e3);
 window.GUNUN = { idx: gunIdx, image: ayetImage, share: shareGunun };
