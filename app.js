@@ -933,6 +933,16 @@ function playAr(i, tok) {
     audio.play().catch(rej);
   });
 }
+// Türkçe meal sesi (Diyanet Vakfı meali, alquran.cloud)
+function playMeal(i) {
+  return new Promise((res, rej) => {
+    if (!audio) audio = new Audio();
+    audio.onended = () => res(); audio.onerror = () => rej(new Error('meal'));
+    audio.src = `https://cdn.islamic.network/quran/audio/128/tr.vakfi-audio/${i + 1}.mp3`;
+    audio.playbackRate = 1;
+    audio.play().catch(rej);
+  });
+}
 function speakTr(i, tok) {
   return new Promise(async (res, rej) => {
     if (!tts) return rej(new Error('tts'));
@@ -971,14 +981,15 @@ async function playVerse() {
   const i = selected; if (i < 0) return;
   dispatchEvent(new Event('ayet:cardplay'));
   const tok = ++playTok; stopMedia(); playing = true; setPlay(true);
-  const mode = $('#listenMode').value;
+  const mode = $('#listenMode').value; try { localStorage.setItem('ayet-okuma', JSON.stringify(mode)); } catch (_) {}
   try {
     if (mode !== 'tr') await playAr(i, tok);
     if (tok !== playTok) return;
-    if (mode !== 'ar') await speakTr(i, tok);
+    if (tok !== playTok) return;
+    if (mode !== 'ar') await (MEAL_TTS ? speakTr(i, tok) : playMeal(i));
   } catch (e) {
     if (tok !== playTok) return;
-    toast(e && e.message === 'tts' ? 'Bu tarayıcı sesli okumayı desteklemiyor' : e && e.message === 'ses' ? 'Tilavet yüklenemedi (internet bağlantısı gerekir)' : 'Ses çalınamadı');
+    toast(e && e.message === 'tts' ? 'Bu tarayıcı sesli okumayı desteklemiyor' : e && e.message === 'ses' ? 'Tilavet yüklenemedi (internet bağlantısı gerekir)' : e && e.message === 'meal' ? 'Meal sesi yüklenemedi (internet bağlantısı gerekir)' : 'Ses çalınamadı');
     playing = false; setPlay(false); return;
   }
   if (tok !== playTok) return;
@@ -989,7 +1000,7 @@ function stopMedia() { if (audio) audio.pause(); if (tts) tts.cancel(); }
 function stopAudio() { playTok++; stopMedia(); playing = false; setPlay(false); if (selected >= 0 && mealText[state.cardMeal]) markSpoken(selected, -1); }
 function setPlay(on) { $('#playBtn').innerHTML = on ? '<svg class="i"><use href="#i-pause"/></svg>Durdur' : '<svg class="i"><use href="#i-play"/></svg>Dinle'; }
 $('#playBtn').onclick = () => playing ? stopAudio() : playVerse();
-$('#listenMode').onchange = () => { if (playing) playVerse(); };
+$('#listenMode').onchange = () => { try { localStorage.setItem('ayet-okuma', JSON.stringify($('#listenMode').value)); } catch (_) {} dispatchEvent(new Event('ayet:okuma')); if (playing) playVerse(); };
 $('#prevBtn').onclick = () => openVerse(selected - 1);
 $('#nextBtn').onclick = () => openVerse(selected + 1);
 $('#closeBtn').onclick = closeVerse; veil.onclick = closeVerse;
@@ -1266,7 +1277,12 @@ function toast(msg) {
 
 /* ---------- başlat ---------- */
 if (!LOCAL) { $('#listenMode').innerHTML = '<option value="tr">Meal</option>'; $('#linkBtn').hidden = true; if (!tts) { $('#playBtn').hidden = true; $('#autoNext').parentElement.hidden = true; } }
-if (LOCAL && !MEAL_TTS) { $('#listenMode').innerHTML = '<option value="ar">Arapça tilavet</option>'; $('#listenMode').hidden = true; $('#rateSel').hidden = true; }
+if (LOCAL && !MEAL_TTS) {
+  $('#listenMode').innerHTML = '<option value="ar">Arapça</option><option value="tr">Türkçe meal</option><option value="artr">Arapça + meal</option>'; $('#rateSel').hidden = true;
+  const syncOkuma = () => { let v = 'ar'; try { v = JSON.parse(localStorage.getItem('ayet-okuma')) || 'ar'; } catch (_) {} $('#listenMode').value = ['ar', 'tr', 'artr'].includes(v) ? v : 'ar'; };
+  syncOkuma(); addEventListener('ayet:okuma', syncOkuma);
+  $('#listenMode').title = 'Meal sesi: Diyanet Vakfı meali';
+}
 setMode('tr');
 const init = LOCAL ? readHash() : { chart: false, a: null };
 computeHits(); renderChips();

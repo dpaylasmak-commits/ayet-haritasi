@@ -27,8 +27,12 @@ const HAFIZ = [
   ['Yasser_Ad-Dussary_128kbps', 'Yâsir ed-Devserî'], ['Hudhaify_128kbps', 'Ali el-Huzeyfî'], ['Ghamadi_40kbps', 'Sa‘d el-Gâmidî']
 ];
 const url = (h, s, a) => `https://everyayah.com/data/${h}/${pad3(s)}${pad3(a)}.mp3`;
+// Türkçe meal sesi: Diyanet Vakfı meali, alquran.cloud (islamic.network) · ayet sırası 1–6236
+const mealUrl = i => `https://cdn.islamic.network/quran/audio/128/tr.vakfi-audio/${i + 1}.mp3`;
+const OKUMA = [['ar', 'Arapça'], ['tr', 'Türkçe meal'], ['artr', 'Arapça + meal']];
+const okuma = () => { const v = store.get('okuma', 'ar'); return OKUMA.some(o => o[0] === v) ? v : 'ar'; };
 const P = Object.assign({ src: 'sure', s: 1, from: 1, to: 7, juz: 1, hafiz: HAFIZ[0][0], rate: 1, rep: 1, loop: false, sleep: 0 }, store.get('dinle', {}));
-let list = [], k = 0, playing = false, repN = 0, basNow = false, sleepT = 0, sleepAt = 0, resumeK = store.get('dinle-k', null);
+let list = [], k = 0, playing = false, repN = 0, parts = [], ph = 0, sleepT = 0, sleepAt = 0, resumeK = store.get('dinle-k', null);
 const au = new Audio(), pre = new Audio(); au.preload = 'auto'; pre.preload = 'auto';
 
 const el = document.createElement('section');
@@ -57,13 +61,14 @@ el.innerHTML = `
     <p class="dnresume small" id="dnResume" hidden></p>
   </div>
   <div class="dnopts">
+    <label>Okuma<select id="dnOkuma">${OKUMA.map(([v, n]) => `<option value="${v}">${n}</option>`).join('')}</select></label>
     <label>Hâfız<select id="dnHafiz"></select></label>
     <label>Hız<select id="dnRate"><option value="0.75">0,75×</option><option value="1">1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option></select></label>
     <label>Her ayet<select id="dnRep"><option value="1">1 kez</option><option value="2">2 kez</option><option value="3">3 kez</option><option value="5">5 kez</option><option value="10">10 kez</option></select></label>
     <label>Uyku<select id="dnSleep"><option value="0">Kapalı</option><option value="15">15 dk</option><option value="30">30 dk</option><option value="60">60 dk</option><option value="-1">Bitince dur</option></select></label>
     <label class="chk"><input type="checkbox" id="dnLoop"> Aralığı baştan tekrarla</label>
   </div>
-  <p class="muted small dnnote">Ses kayıtları everyayah.com'dan gelir; dinlemek için internet gerekir. Ekran kapanınca da çalmaya devam eder; telefonun kilit ekranından yönetebilirsiniz.</p>`;
+  <p class="muted small dnnote">Arapça tilavet everyayah.com'dan, Türkçe meal sesi (Diyanet Vakfı meali) alquran.cloud'dan gelir; dinlemek için internet gerekir. Ekran kapanınca da çalmaya devam eder; telefonun kilit ekranından yönetebilirsiniz.</p>`;
 side.insertBefore(el, anchor);
 
 $('#dnSure').innerHTML = SUR.map(s => `<option value="${s.n}">${s.n}. ${s.tr} · ${s.c} ayet</option>`).join('');
@@ -84,7 +89,7 @@ function syncUI() {
   el.querySelectorAll('.dnsrc button').forEach(b => b.classList.toggle('on', b.dataset.src === P.src));
   el.querySelectorAll('.dnpick').forEach(d => d.hidden = d.dataset.for !== P.src);
   $('#dnSure').value = P.s; $('#dnFrom').value = P.from; $('#dnTo').value = P.to; $('#dnFrom').max = $('#dnTo').max = SUR[P.s - 1].c;
-  $('#dnJuz').value = P.juz; $('#dnHafiz').value = P.hafiz; $('#dnRate').value = String(P.rate); $('#dnRep').value = String(P.rep); $('#dnLoop').checked = P.loop;
+  $('#dnJuz').value = P.juz; $('#dnHafiz').value = P.hafiz; $('#dnRate').value = String(P.rate); $('#dnRep').value = String(P.rep); $('#dnLoop').checked = P.loop; $('#dnOkuma').value = okuma(); $('#dnHafiz').disabled = okuma() === 'tr';
   const n = A.resultIds().length;
   $('#dnRes').textContent = n ? `Aramada bulunan ${fmt(n)} ayet mushaf sırasıyla çalınır.` : 'Önce yukarıdan bir kelime arayın; bulunan ayetler burada sırayla çalınır.';
   $('#dnCount').textContent = list.length ? `${fmt(list.length)} ayet` : '';
@@ -106,15 +111,23 @@ function setBtn() {
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
 }
 function needBasmala(i) { return vA[i] === 1 && vS[i] !== 1 && vS[i] !== 9; }
-function load(i, withBas) {
-  basNow = !!withBas;
-  au.src = basNow ? url(P.hafiz, 1, 1) : url(P.hafiz, vS[i], vA[i]);
+// bir ayetin çalınacak parçaları: (besmele) + Arapça / meal
+function partsOf(i, withBas) {
+  const m = okuma(), out = [];
+  if (withBas && m !== 'tr') out.push('bas');
+  if (m !== 'tr') out.push('ar');
+  if (m !== 'ar') out.push('tr');
+  return out;
+}
+function srcOf(i, part) { return part === 'bas' ? url(P.hafiz, 1, 1) : part === 'tr' ? mealUrl(i) : url(P.hafiz, vS[i], vA[i]); }
+function load(i, part) {
+  au.src = srcOf(i, part);
   au.playbackRate = P.rate; au.defaultPlaybackRate = P.rate;
   return au.play();
 }
 function preloadNext() {
   const j = list[k + 1] ?? (P.loop ? list[0] : null);
-  if (j != null) { pre.src = url(P.hafiz, vS[j], vA[j]); pre.load(); }
+  if (j != null) { pre.src = srcOf(j, partsOf(j, needBasmala(j))[0]); pre.load(); }
 }
 function play(fresh) {
   if (!list.length) buildList();
@@ -122,7 +135,8 @@ function play(fresh) {
   A.stopAudio();
   const i = list[k]; playing = true; setBtn(); showNow(); A.setPlaying(i);
   if (fresh !== false) repN = 0;
-  load(i, fresh !== false && repN === 0 && needBasmala(i)).catch(err => { if (err && err.name === 'AbortError') return; fail(); });
+  parts = partsOf(i, fresh !== false && repN === 0 && needBasmala(i)); ph = 0;
+  load(i, parts[0]).catch(err => { if (err && err.name === 'AbortError') return; fail(); });
   meta(i); preloadNext(); mini();
   store.set('dinle-k', { k, key: key() }); $('#dnResume').hidden = true;
 }
@@ -130,10 +144,10 @@ function pause() { playing = false; au.pause(); setBtn(); }
 function toggle() { playing ? pause() : (au.src && au.currentTime > 0 && !au.ended ? (A.stopAudio(), au.play().then(() => { playing = true; setBtn(); }, fail)) : play()); }
 function go(d) { if (!list.length) return; k = Math.max(0, Math.min(list.length - 1, k + d)); repN = 0; play(); }
 function stopAll() { pause(); au.removeAttribute('src'); A.setPlaying(-1); mini(); }
-function fail() { playing = false; setBtn(); A.toast('Tilavet yüklenemedi; internet bağlantınızı kontrol edin'); }
+function fail() { playing = false; setBtn(); A.toast(parts[ph] === 'tr' ? 'Meal sesi yüklenemedi; internet bağlantınızı kontrol edin' : 'Tilavet yüklenemedi; internet bağlantınızı kontrol edin'); }
 au.onended = () => {
-  if (basNow) { load(list[k], false).catch(fail); return; }
-  if (++repN < P.rep) { load(list[k], false).catch(fail); return; }
+  if (++ph < parts.length) { load(list[k], parts[ph]).catch(fail); return; }
+  if (++repN < P.rep) { parts = parts.filter(x => x !== 'bas'); ph = 0; load(list[k], parts[0]).catch(fail); return; }
   repN = 0;
   if (k + 1 < list.length) { k++; play(false); }
   else if (P.loop && P.sleep !== -1) { k = 0; play(false); }
@@ -149,7 +163,7 @@ function setSleep(m) {
 function meta(i) {
   if (!('mediaSession' in navigator)) return;
   try {
-    navigator.mediaSession.metadata = new MediaMetadata({ title: `${A.sName(i)} ${vA[i]}`, artist: (HAFIZ.find(h => h[0] === P.hafiz) || HAFIZ[0])[1], album: 'Ayet Haritası',
+    navigator.mediaSession.metadata = new MediaMetadata({ title: `${A.sName(i)} ${vA[i]}`, artist: okuma() === 'tr' ? 'Türkçe meal · Diyanet Vakfı' : (HAFIZ.find(h => h[0] === P.hafiz) || HAFIZ[0])[1] + (okuma() === 'artr' ? ' + meal' : ''), album: 'Ayet Haritası',
       artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }] });
   } catch (_) {}
 }
@@ -163,6 +177,8 @@ $('#dnSure').onchange = e => { P.s = +e.target.value; P.from = 1; P.to = SUR[P.s
 $('#dnFrom').onchange = e => { P.from = +e.target.value; if (P.to < P.from) P.to = P.from; k = 0; buildList(); };
 $('#dnTo').onchange = e => { P.to = +e.target.value; k = 0; buildList(); };
 $('#dnJuz').onchange = e => { P.juz = +e.target.value; k = 0; const was = playing; buildList(); if (was) play(); else stopAll(); };
+$('#dnOkuma').onchange = e => { store.set('okuma', e.target.value); dispatchEvent(new Event('ayet:okuma')); syncUI(); if (playing) play(false); };
+addEventListener('ayet:okuma', () => { $('#dnOkuma').value = okuma(); $('#dnHafiz').disabled = okuma() === 'tr'; });
 $('#dnHafiz').onchange = e => { P.hafiz = e.target.value; store.set('dinle', P); if (playing) play(false); };
 $('#dnRate').onchange = e => { P.rate = +e.target.value; au.playbackRate = P.rate; store.set('dinle', P); };
 $('#dnRep').onchange = e => { P.rep = +e.target.value; store.set('dinle', P); };
@@ -186,7 +202,7 @@ function mini() {
   mn.hidden = !on; document.body.classList.toggle('has-mini', on);
   if (!on) return;
   $('#mnTitle').textContent = `${A.sName(i)} ${vA[i]}`;
-  const hz = (HAFIZ.find(h => h[0] === P.hafiz) || HAFIZ[0])[1].split(' · ')[0];
+  const hz = okuma() === 'tr' ? 'Türkçe meal' : (HAFIZ.find(h => h[0] === P.hafiz) || HAFIZ[0])[1].split(' · ')[0] + (okuma() === 'artr' ? ' + meal' : '');
   $('#mnSub').textContent = `${hz} · ${fmt(k + 1)}/${fmt(list.length)}${sleepAt ? ` · ${Math.max(1, Math.round((sleepAt - Date.now()) / 60000))} dk sonra durur` : ''}`;
 }
 $('#mnPlay').onclick = toggle; $('#mnNext').onclick = () => go(1); $('#mnClose').onclick = () => { stopAll(); };
