@@ -11,14 +11,16 @@
 <script>(()=>{const d=document.documentElement,m=matchMedia('(prefers-color-scheme: light)');let p='auto';try{p=localStorage.getItem('ayet-theme')||'auto'}catch(e){}
 const set=()=>{d.dataset.theme=p;d.dataset.mode=p==='auto'?(m.matches?'light':'dark'):p;const t=document.querySelector('meta[name=theme-color]');if(t)t.content=d.dataset.mode==='light'?'#f5f1e8':'#0b0d12';dispatchEvent(new Event('ayet:theme'))};
 window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme',p)}catch(e){}set()};m.addEventListener('change',()=>{if(p==='auto')set()});set()})()</script>
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=23">
+<link rel="icon" href="icons/favicon-32.png?v=2" sizes="32x32" type="image/png">
+<link rel="icon" href="icons/icon-192.png?v=2" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=2">
+<link rel="stylesheet" href="style.css?v=24">
 </head>
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2v.5a1.5 1.5 0 0 0 1.5 1.5H20"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
 <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.5M12 17h.01"/></symbol>
 <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></symbol>
@@ -212,6 +214,8 @@ window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme
 <script src="app.js?v=17"></script>
 <script src="ozellik.js?v=10"></script>
 <script src="kesif.js?v=14"></script>
+<script src="bagis-ayar.js?v=1"></script>
+<script src="bagis.js?v=1"></script>
 <script>
 if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => {
   const sw = navigator.serviceWorker, had = !!sw.controller; let shown = false;
