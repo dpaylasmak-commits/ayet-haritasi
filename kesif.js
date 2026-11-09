@@ -87,6 +87,39 @@ function clockShape(b, n) {
   return { pts, labels, bounds: { x0: cx - 16, y0: cy - 16, x1: cx + 16, y1: cy + 16, w: 32, h: 32 } };
 }
 
+
+/* Kur'an'daki dualar: [ayet(ler), kimin duası, kısa anlamı] */
+const DUA = [
+  { k: 'pey', t: 'Peygamberlerin duaları', c: GOLD, l: [
+    ['7:23', 'Âdem ve Havva', 'Rabbimiz, kendimize zulmettik'], ['71:28', 'Nûh', 'Beni, anne babamı ve mü’minleri bağışla'], ['23:29', 'Nûh', 'Beni bereketli bir yere indir'],
+    ['11:47', 'Nûh', 'Bilmediğim şeyi istemekten sana sığınırım'], ['54:10', 'Nûh', 'Yenildim, bana yardım et'], ['2:127', 'İbrahim ve İsmail', 'Bizden kabul et'],
+    ['2:128', 'İbrahim ve İsmail', 'Bizi sana teslim olanlardan kıl'], ['2:129', 'İbrahim ve İsmail', 'Onlara içlerinden bir peygamber gönder'], ['14:35', 'İbrahim', 'Bu şehri güvenli kıl'],
+    ['14:40', 'İbrahim', 'Beni namazı dosdoğru kılanlardan eyle'], ['14:41', 'İbrahim', 'Beni, anne babamı ve mü’minleri bağışla'], ['26:83-85', 'İbrahim', 'Bana hikmet ver, beni sâlihlere kat'],
+    ['37:100', 'İbrahim', 'Bana sâlihlerden bir evlat ver'], ['60:4-5', 'İbrahim ve beraberindekiler', 'Sana dayandık, sana yöneldik'], ['12:101', 'Yûsuf', 'Canımı müslüman olarak al'],
+    ['20:25-28', 'Mûsâ', 'Göğsümü aç, işimi kolaylaştır'], ['28:16', 'Mûsâ', 'Kendime zulmettim, beni bağışla'], ['28:24', 'Mûsâ', 'Bana indireceğin her hayra muhtacım'],
+    ['7:151', 'Mûsâ', 'Beni ve kardeşimi bağışla'], ['7:89', 'Şuayb', 'Bizimle kavmimiz arasında hak ile hükmet'], ['29:30', 'Lût', 'Bozguncu kavme karşı bana yardım et'],
+    ['27:19', 'Süleyman', 'Nimetine şükretmemi sağla'], ['21:83', 'Eyyûb', 'Başıma bu dert geldi; sen merhametlilerin en merhametlisisin'], ['21:87', 'Yûnus', 'Senden başka ilah yok; seni tenzih ederim'],
+    ['3:38', 'Zekeriyyâ', 'Bana katından temiz bir nesil bağışla'], ['21:89', 'Zekeriyyâ', 'Beni yalnız bırakma'], ['5:114', 'Îsâ', 'Bize gökten bir sofra indir'] ] },
+  { k: 'kul', t: 'Kur’an’ın öğrettiği dualar', c: TEAL, l: [
+    ['1:5-7', 'Fâtiha', 'Bizi doğru yola ilet'], ['2:286', 'Bakara’nın son ayeti', 'Bize gücümüzün yetmediğini yükleme'],
+    ['3:26', 'De ki', 'Mülkün sahibi Allah’ım'], ['17:24', 'Anne baba için', 'Küçükken beni yetiştirdikleri gibi onlara merhamet et'], ['17:80', 'De ki', 'Beni doğruluk girişiyle sok, doğruluk çıkışıyla çıkar'],
+    ['20:114', 'De ki', 'Rabbim, ilmimi artır'], ['23:97-98', 'De ki', 'Şeytanların kışkırtmalarından sana sığınırım'], ['23:118', 'De ki', 'Bağışla ve merhamet et'],
+    ['113:1-5', 'Felak', 'Sabahın Rabbine sığınırım'], ['114:1-6', 'Nâs', 'İnsanların Rabbine sığınırım'] ] },
+  { k: 'mum', t: 'Mü’minlerin duaları', c: VIOLET, l: [
+    ['2:201', 'Âhireti de isteyenler', 'Dünyada da âhirette de iyilik ver'], ['2:250', 'Tâlût’un ordusu', 'Üzerimize sabır yağdır, ayaklarımızı sabit kıl'], ['3:8', 'İlimde derinleşenler', 'Kalplerimizi kaydırma'], ['3:9', 'İlimde derinleşenler', 'İnsanları bir gün toplayacak olan sensin'],
+    ['3:16', 'Takvâ sahipleri', 'İman ettik, günahlarımızı bağışla'], ['3:53', 'Havariler', 'Bizi şahitlerle beraber yaz'], ['3:147', 'Peygamberlerle birlikte savaşanlar', 'Aşırılığımızı bağışla'],
+    ['3:191-194', 'Akıl sahipleri', 'Bunu boşuna yaratmadın'], ['5:83', 'Hakkı tanıyıp ağlayanlar', 'Bizi şahitlerle beraber yaz'], ['7:47', 'A‘râf ehli', 'Bizi zalimlerle beraber kılma'],
+    ['7:126', 'Firavun’un sihirbazları', 'Üzerimize sabır yağdır, canımızı müslüman olarak al'], ['10:85-86', 'Mûsâ’nın kavmi', 'Bizi zalimler için bir imtihan konusu yapma'], ['18:10', 'Ashâb-ı Kehf', 'Katından bir rahmet ver, işimizi doğru kıl'],
+    ['23:109', 'Kullarımdan bir grup', 'İman ettik, bağışla ve merhamet et'], ['25:65-66', 'Rahmân’ın kulları', 'Cehennem azabını bizden uzaklaştır'], ['25:74', 'Rahmân’ın kulları', 'Eşlerimizi ve çocuklarımızı göz aydınlığı kıl'],
+    ['46:15', 'Kırk yaşına gelen', 'Bana ve anne babama verdiğin nimete şükretmemi sağla'], ['59:10', 'Sonra gelenler', 'Bizden önce iman eden kardeşlerimizi bağışla'], ['66:8', 'Mü’minler (âhirette)', 'Nurumuzu tamamla'],
+    ['66:11', 'Firavun’un eşi', 'Katında, cennette bana bir ev yap'] ] },
+  { k: 'mel', t: 'Meleklerin duası', c: BLUE, l: [['40:7-9', 'Arşı taşıyan melekler', 'Tövbe edenleri bağışla, onları cehennem azabından koru']] },
+];
+const duaRefs = r => { const [s, ab] = r.split(':'), [a, b] = ab.split('-').map(Number); return Array.from({ length: (b || a) - a + 1 }, (_, j) => `${s}:${a + j}`); };
+const duaAll = DUA.flatMap(g => g.l);
+const duaList = g => g.l.map(([r, w, m]) => `<li>${vlink(r.split('-')[0], g.c)}${r.includes('-') ? '–' + r.split('-')[1] : ''} <b>${w}</b> <span>${m}</span></li>`);
+const duaBtn = l => `<button class="ghost small duadinle" data-dinle="${l.flatMap(x => duaRefs(x[0])).join(',')}">Bu duaları sırayla dinle</button>`;
+
 /* ---------- önceden yazılan tezler ---------- */
 const TEZ_TARIH = '7 Kasım 2026', TEZ_TARIH2 = '8 Kasım 2026', TEZ_ILK = 25;
 const tezTarih = i => i < TEZ_ILK ? TEZ_TARIH : TEZ_TARIH2;
@@ -420,6 +453,13 @@ const STORIES = [
     { terms: [['lemma', 'اللَّه', 'lemma', 'Allah', GOLD]], cam: 'fit', metric: true,
       text: `<b class="ar">اللَّه</b> ismi <b>2.699</b> kez geçiyor ve <b>1.821</b> ayette yer alıyor. 6.236 ayetin %29’u: <b>yaklaşık her üç ayetten biri.</b> Yanan noktalara bakın; hiçbir bölge boş kalmıyor.` },
   ] },
+  { id: 'dualar', t: 'Kur’an’daki dualar', icon: '﴿', d: `${duaAll.length} dua: peygamberlerden, mü’minlerden, meleklerden`, nw: true, steps: [
+    { terms: DUA.map(g => ['set', g.l.flatMap(x => duaRefs(x[0])).join(','), '', g.t, g.c]), cam: 'fit',
+      text: `Kur’an’da dualar çoğu zaman bir kıssanın içinde, onu söyleyenin ağzından aktarılır: Âdem’in tövbesi, Yûnus’un balığın karnındaki yakarışı, Firavun’un eşinin “bana cennette bir ev yap” demesi. Bir kısmını da Kur’an doğrudan öğretir: “De ki: Rabbim, ilmimi artır.”<br><br>Burada <b>${duaAll.length}</b> dua var. Renkler kimin dua ettiğini gösteriyor; bir duaya dokunun, ayet kartında okuyup dinleyin.<div class="legend3">${DUA.map(g => `<span style="--c:${g.c}"><b>${g.t}</b> ${g.l.length}</span>`).join('')}</div><small class="muted">Liste, duanın açıkça bir yakarış olarak aktarıldığı ayetlerden seçildi (“Rabbimiz…”, “Rabbim…”, “Allah’ım…”, “sana sığınırım”). Kur’an’da “Rabbimiz” diye başlayan ama dua olmayan sözler de var; onlar alınmadı.</small>${duaBtn(duaAll)}` },
+    ...DUA.map(g => ({ terms: [['set', g.l.flatMap(x => duaRefs(x[0])).join(','), '', g.t, g.c]], cam: g.l.map(x => x[0].split('-')[0]), labels: g.l.length <= 12 ? g.l.map(([r, w]) => ({ r: r.split('-')[0], t: w, c: g.c })) : [],
+      text: `<h4>${g.t}</h4><p>${g.k === 'pey' ? 'Peygamberlerin zor anlarda yaptığı dualar. Çoğu kısa: bir itiraf, bir ihtiyaç, bir sığınma.' : g.k === 'kul' ? 'Kur’an’ın doğrudan öğrettiği dualar: Fâtiha, Bakara’nın son ayeti ve “de ki” diye başlayanlar. Namazda ve günlük hayatta en çok okunanlar bunlar.' : g.k === 'mum' ? 'Peygamber olmayan insanların duaları: bir ordu, bir grup genç, sihirbazlar, bir kraliçe. Kur’an bu sözleri örnek olarak aktarır.' : 'Arşı taşıyan meleklerin, yeryüzündeki mü’minler için yaptığı dua.'}</p>${duaBtn(g.l)}`,
+      list: duaList(g) })),
+  ] },
   { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 67 tez, 6.236 ayetin tamamından', nw: true, steps: [
     { terms: tezTerms(), labels: tezLabels(), pulses: TEZ.filter(t => t.st === 'acik').map(t => t.r[0]), cam: 'fit',
       text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt: 1–${TEZ_ILK}. tezler <b>${TEZ_TARIH}</b>, ${TEZ_ILK + 1}–${TEZ.length}. tezler <b>${TEZ_TARIH2}</b>. Son eklenenler 6.236 ayetin tek tek okunmasından çıktı.</div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}${tezList()}<small class="muted">Haritadaki numaralar tezlere karşılık geliyor; halkalar sonucu henüz belli olmayanlar. Bir teze dokunun, doğrudan ona gidin.</small>` },
@@ -715,5 +755,6 @@ function runChance() {
 /* ---------- paylaşılan bağlantıdan açılış ---------- */
 const hp = new URLSearchParams(location.hash.slice(1));
 if (hp.get('k')) setTimeout(() => start(hp.get('k'), (+hp.get('s') || 1) - 1), 700);
+document.addEventListener('click', e => { const b = e.target.closest('[data-dinle]'); if (!b || !window.DINLE) return; e.preventDefault(); window.DINLE.setList(b.dataset.dinle.split(',').map(vi), 0, b.dataset.name || 'Dualar'); dispatchEvent(new CustomEvent('ayet:tab', { detail: 'dinle' })); });
 window.__kesif = { start, end, STORIES };
 })();

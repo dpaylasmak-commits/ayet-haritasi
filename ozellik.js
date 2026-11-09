@@ -31,7 +31,8 @@ const mealUrl = i => `https://cdn.islamic.network/quran/audio/128/tr.vakfi-audio
 const OKUMA = [['ar', 'Arapça'], ['tr', 'Türkçe meal'], ['artr', 'Arapça + meal']];
 const okuma = () => { const v = store.get('okuma', 'ar'); return OKUMA.some(o => o[0] === v) ? v : 'ar'; };
 const P = Object.assign({ src: 'sure', s: 1, from: 1, to: 7, juz: 1, hafiz: HAFIZ[0][0], rate: 1, rep: 1, loop: false, sleep: 0 }, store.get('dinle', {}));
-let list = [], k = 0, playing = false, repN = 0, parts = [], ph = 0, sleepT = 0, sleepAt = 0, resumeK = store.get('dinle-k', null);
+let custom = store.get('dinle-liste', []), list = [], k = 0, playing = false, repN = 0, parts = [], ph = 0, sleepT = 0, sleepAt = 0, resumeK = store.get('dinle-k', null);
+if (P.src === 'liste' && !custom.length) P.src = 'sure';
 const au = new Audio(), pre = new Audio(); au.preload = 'auto'; pre.preload = 'auto';
 
 const el = document.createElement('section');
@@ -47,6 +48,7 @@ el.innerHTML = `
   </div>
   <div class="dnpick" data-for="cuz"><select id="dnJuz" aria-label="Cüz"></select></div>
   <div class="dnpick" data-for="sonuc"><p class="muted small" id="dnRes"></p></div>
+  <div class="dnpick" data-for="liste"><p class="muted small" id="dnListe"></p></div>
   <div class="np" id="dnNow">
     <div class="nph"><b id="dnTitle">—</b><a href="#" id="dnOpen" class="small">Ayeti aç</a></div>
     <p class="npar" id="dnAr" dir="rtl" lang="ar"></p>
@@ -82,6 +84,8 @@ function buildList() {
     list = []; for (let a = P.from; a <= P.to; a++) list.push(vi(P.s, a));
   } else if (P.src === 'cuz') {
     list = []; for (let i = 0; i < N; i++) if (A.juz(i) === P.juz) list.push(i);
+  } else if (P.src === 'liste') {
+    list = custom.slice();
   } else list = A.resultIds().slice();
   store.set('dinle', P);
   syncUI();
@@ -93,6 +97,7 @@ function syncUI() {
   $('#dnJuz').value = P.juz; $('#dnHafiz').value = P.hafiz; $('#dnRate').value = String(P.rate); $('#dnRep').value = String(P.rep); $('#dnLoop').checked = P.loop; $('#dnOkuma').value = okuma(); $('#dnHafiz').disabled = okuma() === 'tr';
   const n = A.resultIds().length;
   $('#dnRes').textContent = n ? `Aramada bulunan ${fmt(n)} ayet, Sonuçlar listesindeki sırayla çalınır.` : 'Önce yukarıdan bir kelime arayın; bulunan ayetler burada sırayla çalınır.';
+  $('#dnListe').textContent = `${P.listName || 'Seçilen liste'}: ${fmt(custom.length)} ayet sırayla çalınır. Sûre ya da cüz seçerek bu listeden çıkabilirsiniz.`;
   $('#dnCount').textContent = list.length ? `${fmt(list.length)} ayet` : '';
   const sl = +$('#dnSleep').value;
   $('#dnMoreSum').textContent = [String(P.rate).replace('.', ',') + '×', P.rep > 1 ? `her ayet ${P.rep} kez` : '', sl > 0 ? `uyku ${sl} dk` : sl < 0 ? 'bitince dur' : '', P.loop ? 'tekrar' : ''].filter(Boolean).join(' · ');
@@ -221,7 +226,7 @@ if (resumeK && resumeK.key === key() && resumeK.k > 0 && resumeK.k < list.length
   r.innerHTML = `Kaldığınız yer: <b>${A.sName(list[k])} ${vA[list[k]]}</b> · <a href="#" id="dnFromStart">baştan başlat</a>`;
   $('#dnFromStart').onclick = e => { e.preventDefault(); k = 0; r.hidden = true; showNow(); };
 }
-window.DINLE = { play, pause, toggle, go, setList(ids, i0 = 0) { P.src = 'sonuc'; list = ids; k = i0; syncUI(); play(); },
+window.DINLE = { play, pause, toggle, go, setList(ids, i0 = 0, name) { if (name) { P.src = 'liste'; P.listName = name; custom = ids.slice(); store.set('dinle-liste', custom); store.set('dinle', P); } else P.src = 'sonuc'; list = ids; k = i0; syncUI(); play(); },
   sure(n) { P.src = 'sure'; P.s = n; P.from = 1; P.to = SUR[n - 1].c; k = 0; stopAll(); buildList(); play(); } };
 
 /* =================================================================
@@ -391,7 +396,7 @@ function renderOzel() {
   const cur = OZ.filter(o => t0 >= o.t && t0 < o.t + span(o.k) * D);
   const next = OZ.filter(o => o.t > t0).slice(0, 4), year = OZ.filter(o => o.t > t0 && o.t < t0 + 366 * D);
   const row = o => { const n = OZ_N[o.k], dd = Math.round((o.t - t0) / D); return `<li><span><b>${n[0]}</b><small>${gTxt(o.t)} · ${n[1]}</small></span><em>${dd === 1 ? 'yarın' : dd + ' gün'}</em></li>`; };
-  el.innerHTML = kehfCard() + cur.map(o => { const n = OZ_N[o.k], day = Math.round((t0 - o.t) / D) + 1; return `<div class="ozbugun"><small>Bugün</small><b>${n[0]}${span(o.k) > 1 ? ` · ${day}. gün` : ''}</b><span>${n[2] ? 'Kandil gecesi bu akşam, akşam ezanıyla başlar.' : n[1]}</span></div>`; }).join('') +
+  el.innerHTML = ramCard() + tehCard() + kehfCard() + cur.map(o => { const n = OZ_N[o.k], day = Math.round((t0 - o.t) / D) + 1; return `<div class="ozbugun"><small>Bugün</small><b>${n[0]}${span(o.k) > 1 ? ` · ${day}. gün` : ''}</b><span>${n[2] ? 'Kandil gecesi bu akşam, akşam ezanıyla başlar.' : n[1]}</span></div>`; }).join('') +
     `<div class="ph"><h3>Yaklaşan günler</h3><span class="muted small">${hicriTarih(tz0())}</span></div><ol class="ozlist">${next.map(row).join('')}</ol>
     <details class="ozall"><summary>Önümüzdeki 12 ay</summary><ol class="ozlist">${year.map(row).join('')}</ol></details>
     <p class="muted small">Kandiller, tarihi verilen günün akşamı başlar. Tarihler Ümmülkura takvimiyle hesaplanır; 2026–2027 için Diyanet’in açıkladığı tarihlerle aynıdır, sonraki yıllarda bir gün sapabilir.</p>`;
@@ -421,7 +426,7 @@ function renderImsak() {
     const d = new Date(t), T = vakitler(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), LOC.lat, LOC.lng), h = hicriOf(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
     return `<tr class="${t === t0 ? 'today' : ''}${d.getUTCDay() === 5 ? ' cuma' : ''}"><th>${ram ? `<b>${j + 1}</b>` : ''}${d.getUTCDate()} ${AYLAR[d.getUTCMonth()].slice(0, 3)}<small>${GKISA[d.getUTCDay()]}${h ? ' · ' + h.d + ' ' + HKISA[h.m - 1] : ''}</small></th>${VN.map(([x]) => `<td>${hm(T[x], LOC.tz)}</td>`).join('')}</tr>`;
   }).join('');
-  body.innerHTML = `<table class="imtab"><thead><tr><th>${ram ? 'Gün' : 'Tarih'}</th>${VN.map(([, n]) => `<th>${n}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table><p class="muted small">${esc(LOC.name)} için. ${ram ? 'Oruç imsak vaktinde başlar, akşam vaktinde biter.' : ''}</p>`;
+  body.innerHTML = `<table class="imtab"><thead><tr><th>${ram ? 'Gün' : 'Tarih'}</th>${VN.map(([, n]) => `<th>${n}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table><p class="muted small">${esc(LOC.name)} için. ${ram ? 'Oruç imsak vaktinde başlar, akşam vaktinde biter.' : ''}</p>${ram ? ramAll() : ''}`;
   const tr = body.querySelector('tr.today'); if (tr) tr.scrollIntoView({ block: 'nearest' });
 }
 $('#imsakiye').addEventListener('toggle', () => { if ($('#imsakiye').open) { if (!$('#imSel').options.length) imOptions(); renderImsak(); } });
@@ -432,6 +437,126 @@ $('#imCopy').onclick = () => {
   for (const t of imDays()) { const d = new Date(t), T = vakitler(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), LOC.lat, LOC.lng); lines.push([gTxt(t), ...VN.map(([x]) => hm(T[x], LOC.tz))].join('\t')); }
   navigator.clipboard.writeText(lines.join('\n') + '\n\nAyet Haritası · Diyanet açılarıyla hesaplanmıştır.').then(() => A.toast('İmsakiye kopyalandı'), () => A.toast('Kopyalanamadı'));
 };
+
+/* ---------- teheccüd: gecenin son üçte biri ---------- */
+// gece = akşamdan imsaka; son üçte bir = imsaktan önceki (gece süresi / 3)
+function nightThird(ref = Date.now()) {
+  if (!LOC) return null;
+  const T0 = dayTimes(0), Tm = dayTimes(-1), T1 = dayTimes(1);
+  // içinde bulunulan ya da sıradaki gece
+  let ak = T0.aksam, im = T1.imsak;
+  if (ref < T0.imsak) { ak = Tm.aksam; im = T0.imsak; }
+  if (ak == null || im == null) return null;
+  const len = im - ak; return { start: im - len / 3, end: im, aksam: ak };
+}
+window.TEHECCUD = { nightThird: (y, m, d) => { // verilen günün akşamından ertesi imsaka
+  if (!LOC) return null; const a = vakitler(y, m, d, LOC.lat, LOC.lng).aksam, n = new Date(Date.UTC(y, m - 1, d + 1)), b = vakitler(n.getUTCFullYear(), n.getUTCMonth() + 1, n.getUTCDate(), LOC.lat, LOC.lng).imsak;
+  return a && b ? { start: b - (b - a) / 3, end: b } : null; } };
+function tehCard() {
+  const n = nightThird(); if (!n) return '';
+  const now = Date.now(), on = now >= n.start && now < n.end;
+  return `<div class="teh${on ? ' on' : ''}"><div class="tehh"><b>${on ? 'Şu an gecenin son üçte biri' : 'Teheccüd vakti'}</b><span>${hm(n.start, LOC.tz)} – ${hm(n.end, LOC.tz)}</span></div>
+    <p>Gecenin son üçte biri, akşamdan imsaka kadar olan sürenin son kısmıdır. Hz. Peygamber, Rabbimizin her gece bu vakitte “Bana dua eden yok mu, kabul edeyim; benden isteyen yok mu, vereyim” buyurduğunu haber vermiştir (Buhârî, Müslim). Kur’an da gece namazını över: <a href="#" class="vref" data-r="17:79">İsrâ 79</a>, <a href="#" class="vref" data-r="51:17">Zâriyât 17–18</a>.</p></div>`;
+}
+
+/* ---------- Ramazan: her güne orucun bir faydası ---------- */
+const RAM = [
+  ['Ayet', 'Orucun amacı: takvâ', 'Kur’an orucun neden farz kılındığını söyler: “sakınasınız diye.” Takvâ, Allah’a karşı sorumluluk bilinciyle yaşamaktır; oruç bunun her gün tekrarlanan bir alıştırmasıdır.', '2:183'],
+  ['Hadis', 'Oruç bir kalkandır', 'Hz. Peygamber orucu bir kalkana benzetmiştir: insanı kötü sözden, kötü davranıştan ve günahtan korur (Buhârî, Müslim).'],
+  ['Sağlık', 'Vücut depolarını kullanır', 'Uzun süre yemek yenmeyince vücut enerji için depoladığı yağı kullanmaya başlar. Ramazan üzerine yapılan çalışmalar ortalama hafif bir kilo ve yağ kaybı bildiriyor; iftar ve sahurda aşırı yenirse bu etki kaybolur.'],
+  ['Hadis', 'Geçmiş günahların bağışlanması', '“Kim inanarak ve karşılığını yalnız Allah’tan bekleyerek Ramazan orucunu tutarsa geçmiş günahları bağışlanır” (Buhârî, Müslim).'],
+  ['Nefis', 'İrade eğitimi', 'Oruçlu, helal olan yemeyi içmeyi bile belli bir süre bırakır. Helalden uzak durabilen, haramdan uzak durmayı daha kolay öğrenir.'],
+  ['Ayet', 'Kur’an ayı', 'Ramazan, Kur’an’ın indirildiği aydır. Bu yüzden Ramazan’da mukabele okunur; her gün bir cüz okuyan, ay bitince hatmi tamamlamış olur.', '2:185'],
+  ['Hadis', 'Oruçlunun iki sevinci', '“Oruçlunun iki sevinci vardır: biri iftar ettiği zaman, diğeri Rabbine kavuştuğu zaman” (Buhârî, Müslim).'],
+  ['Toplum', 'Açın hâlini anlamak', 'Bir gün boyunca aç ve susuz kalmak, her gün yeterince yiyemeyenlerin hâlini insana bizzat yaşatır. Bu tecrübe sadakayı ve yardımlaşmayı kendiliğinden artırır.'],
+  ['Ayet', 'Ben yakınım', 'Oruç ayetlerinin tam ortasında bir dua ayeti yer alır: “Kullarım beni sorarsa, ben yakınım; dua edenin duasını kabul ederim.” Hadiste de oruçlunun iftar edinceye kadarki duasının geri çevrilmediği bildirilir (Tirmizî).', '2:186'],
+  ['Hadis', 'Sahurda bereket', '“Sahur yapın, çünkü sahurda bereket vardır” (Buhârî, Müslim). Lifli ve proteinli bir sahur tokluğu uzatır, gün içinde kan şekerinin dengeli kalmasına yardım eder.'],
+  ['Hadis', 'Dilin orucu', '“Kim yalan sözü ve yalanla iş görmeyi bırakmazsa, Allah’ın onun yemesini içmesini bırakmasına ihtiyacı yoktur” (Buhârî). Oruç yalnız mideyle değil, dille de tutulur.'],
+  ['Sağlık', 'Kan şekeri ve insülin', 'Aralıklı oruç üzerine yapılan bazı çalışmalar insülin duyarlılığının arttığını gösteriyor; sonuçlar kişiden kişiye değişiyor. Şeker hastaları ve ilaç kullananlar oruçtan önce mutlaka doktoruna danışmalı.'],
+  ['Hadis', 'Reyyân kapısı', 'Hz. Peygamber cennette “Reyyân” adlı bir kapı olduğunu ve oradan yalnız oruç tutanların gireceğini bildirmiştir (Buhârî, Müslim).'],
+  ['Hadis', 'Öfkeyi yenmek', '“Biri size sataşır ya da sövecek olursa ‘Ben oruçluyum’ deyin” (Buhârî, Müslim). Oruç, öfke anında durup kendini hatırlamayı öğretir.'],
+  ['Hadis', 'İftar ettirmenin sevabı', '“Kim bir oruçluya iftar ettirirse, onun sevabı kadar sevap kazanır; oruçlunun sevabından da hiçbir şey eksilmez” (Tirmizî).'],
+  ['Sağlık', 'Hücrelerin temizliği', 'Uzun açlıkta hücreler yıpranmış parçalarını parçalayıp yeniden kullanır (otofaji). Bu mekanizmanın keşfi 2016’da Nobel ödülü aldı. İnsanlarda Ramazan orucunun bu süreci ne kadar etkilediği henüz iyi ölçülmedi.'],
+  ['Ayet', 'Oruç sizin için hayırlıdır', '“Oruç tutmanız sizin için daha hayırlıdır, eğer bilirseniz.” Kur’an orucu bir yük olarak değil, insanın kendi iyiliği olarak anlatır.', '2:184'],
+  ['Sağlık', 'Alışkanlıkları kırmak', 'Gün boyu sigara, çay ve kahve olmadan geçirmek, bu alışkanlıkların insanı ne kadar yönettiğini gösterir. Ramazan, sigarayı bırakmak için iyi bir başlangıçtır.'],
+  ['Hadis', 'Miskten güzel', '“Oruçlunun ağız kokusu Allah katında miskin kokusundan daha güzeldir” (Buhârî, Müslim). Allah için katlanılan küçük bir sıkıntı bile değerlidir.'],
+  ['Hadis', 'Cömertlik ayı', 'Hz. Peygamber insanların en cömerdiydi; en cömert olduğu zaman da Ramazan’dı (Buhârî). Ramazan’ın sonunda bayramdan önce fitre verilir.'],
+  ['Ayet', 'Bin aydan hayırlı gece', 'Kadir gecesi bin aydan hayırlıdır. Hz. Peygamber bu geceyi Ramazan’ın son on gecesinde, özellikle tek gecelerde aramayı tavsiye etmiştir (Buhârî).', '97:3'],
+  ['Nefis', 'Vakit bilinci', 'İmsak ve iftar saatine göre yaşamak günü düzene sokar. Oruçlu, günü namaz vakitleriyle birlikte yaşamaya alışır.'],
+  ['Hadis', 'İftarda acele', '“İnsanlar iftarı acele yaptıkları sürece hayır içindedir” (Buhârî, Müslim). Hz. Peygamber orucunu hurma ya da su ile açardı (Ebû Dâvûd, Tirmizî); hafif bir başlangıç mideyi yormaz.'],
+  ['Toplum', 'Aynı sofrada', 'İftar ve sahur, aileyi ve komşuları aynı saatte aynı sofrada toplar. Ramazan, yalnız yaşayanları iftara davet etmek için de bir fırsattır.'],
+  ['Sağlık', 'Suyu ihmal etmeyin', 'İftar ile sahur arasına yayılmış 8–10 bardak su baş ağrısını ve kabızlığı önlemeye yardım eder. Çok tuzlu ve çok şekerli yiyecekler gün içinde susuzluğu artırır.'],
+  ['Hadis', 'İtikâf', 'Hz. Peygamber Ramazan’ın son on gününde itikâfa girer, kendini ibadete verirdi (Buhârî, Müslim). Son on gün, ayın en yoğun ibadet zamanıdır.'],
+  ['Ayet', 'Kolaylık', '“Allah sizin için kolaylık ister, zorluk istemez.” Hasta ve yolcu oruç tutmayıp sonra kaza eder; tutamayacak durumda olan fidye verir.', '2:185'],
+  ['Nefis', 'Şükür', 'İftar vakti içilen bir bardak su, her gün sahip olunan nimetlerin değerini hatırlatır. Ramazan ayetleri de “şükredesiniz diye” sözüyle biter.'],
+  ['Hadis', 'Kapılar açılır', '“Ramazan girince cennetin kapıları açılır, cehennemin kapıları kapanır, şeytanlar bağlanır” (Buhârî, Müslim).'],
+  ['Hadis', 'Bayram ve Şevval orucu', 'Ramazan’ın sonu bayramdır. “Kim Ramazan orucunu tutar, ardından Şevval’den altı gün oruç tutarsa bütün yılı oruçlu geçirmiş gibi olur” (Müslim).'],
+];
+const ramDay = () => { const t0 = today0(), D = 864e5; const s = OZ.filter(o => o.k === 's' && o.t <= t0).pop(); if (!s) return 0; const f = OZ.find(o => o.k === 'F' && o.t > s.t); return f && t0 < f.t ? Math.round((t0 - s.t) / D) + 1 : 0; };
+const ramItem = (r, n) => `<span class="rtag">${r[0]}</span><b>${r[1]}</b><p>${r[2]}${r[3] ? ` <a href="#" class="vref" data-r="${r[3]}">${r[3]}</a>` : ''}</p>`;
+function ramCard() { const n = ramDay(); if (!n || n > 30) return ''; return `<div class="ramcard"><small>Ramazan · ${n}. gün</small>${ramItem(RAM[n - 1], n)}</div>`; }
+const ramAll = () => `<details class="ramall"><summary>Ramazan’da her güne orucun bir faydası</summary><ol>${RAM.map((r, j) => `<li><em>${j + 1}. gün</em>${ramItem(r, j + 1)}</li>`).join('')}</ol><p class="muted small">Ayet ve hadisler kaynağıyla verildi. Sağlıkla ilgili bilgiler genel bilgidir, tıbbi tavsiye değildir; hastalar oruç için doktoruna danışmalı.</p></details>`;
+vk.addEventListener('click', e => { const a = e.target.closest('.vref[data-r]'); if (!a || !vk.contains(a)) return; e.preventDefault(); const [s, v] = a.dataset.r.split(':').map(Number); A.openVerse(A.verseIndex(s, v)); });
+
+/* ---------- yakındaki camiler (OpenStreetMap) ---------- */
+// Konum yalnız "Camileri bul"a basınca, ~1 km'ye yuvarlanarak OpenStreetMap'in Overpass sunucusuna gider; mesafeler cihazda hesaplanır.
+const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']; // overpass-api.de ikinci kez: "meşgul" cevabından sonra
+const camiBox = document.createElement('div'); camiBox.className = 'cami'; camiBox.id = 'cami';
+camiBox.innerHTML = `<div class="ph"><h3>Yakındaki camiler</h3><span class="muted small" id="cmInfo"></span></div><div id="cmBody"><p class="muted small">Bulunduğunuz yere en yakın camileri, uzaklık ve yönüyle listeler. Konumunuz yalnız bu düğmeye basınca, yaklaşık 1 km’ye yuvarlanarak OpenStreetMap’e gönderilir; kaydedilmez.</p><button class="ghost" id="cmFind">${I('pin')}Camileri bul</button></div>`;
+$('#kible').after(camiBox);
+const ddist = (a, b, c, d) => { const R = 6371e3, x = rad(c - a), y = rad(d - b), h = Math.sin(x / 2) ** 2 + Math.cos(rad(a)) * Math.cos(rad(c)) * Math.sin(y / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+const bear = (a, b, c, d) => fix(deg(Math.atan2(Math.sin(rad(d - b)) * Math.cos(rad(c)), Math.cos(rad(a)) * Math.sin(rad(c)) - Math.sin(rad(a)) * Math.cos(rad(c)) * Math.cos(rad(d - b)))), 360);
+async function overpass(q) {
+  // ilk sunucu hata verirse ya da 6 sn'de cevap vermezse sıradakine de sor; ilk gelen cevap kullanılır
+  const ctl = OVERPASS.map(() => new AbortController());
+  return new Promise((ok, no) => {
+    let next = 0, fails = 0, done = false, hedge = 0;
+    const finish = (f, v) => { if (done) return; done = true; clearTimeout(hedge); ctl.forEach(c => c.abort()); f(v); };
+    const launch = () => {
+      if (done || next >= OVERPASS.length) return; const j = next++;
+      clearTimeout(hedge); hedge = setTimeout(launch, 6000);
+      fetch(OVERPASS[j], { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctl[j].signal })
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(js => finish(ok, js))
+        .catch(e => { if (done) return; if (++fails === OVERPASS.length) finish(no, e); else if (next === j + 1) launch(); });
+    };
+    launch();
+    setTimeout(() => finish(no, new Error('timeout')), 60000);
+  });
+}
+function camiRender(pos, els, cached) {
+  const [la, lo] = pos;
+  const rows = els.map(e => { const y = e.lat ?? e.center?.lat, x = e.lon ?? e.center?.lon, t = e.tags || {}; return { n: t['name:tr'] || t.name || 'İsimsiz cami', y, x, d: ddist(la, lo, y, x), b: bear(la, lo, y, x) }; })
+    .filter(r => r.y != null && r.d <= 3000).sort((a, b) => a.d - b.d).slice(0, 15);
+  const fd = m => m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1).replace('.', ',')} km`;
+  const maps = r => `https://www.google.com/maps/dir/?api=1&destination=${r.y.toFixed(6)},${r.x.toFixed(6)}&travelmode=walking`;
+  $('#cmInfo').textContent = rows.length ? `${rows.length} cami · 3 km içinde` : '';
+  $('#cmBody').innerHTML = (rows.length ? `<ol class="cmlist">${rows.map(r => `<li><i style="transform:rotate(${r.b}deg)" aria-hidden="true">↑</i><span><b>${esc(r.n)}</b><small>${fd(r.d)} · ${YON[Math.round(r.b / 45) % 8]}</small></span><a class="ghost small" href="${maps(r)}" target="_blank" rel="noopener">Yol tarifi</a></li>`).join('')}</ol>`
+    : '<p class="muted small">3 km içinde OpenStreetMap’te kayıtlı cami bulunamadı.</p>') +
+    `<p class="muted small">Okun yönü kuzeye göredir. Cami verisi © OpenStreetMap katkıcıları; eksik olabilir.${cached ? ' Son arama sonucu gösteriliyor.' : ''}</p><div class="cmb"><button class="ghost small" id="cmFind">${I('target')}Yeniden ara</button><a class="ghost small" href="https://www.google.com/maps/search/cami/@${la.toFixed(3)},${lo.toFixed(3)},15z" target="_blank" rel="noopener">Haritada ara</a></div>`;
+  $('#cmFind').onclick = camiFind;
+}
+function camiFind() {
+  if (!navigator.geolocation) { A.toast('Bu cihaz konum vermiyor'); return; }
+  $('#cmBody').innerHTML = '<p class="muted small">Konum alınıyor…</p>';
+  navigator.geolocation.getCurrentPosition(async p => {
+    const la = p.coords.latitude, lo = p.coords.longitude, ra = Math.round(la * 100) / 100, ro = Math.round(lo * 100) / 100, key = `${ra},${ro}`;
+    const c = store.get('cami', null);
+    if (c && c.k === key && Date.now() - c.t < 7 * 864e5) { camiRender([la, lo], c.e, true); return; }
+    $('#cmBody').innerHTML = '<p class="muted small">Camiler aranıyor… OpenStreetMap sunucuları yoğunsa yarım dakikayı bulabilir.</p>';
+    try {
+      const js = await overpass(`[out:json][timeout:25];nwr["amenity"="place_of_worship"]["religion"="muslim"](around:4000,${ra},${ro});out center 120;`);
+      const e = js.elements.map(x => ({ lat: x.lat ?? x.center?.lat, lon: x.lon ?? x.center?.lon, tags: { name: x.tags?.name, 'name:tr': x.tags?.['name:tr'] } }));
+      store.set('cami', { k: key, t: Date.now(), e }); camiRender([la, lo], e, false);
+    } catch (_) {
+      $('#cmBody').innerHTML = `<p class="muted small">Cami listesi şu an alınamadı. Haritada arayabilirsiniz.</p><div class="cmb"><button class="ghost small" id="cmFind">Tekrar dene</button><a class="ghost small" href="https://www.google.com/maps/search/cami/@${ra},${ro},15z" target="_blank" rel="noopener">Haritada ara</a></div>`;
+      $('#cmFind').onclick = camiFind;
+    }
+  }, err => { $('#cmBody').innerHTML = `<p class="muted small">${err.code === 1 ? 'Konum izni verilmedi.' : 'Konum alınamadı.'}</p><button class="ghost" id="cmFind">Tekrar dene</button>`; $('#cmFind').onclick = camiFind; },
+  { enableHighAccuracy: true, timeout: 20000, maximumAge: 5 * 60e3 });
+}
+$('#cmFind').onclick = camiFind;
+
 locCbs.push(() => { renderOzel(); renderImsak(); });
 renderOzel(); setInterval(() => { if (!vk.hidden) renderOzel(); }, 60000);
 // masaüstünde pusula yok: yalnız yön ve mesafe

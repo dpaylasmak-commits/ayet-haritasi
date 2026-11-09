@@ -27,17 +27,18 @@ ul{padding-left:20px}
 <main>
   <a class="pill" href="./">Ayet Haritası</a>
   <h1>Gizlilik Politikası</h1>
-  <p class="muted">Son güncelleme: 8 Kasım 2026 · Web sitesi ve Android uygulaması için geçerlidir.</p>
+  <p class="muted">Son güncelleme: 9 Kasım 2026 · Web sitesi ve Android uygulaması için geçerlidir.</p>
 
   <div class="box"><b>Kısaca:</b> Ayet Haritası hiçbir kişisel veri toplamaz, saklamaz ve kimseyle paylaşmaz. Hesap, reklam, analiz ya da takip aracı yoktur.</div>
 
   <h2>Toplanan veriler</h2>
-  <p>Hiçbiri. Arama yaptığınız kelimeler, açtığınız ayetler, keşifler, seçtiğiniz konum ve bildirim ayarları yalnız cihazınızda işlenir ve saklanır; hiçbir sunucuya gönderilmez. Kur’an metni, mealler, kök ve lemma verileri uygulamanın içinde gelir; arama için internete bağlanılmaz.</p>
+  <p>Ayet Haritası’nın kendi sunucusu yoktur ve sizden hiçbir veri toplamaz. Arama yaptığınız kelimeler, açtığınız ayetler, keşifler, seçtiğiniz konum ve bildirim ayarları yalnız cihazınızda işlenir ve saklanır. Tek istisna aşağıda anlatılan “Yakındaki camiler” aramasıdır: onu kullanırsanız yaklaşık konumunuz bir harita sunucusuna gönderilir. Kur’an metni, mealler, kök ve lemma verileri uygulamanın içinde gelir; arama için internete bağlanılmaz.</p>
 
   <h2>İnternet bağlantısı kullanılan yerler</h2>
   <ul>
     <li><b>Tilavet dinleme:</b> “Dinle” düğmesine bastığınızda ayetin ses dosyası <a href="https://everyayah.com" rel="noopener">everyayah.com</a> adresinden, Türkçe meal sesi (Diyanet Vakfı meali) <a href="https://alquran.cloud" rel="noopener">alquran.cloud</a> (islamic.network) sunucusundan çalınır. Bu sırada o sunucular, her internet isteğinde olduğu gibi IP adresinizi görebilir. Ayet Haritası bu bilgiye erişmez.</li>
     <li><b>Namaz vakitleri ve kıble:</b> Vakitler ve kıble yönü cihazınızda hesaplanır; bunun için internete bağlanılmaz ve konumunuz kimseyle paylaşılmaz.</li>
+    <li><b>Yakındaki camiler:</b> Yalnız “Camileri bul” düğmesine bastığınızda, konumunuz yaklaşık 1 km’ye yuvarlanarak OpenStreetMap’in ücretsiz Overpass sunucularından birine gönderilir: <a href="https://overpass-api.de" rel="noopener">overpass-api.de</a> (Almanya), overpass.private.coffee (Avusturya), overpass.kumi.systems (Almanya) ya da maps.mail.ru (VK, Rusya). Sunucu o bölgedeki camilerin listesini döndürür; camilere olan uzaklık ve yön cihazınızda hesaplanır. Kesin konumunuz gönderilmez. Bu sunucular IP adresinizi ve yuvarlanmış konumu, kendi politikalarına göre kısa süre kayıtlarında tutabilir. Sonuç, aynı bölgede tekrar aramamak için bir hafta cihazınızda saklanır. “Yol tarifi” ve “Haritada ara” bağlantıları Google Haritalar’ı açar; orada Google’ın gizlilik politikası geçerlidir.</li>
     <li><b>Dış bağlantılar:</b> “Quran.com” gibi bağlantılar tarayıcınızda açılır; o sitelerin kendi gizlilik politikaları geçerlidir.</li>
     <li><b>Web sitesi:</b> Site GitHub Pages üzerinde barındırılır. GitHub, sunucu güvenliği için standart erişim kayıtları tutabilir (<a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub gizlilik bildirimi</a>).</li>
   </ul>
@@ -49,8 +50,8 @@ ul{padding-left:20px}
   <p>Android uygulamasının kullandığı izinler:</p>
   <ul>
     <li><b>İnternet:</b> tilavet seslerini çalmak için.</li>
-    <li><b>Yaklaşık konum</b> (isteğe bağlı): yalnız “Konumumu kullan”a dokunduğunuzda, namaz vakitlerini ve kıbleyi bulunduğunuz yere göre hesaplamak için. Konum cihazdan çıkmaz; isterseniz il seçerek bu izni hiç vermeyebilirsiniz.</li>
-    <li><b>Bildirimler ve alarmlar</b> (isteğe bağlı): açtığınız vakit ve günün ayeti bildirimlerini zamanında göstermek için. Bildirimler cihazda kurulur; bunun için sunucuya bağlanılmaz.</li>
+    <li><b>Konum</b> (isteğe bağlı): “Konumumu kullan”a dokunduğunuzda namaz vakitlerini ve kıbleyi bulunduğunuz yere göre hesaplamak için; bu konum cihazdan çıkmaz. “Camileri bul”a dokunduğunuzda en yakın camilerin uzaklığını doğru göstermek için kesin konum istenir; sunucuya yalnız yuvarlanmış hâli gider (yukarıya bakın). Android’de “yaklaşık” seçebilir ya da il seçerek bu izni hiç vermeyebilirsiniz. Arka planda konum kullanılmaz.</li>
+    <li><b>Bildirimler ve alarmlar</b> (isteğe bağlı): açtığınız vakit, günün ayeti, Cuma ve teheccüd bildirimlerini zamanında göstermek için. Bildirimler cihazda kurulur; bunun için sunucuya bağlanılmaz.</li>
   </ul>
   <p>Kamera, mikrofon, rehber ya da dosya erişimi istenmez. Paylaştığınız ayet görseli yalnız paylaşma anında geçici olarak oluşturulur.</p>
 

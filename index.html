@@ -13,7 +13,7 @@ const set=()=>{d.dataset.theme=p;d.dataset.mode=p==='auto'?(m.matches?'light':'d
 window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme',p)}catch(e){}set()};m.addEventListener('change',()=>{if(p==='auto')set()});set()})()</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
 
@@ -210,8 +210,8 @@ window.ayetTheme=x=>{if(x)p=x;else return p;try{localStorage.setItem('ayet-theme
 
 <script src="data.js"></script>
 <script src="app.js?v=17"></script>
-<script src="ozellik.js?v=8"></script>
-<script src="kesif.js?v=12"></script>
+<script src="ozellik.js?v=9"></script>
+<script src="kesif.js?v=13"></script>
 <script>
 if ('serviceWorker' in navigator && !window.Capacitor && !window.ARTIFACT_BUILD && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => {
   const sw = navigator.serviceWorker, had = !!sw.controller; let shown = false;
