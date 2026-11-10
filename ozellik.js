@@ -693,5 +693,5 @@ if (shb) shb.onclick = () => { const i = A.cardIndex ? A.cardIndex() : -1; if (i
 renderGunun();
 let gunDay = dayNum(); setInterval(() => { if (dayNum() !== gunDay) { gunDay = dayNum(); renderGunun(); } }, 60e3);
 window.GUNUN = { idx: gunIdx, image: ayetImage, share: shareGunun };
-window.VAKIT = { vakitler, VN, loc: () => LOC, onLoc: f => locCbs.push(f), dateParts, hm };
+window.VAKIT = { vakitler, VN, loc: () => LOC, onLoc: f => locCbs.push(f), dateParts, hm, qibla, YONK: ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'] };
 })();
