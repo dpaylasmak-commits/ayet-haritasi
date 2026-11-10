@@ -537,15 +537,25 @@ body.has-mini .updbar{bottom:96px}
 .vklist li.next span{color:var(--accent-text)}
 .kible{display:grid;gap:12px;justify-items:center;border-top:1px solid var(--line);padding-top:16px}
 .kible .ph{width:100%}
-.kbdial{width:min(240px,70vw);aspect-ratio:1;border-radius:50%;background:var(--surface-2);transition:box-shadow var(--base)}
-.kbdial svg{width:100%;height:100%;display:block}
-.kbdial.ok{box-shadow:0 0 0 4px var(--accent-soft-2)}
-.kbring{fill:none;stroke:var(--line-2);stroke-width:1}
-.kbtick{stroke:var(--faint);stroke-width:1}.kbtick.big{stroke:var(--ink-2);stroke-width:2}
-.kbn,.kbl{font:600 15px var(--sans);text-anchor:middle;fill:var(--muted)}.kbn{fill:var(--no)}
-.kbneedle{stroke:var(--accent);stroke-width:3;stroke-linecap:round}
-.kbkaaba{fill:var(--ink)}.kbband{stroke:var(--accent);stroke-width:2}
-.kbhub{fill:var(--accent)}
+.kbdial{width:min(290px,80vw);aspect-ratio:1;border-radius:50%;transition:filter var(--base),transform var(--base)}
+.kbdial svg{width:100%;height:100%;display:block;overflow:visible}
+.kbbezel{fill:var(--surface-2);stroke:var(--line-2);stroke-width:1}
+.kbface{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.kbarc{fill:none;stroke:var(--accent);stroke-opacity:.28;stroke-width:9;stroke-linecap:round}
+.kbtick{stroke:var(--faint);stroke-width:1;stroke-linecap:round}.kbtick.mid{stroke:var(--muted);stroke-width:1.4}.kbtick.big{stroke:var(--ink-2);stroke-width:2.4}
+.kbdeg{font:500 8.5px var(--sans);text-anchor:middle;fill:var(--muted);letter-spacing:.02em}
+.kbn,.kbl{font:700 15px var(--sans);text-anchor:middle;fill:var(--ink-2)}.kbn{fill:var(--no)}
+.kbneedle{fill:var(--accent)}.kbtail{fill:var(--faint)}
+.kbkb{fill:var(--surface);stroke:var(--accent);stroke-width:1.6}
+.kbkaaba{fill:var(--ink)}.kbband{fill:#d8a531}
+.kbcenter{fill:var(--surface-2);stroke:var(--line-2);stroke-width:1}
+.kbval{font:700 19px var(--sans);text-anchor:middle;fill:var(--ink);font-variant-numeric:tabular-nums}
+.kbdir{font:500 8.5px var(--sans);text-anchor:middle;fill:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.kbme{fill:var(--ink-2);opacity:0;transition:opacity var(--base)}
+.kbdial.live .kbme{opacity:1}
+.kbdial.ok{filter:drop-shadow(0 0 14px var(--accent-soft-2))}
+.kbdial.ok .kbarc{stroke-opacity:.6}
+.kbdial.ok .kbkb{fill:var(--accent)}.kbdial.ok .kbcenter{fill:var(--accent-soft)}
 #kbRose,#kbNeedle{transition:transform .12s linear}
 #kbNote{margin:0;text-align:center;max-width:34ch}
 .sidetabs button{font-size:13px;padding:0 4px;gap:4px}

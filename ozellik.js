@@ -283,11 +283,25 @@ vk.innerHTML = `
   <div class="kible" id="kible">
     <div class="ph"><h3>Kıble</h3><span class="muted small" id="kbTxt"></span></div>
     <div class="kbdial" id="kbDial" aria-hidden="true">
-      <svg viewBox="0 0 200 200"><g id="kbRose"><circle cx="100" cy="100" r="92" class="kbring"/>
-        ${Array.from({ length: 72 }, (_, j) => `<line x1="100" y1="${j % 18 ? 12 : 9}" x2="100" y2="${j % 6 ? 16 : 22}" transform="rotate(${j * 5} 100 100)" class="kbtick${j % 18 ? '' : ' big'}"/>`).join('')}
-        <text x="100" y="40" class="kbn">K</text><text x="164" y="105" class="kbl">D</text><text x="100" y="170" class="kbl">G</text><text x="36" y="105" class="kbl">B</text></g>
-        <g id="kbNeedle"><line x1="100" y1="100" x2="100" y2="30" class="kbneedle"/><rect x="91" y="18" width="18" height="18" rx="3" class="kbkaaba"/><line x1="91" y1="23" x2="109" y2="23" class="kbband"/></g>
-        <circle cx="100" cy="100" r="5" class="kbhub"/></svg>
+      <svg viewBox="0 0 240 240">
+        <circle cx="120" cy="120" r="118" class="kbbezel"/>
+        <g id="kbRose">
+          <path id="kbArc" class="kbarc" d=""/>
+          <circle cx="120" cy="120" r="102" class="kbface"/>
+          ${Array.from({ length: 72 }, (_, j) => `<line x1="120" y1="${j % 6 ? 22 : 20}" x2="120" y2="${j % 18 ? (j % 6 ? 27 : 31) : 33}" transform="rotate(${j * 5} 120 120)" class="kbtick${j % 6 ? '' : ' mid'}${j % 18 ? '' : ' big'}"/>`).join('')}
+          ${[30, 60, 120, 150, 210, 240, 300, 330].map(d => { const a = d * Math.PI / 180; return `<text x="${(120 + 78 * Math.sin(a)).toFixed(1)}" y="${(124 - 78 * Math.cos(a)).toFixed(1)}" class="kbdeg" data-d="${d}">${d}</text>`; }).join('')}
+          <text x="120" y="62" class="kbn">K</text><text x="183" y="126" class="kbl">D</text><text x="120" y="190" class="kbl">G</text><text x="57" y="126" class="kbl">B</text>
+        </g>
+        <g id="kbNeedle">
+          <path d="M116.5 86 L120 30 L123.5 86 Z" class="kbneedle"/>
+          <path d="M118.5 154 L120 176 L121.5 154 Z" class="kbtail"/>
+          <g transform="translate(120 9)"><circle r="12" class="kbkb"/><rect x="-6.5" y="-6.5" width="13" height="13" rx="1.6" class="kbkaaba"/><rect x="-6.5" y="-3.2" width="13" height="2.2" class="kbband"/></g>
+        </g>
+        <path d="M120 -3 l-6.5 -10 h13 z" class="kbme"/>
+        <circle cx="120" cy="120" r="33" class="kbcenter"/>
+        <text x="120" y="122" class="kbval" id="kbDeg">—</text>
+        <text x="120" y="137" class="kbdir" id="kbDir"></text>
+      </svg>
     </div>
     <button class="ghost" id="kbStart">${I('compass')}Pusulayı aç</button>
     <p class="muted small" id="kbNote">Telefonu yere paralel tutun. Metal eşyalar ve mıknatıslı kılıflar pusulayı saptırabilir; sapma görürseniz telefonu havada 8 çizerek kalibre edin.</p>
@@ -560,8 +574,14 @@ let heading = null, compassOn = false;
 function rotate() {
   if (!LOC) return;
   const q = qibla(LOC.lat, LOC.lng), h = heading ?? 0;
-  $('#kbRose').setAttribute('transform', `rotate(${-h} 100 100)`);
-  $('#kbNeedle').setAttribute('transform', `rotate(${q - h} 100 100)`);
+  $('#kbRose').setAttribute('transform', `rotate(${-h} 120 120)`);
+  $('#kbNeedle').setAttribute('transform', `rotate(${q - h} 120 120)`);
+  // kuzeyden kıbleye yay (saat yönünde, açının ölçüldüğü yön)
+  const ra = q * Math.PI / 180, R = 111, ex = 120 + R * Math.sin(ra), ey = 120 - R * Math.cos(ra);
+  $('#kbArc').setAttribute('d', `M120 ${120 - R} A${R} ${R} 0 ${q > 180 ? 1 : 0} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}`);
+  document.querySelectorAll('.kbdeg').forEach(t => { const dd = Math.abs(((+t.dataset.d - q + 540) % 360) - 180); t.style.opacity = dd < 13 ? 0 : 1; });
+  $('#kbDeg').textContent = `${Math.round(q)}°`; $('#kbDir').textContent = YON[Math.round(q / 45) % 8];
+  $('#kbDial').classList.toggle('live', heading != null);
   const off = ((q - h + 540) % 360) - 180, ok = heading != null && Math.abs(off) < 4;
   $('#kbDial').classList.toggle('ok', ok);
   if (heading != null) $('#kbNote').textContent = ok ? 'Kıbleye dönüksünüz.' : `Kıble için ${Math.abs(Math.round(off))}° ${off > 0 ? 'sağa' : 'sola'} dönün.`;
