@@ -17,7 +17,7 @@ m.className = 'modal'; m.id = 'bagis'; m.hidden = true;
 m.innerHTML = `<div class="modal-in bagis-in" role="dialog" aria-modal="true" aria-labelledby="bgT">
   <button class="ghost icon close" data-close aria-label="Kapat"><svg class="i"><use href="#i-x"/></svg></button>
   <h2 id="bgT">Destek ol</h2>
-  <p>Ayet Haritası ücretsiz ve reklamsız; hesap da istemiyor. Geliştirmeye ve masraflarına katkıda bulunmak isterseniz banka havalesiyle bağış yapabilirsiniz. Bağış tamamen isteğe bağlıdır; hiçbir özellik bağışa bağlı değildir.</p>
+  <p>Ayet Haritası, Kuran-ı Kerim'i daha ayrıntılı ve bilimsel gerçeklerle paralel olarak incelemek isteyenler için tasarlanmış tamamen ücretsiz ve reklamsız bir uygulamadır. Kullanıcılarından herhangi bir bilgi ve ödeme talep etmeyen bu uygulamanın geliştirilmesine ve masraflarına katkıda bulunmak isterseniz banka havalesiyle bağış yapabilirsiniz.</p>
   <dl class="bgdl">
     ${B.ad ? `<div><dt>Alıcı</dt><dd>${esc(B.ad)}</dd><button class="ghost small" data-c="${esc(B.ad)}" data-m="Alıcı adı kopyalandı">Kopyala</button></div>` : ''}
     ${B.banka ? `<div><dt>Banka</dt><dd>${esc(B.banka)}</dd></div>` : ''}
