@@ -398,7 +398,7 @@ function tezTimeline() {
   return `<ol class="tztl">${ys.map(y => `<li class="${y <= now ? 'past' : ''}"><b>${y}</b><div>${ev.filter(e => e.y === y).map(e => `<span style="--c:${e.c}"><i>${e.i + 1}</i>${e.w}</span>`).join('')}</div></li>`).join('')}</ol>`;
 }
 function countdown(d, w) { const n = Math.ceil((new Date(d) - new Date()) / 864e5); return n > 0 ? `<div class="tzcd"><b>${fmt(n)}</b> gün kaldı · ${w}</div>` : ''; }
-const tezCard = (t, i) => `<div class="tzcard" style="--c:${TS[t.st][1]}"><div class="tzh"><span class="tzn">${i + 1}</span><h4>${t.t}</h4><span class="tag" style="--c:${TS[t.st][1]}">${TS[t.st][0]}</span></div>
+const tezCard = (t, i) => `<a href="#" class="tzback" data-go="0">← Tez listesine dön</a><div class="tzcard" style="--c:${TS[t.st][1]}"><div class="tzh"><span class="tzn">${i + 1}</span><h4>${t.t}</h4><span class="tag" style="--c:${TS[t.st][1]}">${TS[t.st][0]}</span></div>
   ${t.q.map(([r, x]) => `<div class="quote" style="--c:${TS[t.st][1]}">“${x}” <small>${vlink(r, TS[t.st][1])}</small></div>`).join('')}
   <dl><dt>Okuma</dt><dd>${t.o}</dd><dt>Tez</dt><dd><b>${t.z}</b></dd><dt>Bugün</dt><dd>${t.b}</dd>
   ${t.s.length ? `<dt>Sınav</dt><dd>${t.s.map(([y, w]) => `<span class="tzy">${y}</span> ${w}`).join('<br>')}</dd>` : ''}${t.c === '—' || t.st === 'zor' ? '' : `<dt>Çökerse</dt><dd>${t.c}</dd>`}<dt>Kayıt</dt><dd>${tezTarih(i)}</dd></dl>
@@ -519,7 +519,7 @@ addEventListener('ayet:terms', e => { resBadge(); syncPresets(); if (e.detail.n 
 addEventListener('ayet:results', () => showTab('res'));
 addEventListener('ayet:stats', resBadge);
 let t0 = ''; try { t0 = sessionStorage.getItem('ayet-tab') || ''; } catch (_) {}
-showTab(TABS.some(t => t[0] === t0) ? t0 : (A.state.terms.length ? 'res' : 'kesif'), false); resBadge();
+showTab(TABS.some(t => t[0] === t0) ? t0 : (A.state.terms.length ? 'res' : 'vakit'), false); resBadge();
 
 const panel = document.createElement('section');
 panel.className = 'story'; panel.hidden = true;
@@ -527,7 +527,7 @@ panel.innerHTML = `<div class="st-h"><span class="pill"><svg class="i"><use href
   <div class="st-b" id="stBody"></div>
   <div class="st-f"><button class="ghost icon" id="stPrev" title="Önceki" aria-label="Önceki adım"><svg class="i"><use href="#i-left"/></svg></button><span id="stDots"></span><button class="gold" id="stNext">Devam</button><button class="ghost icon" id="stShare" title="Bu adımın bağlantısını kopyala" aria-label="Paylaş"><svg class="i"><use href="#i-share"/></svg></button></div>`;
 const mq = matchMedia('(max-width:980px)');
-const place = () => mq.matches ? mapEl.after(panel) : side.prepend(panel);
+const place = () => { if (!mq.matches) { side.prepend(panel); return; } let a = mapEl; for (const id of ['#hint', '#legend']) { const e = $(id); if (e && e.parentNode === mapEl.parentNode) a = e; } a.after(panel); };
 place(); mq.addEventListener('change', place);
 
 const topBtns = $('.topbtns');
@@ -753,6 +753,7 @@ function runChance() {
 /* ---------- paylaşılan bağlantıdan açılış ---------- */
 const hp = new URLSearchParams(location.hash.slice(1));
 if (hp.get('k')) setTimeout(() => start(hp.get('k'), (+hp.get('s') || 1) - 1), 700);
+if (TABS.some(t => t[0] === hp.get('tab'))) setTimeout(() => { showTab(hp.get('tab')); (mq.matches ? tabs : side).scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
 document.addEventListener('click', e => { const b = e.target.closest('[data-dinle]'); if (!b || !window.DINLE) return; e.preventDefault(); window.DINLE.setList(b.dataset.dinle.split(',').map(vi), 0, b.dataset.name || 'Dualar'); dispatchEvent(new CustomEvent('ayet:tab', { detail: 'dinle' })); });
 window.__kesif = { start, end, STORIES };
 })();

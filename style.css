@@ -690,3 +690,8 @@ body.has-mini .updbar{bottom:96px}
 @media (max-width:420px){.bgdl > div{grid-template-columns:1fr auto}.bgdl dt{grid-column:1/-1}}
 .bgnote{margin:4px 0 0;text-align:center}
 .bgnote a{color:var(--accent-text)}
+/* telefonda harita açıklaması haritanın altında */
+.mapwrap > .legend{position:static;max-width:none;margin:8px 0 0;background:var(--surface);font-size:13px}
+.tzback{display:inline-block;margin:0 0 10px;color:var(--accent-text);font:500 14px var(--sans);text-decoration:none}
+.tzback:hover{text-decoration:underline}
+.mapwrap > .hint{position:static;transform:none;display:block;margin:8px auto 0;width:auto;max-width:100%}

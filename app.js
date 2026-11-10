@@ -529,6 +529,10 @@ function termTitle(t) {
   return (t.mode === 'tr' ? `<b>${escHtml(t.label)}</b>` : t.label !== t.q ? `<b>${escHtml(t.label)}</b> <span class="ar">${escHtml(t.ar)}</span>` : `<span class="ar">${escHtml(t.ar)}</span>`);
 }
 const TRY = [['sabır'], ['rahmet'], ['Dünya ⚖ Âhiret', ['dünya', 'ahiret']], ['cennet ⚖ cehennem', ['cennet', 'cehennem']]];
+// telefonda açıklama kutusu haritayı kapatmasın: haritanın altına taşı
+{ const lg = $('#legend'), hn = $('#hint'), mp = $('#map'), mqL = matchMedia('(max-width:600px)');
+  const placeL = () => { if (!lg || !mp) return; if (mqL.matches) { if (lg.parentNode === mp) mp.after(lg); if (hn && hn.parentNode === mp) mp.after(hn); } else { if (lg.parentNode !== mp) mp.appendChild(lg); if (hn && hn.parentNode !== mp) mp.appendChild(hn); } };
+  placeL(); mqL.addEventListener('change', placeL); }
 function renderLegend() {
   const lg = $('#legend'); if (!lg) return;
   const T = state.terms; lg.hidden = !T.length;
@@ -1197,7 +1201,7 @@ applyFs();
 $('#fsBtn').onclick = () => { fsK = (fsK + 1) % FS.length; applyFs(); try { localStorage.setItem('ayet-fs', FS[fsK]); } catch (_) {} toast('Yazı boyutu: %' + Math.round(FS[fsK] * 100)); };
 $('#fitBtn').onclick = () => tweenCam(fitCam(), 700);
 $('#infoBtn').onclick = () => $('#info').hidden = false;
-$('#info').onclick = e => { if (e.target.id === 'info' || e.target.hasAttribute('data-close')) $('#info').hidden = true; };
+$('#info').onclick = e => { if (e.target.id === 'info' || e.target.closest('[data-close]')) $('#info').hidden = true; };
 
 document.addEventListener('keydown', e => {
   if (e.target.matches('input,select,textarea')) return;
@@ -1334,7 +1338,7 @@ themeBtn();
 if (init.chart) setTimeout(() => setChart(true), 400);
 if (init.a) { const [s, a] = init.a.split(':').map(Number); setTimeout(() => openVerse(verseIndex(s, a), { fast: true }), 300); }
 $('#hint').textContent = TOUCH ? 'Dokunun: yakınlaşır · tekrar dokunun: ayet açılır · iki parmakla yakınlaşın' : 'Sürükleyerek gezin · Ctrl + tekerlek ya da +/− ile yakınlaşın · noktaya tıklayın';
-setTimeout(() => $('#hint').style.opacity = 0, 6000);
+setTimeout(() => { $('#hint').style.opacity = 0; setTimeout(() => { $('#hint').hidden = true; }, 1100); }, 6000);
 window.__ayet = { state, openVerse, addTerm, termsChanged }; // hata ayıklama
 // Keşifler modülü (kesif.js) için arayüz
 window.AYET = {
