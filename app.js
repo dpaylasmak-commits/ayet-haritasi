@@ -828,6 +828,7 @@ function placeCard() {
   } else { card.style.left = card.style.width = veil.style.right = ''; card.classList.remove('docked'); veil.classList.remove('docked'); }
 }
 window.addEventListener('resize', () => { if (!card.hidden) placeCard(); });
+let openedAt = 0;
 function openVerse(i, opts = {}) {
   if (i < 0 || i >= N) return;
   const wasOpen = !card.hidden;
@@ -840,7 +841,7 @@ function openVerse(i, opts = {}) {
     const mr = map.getBoundingClientRect();
     const fx = mr.left + sx, fy = mr.top + sy;
     tweenCam({ x: tx, y: ty, s: Math.max(cam.s * 4, fitCam().s * 9) }, 750);
-    placeCard(); veil.hidden = false; card.hidden = false;
+    placeCard(); veil.hidden = false; card.hidden = false; openedAt = performance.now();
     const cr = card.getBoundingClientRect();
     const dx = fx - (cr.left + cr.width / 2), dy = fy - (cr.top + cr.height / 2);
     veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, fill: 'both' });
@@ -1037,7 +1038,9 @@ $('#playBtn').onclick = () => playing ? stopAudio() : playVerse();
 $('#listenMode').onchange = () => { try { localStorage.setItem('ayet-okuma', JSON.stringify($('#listenMode').value)); } catch (_) {} dispatchEvent(new Event('ayet:okuma')); if (playing) playVerse(); };
 $('#prevBtn').onclick = () => openVerse(selected - 1);
 $('#nextBtn').onclick = () => openVerse(selected + 1);
-$('#closeBtn').onclick = closeVerse; veil.onclick = closeVerse;
+$('#closeBtn').onclick = closeVerse;
+// dokunmatikte kartı açan dokunuşun ardından gelen click perdeye düşüp kartı hemen kapatmasın
+veil.onclick = () => { if (performance.now() - openedAt > 450) closeVerse(); };
 $('#copyBtn').onclick = () => {
   const i = selected, v = Q.verses[i];
   navigator.clipboard.writeText(`${v[2]}\n\n${v[4]}\n— ${sName(i)} ${vA[i]} (${ref(i)})`).then(() => toast('Ayet kopyalandı'), () => toast('Kopyalanamadı'));
