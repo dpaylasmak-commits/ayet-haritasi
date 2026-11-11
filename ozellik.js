@@ -31,6 +31,8 @@ const mealUrl = i => `https://cdn.islamic.network/quran/audio/128/tr.vakfi-audio
 const OKUMA = [['ar', 'Arapça'], ['tr', 'Türkçe meal'], ['artr', 'Arapça + meal']];
 const okuma = () => { const v = store.get('okuma', 'ar'); return OKUMA.some(o => o[0] === v) ? v : 'ar'; };
 const P = Object.assign({ src: 'sure', s: 1, from: 1, to: 7, juz: 1, hafiz: HAFIZ[0][0], rate: 1, rep: 1, loop: false, sleep: 0 }, store.get('dinle', {}));
+// bitince: sonraki sûre/cüz (durdurana kadar devam), aralığı tekrarla ya da dur
+if (!P.end) P.end = P.loop ? 'loop' : 'next';
 let custom = store.get('dinle-liste', []), list = [], k = 0, playing = false, repN = 0, parts = [], ph = 0, sleepT = 0, sleepAt = 0, resumeK = store.get('dinle-k', null);
 if (P.src === 'liste' && !custom.length) P.src = 'sure';
 const au = new Audio(), pre = new Audio(); au.preload = 'auto'; pre.preload = 'auto';
@@ -68,7 +70,7 @@ el.innerHTML = `
     <label>Hız<select id="dnRate"><option value="0.75">0,75×</option><option value="1">1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option></select></label>
     <label>Her ayet<select id="dnRep"><option value="1">1 kez</option><option value="2">2 kez</option><option value="3">3 kez</option><option value="5">5 kez</option><option value="10">10 kez</option></select></label>
     <label>Uyku<select id="dnSleep"><option value="0">Kapalı</option><option value="15">15 dk</option><option value="30">30 dk</option><option value="60">60 dk</option><option value="-1">Bitince dur</option></select></label>
-    <label class="chk"><input type="checkbox" id="dnLoop"> Aralığı baştan tekrarla</label>
+    <label>Bitince<select id="dnEnd"><option value="next">Sonrakine geç</option><option value="loop">Baştan tekrarla</option><option value="stop">Dur</option></select></label>
     </div></details>
   </div>
   <p class="muted small dnnote">Arapça tilavet everyayah.com'dan, Türkçe meal sesi (Diyanet Vakfı meali) alquran.cloud'dan gelir; dinlemek için internet gerekir. Ekran kapanınca da çalmaya devam eder; telefonun kilit ekranından yönetebilirsiniz.</p>`;
@@ -94,13 +96,13 @@ function syncUI() {
   el.querySelectorAll('.dnsrc button').forEach(b => b.classList.toggle('on', b.dataset.src === P.src));
   el.querySelectorAll('.dnpick').forEach(d => d.hidden = d.dataset.for !== P.src);
   $('#dnSure').value = P.s; $('#dnFrom').value = P.from; $('#dnTo').value = P.to; $('#dnFrom').max = $('#dnTo').max = SUR[P.s - 1].c;
-  $('#dnJuz').value = P.juz; $('#dnHafiz').value = P.hafiz; $('#dnRate').value = String(P.rate); $('#dnRep').value = String(P.rep); $('#dnLoop').checked = P.loop; $('#dnOkuma').value = okuma(); $('#dnHafiz').disabled = okuma() === 'tr';
+  $('#dnJuz').value = P.juz; $('#dnHafiz').value = P.hafiz; $('#dnRate').value = String(P.rate); $('#dnRep').value = String(P.rep); $('#dnEnd').value = P.end; $('#dnOkuma').value = okuma(); $('#dnHafiz').disabled = okuma() === 'tr';
   const n = A.resultIds().length;
   $('#dnRes').textContent = n ? `Aramada bulunan ${fmt(n)} ayet, Sonuçlar listesindeki sırayla çalınır.` : 'Önce yukarıdan bir kelime arayın; bulunan ayetler burada sırayla çalınır.';
   $('#dnListe').textContent = `${P.listName || 'Seçilen liste'}: ${fmt(custom.length)} ayet sırayla çalınır. Sûre ya da cüz seçerek bu listeden çıkabilirsiniz.`;
   $('#dnCount').textContent = list.length ? `${fmt(list.length)} ayet` : '';
   const sl = +$('#dnSleep').value;
-  $('#dnMoreSum').textContent = [String(P.rate).replace('.', ',') + '×', P.rep > 1 ? `her ayet ${P.rep} kez` : '', sl > 0 ? `uyku ${sl} dk` : sl < 0 ? 'bitince dur' : '', P.loop ? 'tekrar' : ''].filter(Boolean).join(' · ');
+  $('#dnMoreSum').textContent = [String(P.rate).replace('.', ',') + '×', P.rep > 1 ? `her ayet ${P.rep} kez` : '', sl > 0 ? `uyku ${sl} dk` : sl < 0 ? 'bitince dur' : '', P.end === 'loop' ? 'tekrar' : P.end === 'stop' ? 'bitince dur' : ''].filter(Boolean).join(' · ');
   showNow();
 }
 function showNow() {
@@ -134,7 +136,7 @@ function load(i, part) {
   return au.play();
 }
 function preloadNext() {
-  const j = list[k + 1] ?? (P.loop ? list[0] : null);
+  const j = list[k + 1] ?? (P.end === 'loop' ? list[0] : null);
   if (j != null) { pre.src = srcOf(j, partsOf(j, needBasmala(j))[0]); pre.load(); }
 }
 function play(fresh) {
@@ -158,9 +160,18 @@ au.onended = () => {
   if (++repN < P.rep) { parts = parts.filter(x => x !== 'bas'); ph = 0; load(list[k], parts[0]).catch(fail); return; }
   repN = 0;
   if (k + 1 < list.length) { k++; play(false); }
-  else if (P.loop && P.sleep !== -1) { k = 0; play(false); }
+  else if (P.end === 'loop' && P.sleep !== -1) { k = 0; play(false); }
+  else if (P.end === 'next' && P.sleep !== -1 && advance()) { k = 0; play(); }
   else { playing = false; setBtn(); A.setPlaying(-1); if (P.sleep === -1) setSleep(0); A.toast('Dinleme bitti'); }
 };
+// aralık bitince bir sonraki sûreye/cüze geç; Nâs'tan sonra Fâtiha'ya dön
+function advance() {
+  if (P.src === 'sure') { P.s = P.s % 114 + 1; P.from = 1; P.to = SUR[P.s - 1].c; }
+  else if (P.src === 'cuz') P.juz = P.juz % 30 + 1;
+  else return false;
+  buildList();
+  return list.length > 0;
+}
 au.onerror = () => { if (au.getAttribute('src')) fail(); };
 const key = () => P.src === 'sure' ? `s${P.s}:${P.from}-${P.to}` : P.src === 'cuz' ? `c${P.juz}` : 'r';
 function setSleep(m) {
@@ -190,7 +201,7 @@ addEventListener('ayet:okuma', () => { $('#dnOkuma').value = okuma(); $('#dnHafi
 $('#dnHafiz').onchange = e => { P.hafiz = e.target.value; store.set('dinle', P); if (playing) play(false); };
 $('#dnRate').onchange = e => { P.rate = +e.target.value; au.playbackRate = P.rate; store.set('dinle', P); };
 $('#dnRep').onchange = e => { P.rep = +e.target.value; store.set('dinle', P); };
-$('#dnLoop').onchange = e => { P.loop = e.target.checked; store.set('dinle', P); };
+$('#dnEnd').onchange = e => { P.end = e.target.value; P.loop = P.end === 'loop'; store.set('dinle', P); syncUI(); preloadNext(); };
 $('#dnSleep').onchange = e => setSleep(+e.target.value);
 $('#dnMore').addEventListener('change', () => setTimeout(syncUI));
 $('#dnPlay').onclick = toggle; $('#dnPrev').onclick = () => go(-1); $('#dnNext').onclick = () => go(1);
@@ -285,8 +296,8 @@ vk.innerHTML = `
     <div class="kbdial" id="kbDial" aria-hidden="true">
       <svg viewBox="0 0 240 240">
         <circle cx="120" cy="120" r="118" class="kbbezel"/>
+        <path id="kbArc" class="kbarc" d=""/>
         <g id="kbRose">
-          <path id="kbArc" class="kbarc" d=""/>
           <circle cx="120" cy="120" r="102" class="kbface"/>
           ${Array.from({ length: 72 }, (_, j) => `<line x1="120" y1="${j % 6 ? 22 : 20}" x2="120" y2="${j % 18 ? (j % 6 ? 27 : 31) : 33}" transform="rotate(${j * 5} 120 120)" class="kbtick${j % 6 ? '' : ' mid'}${j % 18 ? '' : ' big'}"/>`).join('')}
           ${[30, 60, 120, 150, 210, 240, 300, 330].map(d => { const a = d * Math.PI / 180; return `<text x="${(120 + 78 * Math.sin(a)).toFixed(1)}" y="${(124 - 78 * Math.cos(a)).toFixed(1)}" class="kbdeg" data-d="${d}">${d}</text>`; }).join('')}
@@ -298,9 +309,9 @@ vk.innerHTML = `
           <g transform="translate(120 9)"><circle r="12" class="kbkb"/><rect x="-6.5" y="-6.5" width="13" height="13" rx="1.6" class="kbkaaba"/><rect x="-6.5" y="-3.2" width="13" height="2.2" class="kbband"/></g>
         </g>
         <path d="M120 -3 l-6.5 -10 h13 z" class="kbme"/>
-        <circle cx="120" cy="120" r="33" class="kbcenter"/>
-        <text x="120" y="122" class="kbval" id="kbDeg">—</text>
-        <text x="120" y="137" class="kbdir" id="kbDir"></text>
+        <circle cx="120" cy="120" r="36" class="kbcenter"/>
+        <text x="120" y="124" class="kbval" id="kbDeg">—</text>
+        <text x="120" y="141" class="kbdir" id="kbDir"></text>
       </svg>
     </div>
     <button class="ghost" id="kbStart">${I('compass')}Pusulayı aç</button>
@@ -570,21 +581,32 @@ if (NOCOMPASS) { vk.classList.add('nocompass'); $('#kbStart').hidden = true; $('
 /* =================================================================
    3) KIBLE PUSULASI
    ================================================================= */
-let heading = null, compassOn = false;
+let heading = null, compassOn = false, wasOk = false;
+const YONK = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
 function rotate() {
   if (!LOC) return;
   const q = qibla(LOC.lat, LOC.lng), h = heading ?? 0;
   $('#kbRose').setAttribute('transform', `rotate(${-h} 120 120)`);
   $('#kbNeedle').setAttribute('transform', `rotate(${q - h} 120 120)`);
-  // kuzeyden kıbleye yay (saat yönünde, açının ölçüldüğü yön)
-  const ra = q * Math.PI / 180, R = 111, ex = 120 + R * Math.sin(ra), ey = 120 - R * Math.cos(ra);
-  $('#kbArc').setAttribute('d', `M120 ${120 - R} A${R} ${R} 0 ${q > 180 ? 1 : 0} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}`);
   document.querySelectorAll('.kbdeg').forEach(t => { const dd = Math.abs(((+t.dataset.d - q + 540) % 360) - 180); t.style.opacity = dd < 13 ? 0 : 1; });
-  $('#kbDeg').textContent = `${Math.round(q)}°`; $('#kbDir').textContent = YON[Math.round(q / 45) % 8];
+  $('#kbDeg').textContent = `${Math.round(q)}°`; $('#kbDir').textContent = YONK[Math.round(q / 45) % 8];
   $('#kbDial').classList.toggle('live', heading != null);
   const off = ((q - h + 540) % 360) - 180, ok = heading != null && Math.abs(off) < 4;
+  // telefonun baktığı yönden (üstteki ok) Kâbe'ye canlı yay: yaklaştıkça kısalır, kırmızıdan yeşile döner
+  const arc = $('#kbArc');
+  if (heading == null || ok) arc.setAttribute('d', '');
+  else {
+    const ra = off * Math.PI / 180, R = 111, ex = 120 + R * Math.sin(ra), ey = 120 - R * Math.cos(ra);
+    arc.setAttribute('d', `M120 ${120 - R} A${R} ${R} 0 0 ${off > 0 ? 1 : 0} ${ex.toFixed(2)} ${ey.toFixed(2)}`);
+  }
+  const hue = Math.round(140 * Math.pow(1 - Math.min(Math.abs(off), 90) / 90, 2));
+  $('#kbDial').style.setProperty('--kbhue', hue);
+  if (ok && !wasOk) { try { navigator.vibrate && navigator.vibrate(60); } catch (_) {} }
+  wasOk = ok;
   $('#kbDial').classList.toggle('ok', ok);
-  if (heading != null) $('#kbNote').textContent = ok ? 'Kıbleye dönüksünüz.' : `Kıble için ${Math.abs(Math.round(off))}° ${off > 0 ? 'sağa' : 'sola'} dönün.`;
+  const note = $('#kbNote');
+  note.classList.toggle('kbguide', heading != null); note.style.setProperty('--kbhue', hue);
+  if (heading != null) note.textContent = ok ? 'Kıbleye dönüksünüz.' : `Kıble için ${Math.abs(Math.round(off))}° ${off > 0 ? 'sağa' : 'sola'} dönün.`;
 }
 function onOri(e) {
   let h = null;

@@ -528,7 +528,7 @@ body.has-mini .updbar{bottom:96px}
 .vknext small{color:var(--ink-2);font-size:13px}
 .vknext b{font:600 34px/1.2 var(--sans);letter-spacing:-.02em;color:var(--accent-text);font-variant-numeric:tabular-nums}
 .vknext b span{font-size:18px;font-weight:500;color:var(--muted)}
-.vklist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.vklist{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .vklist li{display:grid;gap:2px;text-align:center;padding:10px 4px;border-radius:12px;background:var(--surface-2)}
 .vklist span{font-size:12.5px;color:var(--muted);font-weight:500}
 .vklist b{font:600 18px var(--sans);font-variant-numeric:tabular-nums}
@@ -541,7 +541,7 @@ body.has-mini .updbar{bottom:96px}
 .kbdial svg{width:100%;height:100%;display:block;overflow:visible}
 .kbbezel{fill:var(--surface-2);stroke:var(--line-2);stroke-width:1}
 .kbface{fill:var(--surface);stroke:var(--line);stroke-width:1}
-.kbarc{fill:none;stroke:var(--accent);stroke-opacity:.28;stroke-width:9;stroke-linecap:round}
+.kbarc{fill:none;stroke:hsl(var(--kbhue,140) 62% 44%);stroke-opacity:.85;stroke-width:9;stroke-linecap:round;transition:stroke .25s}
 .kbtick{stroke:var(--faint);stroke-width:1;stroke-linecap:round}.kbtick.mid{stroke:var(--muted);stroke-width:1.4}.kbtick.big{stroke:var(--ink-2);stroke-width:2.4}
 .kbdeg{font:500 8.5px var(--sans);text-anchor:middle;fill:var(--muted);letter-spacing:.02em}
 .kbn,.kbl{font:700 15px var(--sans);text-anchor:middle;fill:var(--ink-2)}.kbn{fill:var(--no)}
@@ -549,12 +549,14 @@ body.has-mini .updbar{bottom:96px}
 .kbkb{fill:var(--surface);stroke:var(--accent);stroke-width:1.6}
 .kbkaaba{fill:var(--ink)}.kbband{fill:#d8a531}
 .kbcenter{fill:var(--surface-2);stroke:var(--line-2);stroke-width:1}
-.kbval{font:700 19px var(--sans);text-anchor:middle;fill:var(--ink);font-variant-numeric:tabular-nums}
-.kbdir{font:500 8.5px var(--sans);text-anchor:middle;fill:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.kbval{font:700 22px var(--sans);text-anchor:middle;fill:var(--ink);font-variant-numeric:tabular-nums}
+.kbdir{font:600 10px var(--sans);text-anchor:middle;fill:var(--muted);letter-spacing:.08em}
+#kbNote.kbguide{color:hsl(var(--kbhue,140) 60% 62%);font-weight:600;transition:color .25s}
+[data-mode="light"] #kbNote.kbguide{color:hsl(var(--kbhue,140) 58% 36%)}
+[data-mode="light"] .kbarc{stroke:hsl(var(--kbhue,140) 60% 40%)}
 .kbme{fill:var(--ink-2);opacity:0;transition:opacity var(--base)}
 .kbdial.live .kbme{opacity:1}
 .kbdial.ok{filter:drop-shadow(0 0 14px var(--accent-soft-2))}
-.kbdial.ok .kbarc{stroke-opacity:.6}
 .kbdial.ok .kbkb{fill:var(--accent)}.kbdial.ok .kbcenter{fill:var(--accent-soft)}
 #kbRose,#kbNeedle{transition:transform .12s linear}
 #kbNote{margin:0;text-align:center;max-width:34ch}
@@ -583,8 +585,9 @@ body.has-mini .updbar{bottom:96px}
 .bild .chips button{min-height:32px;padding:0 12px;border-radius:99px;background:var(--surface-3);color:var(--muted);font-size:.85rem}
 .bild .chips button.on{background:var(--accent-soft-2);color:var(--accent-text)}
 .bild input[type=time]{background:var(--surface-3);border:0;border-radius:var(--r-sm);min-height:36px;padding:0 10px;color:var(--ink);font:inherit}
-.sw{position:relative;width:46px;height:28px;flex:none;border-radius:99px;background:var(--surface-3);transition:background .2s}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.sw{position:relative;box-sizing:border-box;width:46px;height:28px;flex:none;padding:0;border:0;outline-offset:3px;-webkit-appearance:none;appearance:none;border-radius:99px;background:var(--surface-3);transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--ink-2);box-shadow:0 1px 2px rgba(0,0,0,.18);transition:transform .2s var(--ease),background .2s}
+[data-mode="light"] .sw::after{background:#fff}
 .sw.on{background:var(--accent)}.sw.on::after{transform:translateX(18px);background:var(--on-accent)}
 .bild .chips button{border:0}
 .bild select{width:auto;min-width:140px}
