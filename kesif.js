@@ -119,8 +119,8 @@ const duaList = g => g.l.map(([r, w, m]) => `<li>${vlink(r.split('-')[0], g.c)}$
 const duaBtn = l => `<button class="ghost small duadinle" data-dinle="${l.flatMap(x => duaRefs(x[0])).join(',')}">Bu duaları sırayla dinle</button>`;
 
 /* ---------- önceden yazılan tezler ---------- */
-const TEZ_TARIH = '7 Kasım 2026', TEZ_TARIH2 = '8 Kasım 2026', TEZ_ILK = 25;
-const tezTarih = i => i < TEZ_ILK ? TEZ_TARIH : TEZ_TARIH2;
+const TEZ_TARIH = '8 Kasım 2026';
+const tezTarih = () => TEZ_TARIH;
 const TS = { acik: ['Açık', GOLD], destek: ['Destekleniyor', TEAL], kismen: ['Kısmen tutuyor', VIOLET], zor: ['Zorlanıyor', ROSE], bilinen: ['Önceden biliniyordu', BLUE] };
 const TEZ = [
   { k: 'Geri dönüş', t: 'Evren sonunda geri dönecek', st: 'acik', r: ['51:47', '21:104'],
@@ -389,9 +389,18 @@ const TEZ = [
 const tezRefs = TEZ.flatMap(t => t.r);
 const tezTerms = () => Object.entries(TS).map(([k, [n, c]]) => ['set', TEZ.filter(t => t.st === k).flatMap(t => t.r).join(','), '', n, c]);
 const tezLabels = () => TEZ.map((t, i) => ({ r: t.r[0], t: `${i + 1}`, c: TS[t.st][1] }));
-const tezList = () => `<ol class="tzlist">${TEZ.map((t, i) => `<li style="--c:${TS[t.st][1]}"><a href="#" data-go="${i + 1}"><i>${i + 1}</i>${t.t}</a></li>`).join('')}</ol>`;
+const tezList = () => `<ol class="tzlist">${TEZ.map((t, i) => `<li data-st="${t.st}" style="--c:${TS[t.st][1]}"><a href="#" data-go="${i + 1}"><i>${i + 1}</i>${t.t}</a></li>`).join('')}</ol>`;
 const tezLinks = TEZ.flatMap(t => t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : []);
-const tezScore = () => `<div class="tzscore">${Object.entries(TS).map(([k, [n, c]]) => `<span style="--c:${c}"><b>${TEZ.filter(t => t.st === k).length}</b>${n}</span>`).join('')}</div>`;
+const tezScore = () => `<div class="tzscore" role="group" aria-label="Duruma göre süz">${Object.entries(TS).map(([k, [n, c]]) => `<button type="button" data-st="${k}" aria-pressed="false" style="--c:${c}"><b>${TEZ.filter(t => t.st === k).length}</b>${n}</button>`).join('')}</div>`;
+// durum kutuları süzgeç: dokununca listede yalnız o durumdaki tezler kalır, tekrar dokununca hepsi döner
+document.addEventListener('click', e => {
+  const b = e.target.closest('.tzscore button'); if (!b) return;
+  const box = b.closest('.tzscore'), on = b.getAttribute('aria-pressed') !== 'true';
+  box.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(on && x === b)));
+  box.classList.toggle('filtering', on);
+  const list = box.parentElement.querySelector('.tzlist');
+  if (list) list.querySelectorAll('li').forEach(li => { li.hidden = on && li.dataset.st !== b.dataset.st; });
+});
 function tezTimeline() {
   const ev = TEZ.flatMap((t, i) => t.s.map(([y, w]) => ({ y, w, i, c: TS[t.st][1] }))).sort((a, b) => a.y - b.y);
   const ys = [...new Set(ev.map(e => e.y))], now = new Date().getFullYear();
@@ -460,7 +469,7 @@ const STORIES = [
   ] },
   { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 67 tez, 6.236 ayetin tamamından', nw: true, steps: [
     { terms: tezTerms(), labels: tezLabels(), pulses: TEZ.filter(t => t.st === 'acik').map(t => t.r[0]), cam: 'fit',
-      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt: 1–${TEZ_ILK}. tezler <b>${TEZ_TARIH}</b>, ${TEZ_ILK + 1}–${TEZ.length}. tezler <b>${TEZ_TARIH2}</b>. Son eklenenler 6.236 ayetin tek tek okunmasından çıktı.</div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}${tezList()}<small class="muted">Haritadaki numaralar tezlere karşılık geliyor; halkalar sonucu henüz belli olmayanlar. Bir teze dokunun, doğrudan ona gidin.</small>` },
+      text: `Bilinen yol hep aynı: önce bilim bir şey bulur, sonra bir ayete o anlam verilir. Burada <b>yönü tersine çeviriyoruz</b>: bir ayetin bir okumasından, sonucu henüz bilinmeyen ve yanlışlanabilen bir tez çıkarıyoruz, tarihini koyup bekliyoruz.<div class="quote" style="--c:${GOLD}">Kayıt tarihi: <b>${TEZ_TARIH}</b>. Tezlerin bir kısmı 6.236 ayetin tek tek okunmasından çıktı.</div>Tez tutarsa “keşiften sonra yorumlandı” itirazına açık olmaz. Tutmazsa çöken Kur’an değil, <b>o okuma</b> olur. Tutmayanlar da bu listede kalacak.${tezScore()}${tezList()}<small class="muted">Haritadaki numaralar tezlere karşılık geliyor; halkalar sonucu henüz belli olmayanlar. Bir teze dokunun, doğrudan ona gidin.</small>` },
     ...TEZ.map((t, i) => ({
       terms: [['set', t.r.join(','), '', `Tez ${i + 1} · ${t.k}`, TS[t.st][1]]],
       links: t.r.length > 1 ? [{ a: t.r[0], b: t.r[t.r.length - 1], c: TS[t.st][1] }] : [],
@@ -468,7 +477,7 @@ const STORIES = [
       text: tezCard(t, i) })),
     { terms: tezTerms(), labels: tezLabels(), links: tezLinks, cam: 'fit',
       text: `<h4>Sonuç takvimi</h4><p>${TEZ.length} tezin açık kalanlarının çoğunun cevabı 2027–2035 arasında gelecek. Her yıl hangi tezin sınandığı:</p>${tezTimeline()}${tezScore()}
-      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> 1–${TEZ_ILK}. tezler ${TEZ_TARIH}, sonrakiler ${TEZ_TARIH2} tarihli.</li><li><b>Önceden bilinenler ayrı sayılır.</b> Mavi tezlerin sonucu biz yazmadan önce zaten biliniyordu; bu yüzden “öngörü” sayılmazlar. Yalnız tamlık için listedeler.</li><li><b>Tutmayanlar da sayılır.</b> Yalnız tutanları anlatmak, “keşiften sonra yorum” yöntemine geri dönmek olur. Zorlanan tezler de listede kalıyor.</li></ol><p><a class="tzall" href="tezler.html">285 adayın tam kataloğu →</a><br><small class="muted">Tam okumada not edilen her aday: tezler, bilinen bilgiler, zorlananlar ve elenenler.</small></p>` },
+      <h4>Oyunun kuralları</h4><ol class="tzrules"><li><b>Okuma önceden yazılır.</b> Kelimenin hangi anlamının seçildiği sonuç bilinmeden belirlenir, sonradan değişmez.</li><li><b>Tez yanlışlanabilir olmalı.</b> “Ne olursa çöker?” sorusunun bir cevabı olmalı.</li><li><b>Tarih konur.</b> Bütün tezler ${TEZ_TARIH} tarihli.</li><li><b>Önceden bilinenler ayrı sayılır.</b> Mavi tezlerin sonucu biz yazmadan önce zaten biliniyordu; bu yüzden “öngörü” sayılmazlar. Yalnız tamlık için listedeler.</li><li><b>Tutmayanlar da sayılır.</b> Yalnız tutanları anlatmak, “keşiften sonra yorum” yöntemine geri dönmek olur. Zorlanan tezler de listede kalıyor.</li></ol><p><a class="tzall" href="tezler.html">285 adayın tam kataloğu →</a><br><small class="muted">Tam okumada not edilen her aday: tezler, bilinen bilgiler, zorlananlar ve elenenler.</small></p>` },
   ] },
 ];
 
@@ -641,7 +650,10 @@ function go(k) {
   const bar = $('#stDots .stbar'); if (bar) bar.onclick = e => { const r = bar.getBoundingClientRect(); go(Math.min(N - 1, Math.floor((e.clientX - r.left) / r.width * N))); };
   $('#stPrev').disabled = k === 0;
   const last = k === story.steps.length - 1;
-  $('#stNext').textContent = last ? (nextStory() ? `Sonraki: ${nextStory().t}` : 'Bitir') : 'Devam';
+  { const ns = last && nextStory(), b = $('#stNext'), sp = document.createElement('span');
+    sp.textContent = ns ? ns.t : last ? 'Bitir' : 'Devam'; b.classList.toggle('stnx', !!ns);
+    if (ns) { const sm = document.createElement('small'); sm.textContent = 'Sonraki keşif'; b.replaceChildren(sm, sp); } else b.replaceChildren(sp);
+    b.title = ns ? `Sonraki: ${ns.t}` : sp.textContent; }
   if (A.state.metric !== 'occ') $('#metricSeg button[data-m="occ"]').click();
   if (st.eq) return runEq(st.eq, 0);
   if (st.chance) return runChance();

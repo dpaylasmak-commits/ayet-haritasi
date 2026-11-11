@@ -622,12 +622,13 @@ function renderStats() {
       <div class="sub">${fmt(s.occ)} geçiş · ${fmt(s.ver)} ayet · ${s.surahs} sûre · ${t.mode === 'tr' ? mealName(t.meal) + ' meali' : modeName[t.mode]}</div>
       <div class="bar" title="Mekkî / Medenî"><i style="width:${s.mk / tot * 100}%;background:${t.color}"></i><i style="width:${s.md / tot * 100}%;background:${t.color};opacity:.4"></i></div>
       <div class="sub">Mekkî %${Math.round(s.mk / tot * 100)} · Medenî %${Math.round(s.md / tot * 100)}${s.first >= 0 ? ` · ilk: <a href="#" data-v="${s.first}">${ref(s.first)}</a> · son: <a href="#" data-v="${s.last}">${ref(s.last)}</a>` : ''}</div>
-      <div class="tops">${s.tops.map(x => `<button data-s="${x}">${SUR[x - 1].tr} ${s.per[x]}</button>`).join('')}</div>
+      <div class="tops">${s.tops.map(x => `<button data-s="${x}" class="${state.fSurah === x ? 'on' : ''}" aria-pressed="${state.fSurah === x}">${SUR[x - 1].tr} ${s.per[x]}</button>`).join('')}</div>
     </div>`;
   });
   el.innerHTML = html + resultList();
   el.querySelectorAll('a[data-v]').forEach(a => a.onclick = e => { e.preventDefault(); openVerse(+a.dataset.v); });
-  el.querySelectorAll('button[data-s]').forEach(b => b.onclick = () => focusSurah(+b.dataset.s));
+  // sûre düğmesi aç/kapa: ikinci dokunuş süzgeci kaldırıp bütün sonuçlara döner
+  el.querySelectorAll('button[data-s]').forEach(b => b.onclick = () => focusSurah(state.fSurah === +b.dataset.s ? 0 : +b.dataset.s));
   bindResults(el);
 }
 /* sonuç listesi: haritadaki noktaların okunabilir karşılığı */
