@@ -400,7 +400,7 @@ $('#vkGps').onclick = () => {
     $('#vkGps').disabled = false;
     const la = +p.coords.latitude.toFixed(3), lo = +p.coords.longitude.toFixed(3);
     const near = IL.map(c => [c, Math.hypot(c.lat - la, (c.lng - lo) * Math.cos(rad(la)))]).sort((a, b) => a[1] - b[1])[0];
-    setLoc({ name: near && near[1] < 0.6 ? `${near[0].n} (konum)` : 'Bulunduğum yer', lat: la, lng: lo, tz: localTz() });
+    setLoc({ name: near && near[1] < 0.6 ? `${near[0].n} (konum)` : near && near[1] < 1.5 ? `${near[0].n} yakını` : 'Bulunduğum yer', lat: la, lng: lo, tz: localTz() });
   }, err => { $('#vkGps').disabled = false; A.toast(err.code === 1 ? 'Konum izni verilmedi; il seçebilirsiniz' : 'Konum alınamadı; il seçin'); }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 6 * 3600e3 });
 };
 setInterval(() => { if (LOC && !vk.hidden) renderVakit(); }, 1000);
@@ -720,6 +720,14 @@ addEventListener('ayet:zikir', e => {
   setTimeout(() => $('#zk').scrollIntoView({ behavior: 'smooth', block: 'start' }), 250);
 });
 zkOptions(); zkRender();
+// ana ekran widget'ından gelen yönlendirme: 'vakit' | 'kible' | 'imsakiye'
+addEventListener('ayet:git', e => {
+  const b = document.querySelector('#bnav button[data-go="vakit"]') || document.querySelector('[data-go="vakit"]');
+  if (b) b.click();
+  const id = { kible: 'kible', imsakiye: 'imsakiye' }[e.detail] || 'vkBody', el = document.getElementById(id);
+  if (id === 'imsakiye' && el) el.open = true;
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: id === 'vkBody' ? 'center' : 'start' }), 250);
+});
 
 /* =================================================================
    4) GÜNÜN AYETİ · her gün aynı ayet herkese; paylaşım görseli

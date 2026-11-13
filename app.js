@@ -222,6 +222,7 @@ const pos = new Float32Array(N * 2); pos.set(cur.P);
 const cam = { x: 39, y: 39, s: 8 };
 let camAnim = null, needs = true, hover = -1, selected = -1;
 let intro = { t0: 0, on: true };
+let layoutDur = 900, layoutStag = 700;
 let particles = null, partT = 1, partStart = 0, chartLabels = [], overlay = null;
 
 function resize() {
@@ -242,7 +243,7 @@ const w2s = (x, y) => [(x - cam.x) * cam.s + W / 2, (y - cam.y) * cam.s + H / 2]
 const s2w = (x, y) => [(x - W / 2) / cam.s + cam.x, (y - H / 2) / cam.s + cam.y];
 
 function setLayout(kind) {
-  state.layout = kind;
+  state.layout = kind; layoutDur = 900; layoutStag = 700;
   $$('#layoutSeg button').forEach(b => b.classList.toggle('on', b.dataset.l === kind));
   from = new Float32Array(pos); cur = layoutPositions(kind);
   layoutT = 0; layoutStart = performance.now();
@@ -302,7 +303,7 @@ function draw(now) {
   // yerleşim geçişi (sıralı, akışkan)
   let moving = false;
   if (layoutT < 1 && from) {
-    const el = now - layoutStart, dur = 900, stag = 700;
+    const el = now - layoutStart, dur = layoutDur, stag = layoutStag;
     let done = true;
     for (let i = 0; i < N; i++) {
       let t = (el - (i / N) * stag) / dur; t = t < 0 ? 0 : t > 1 ? 1 : t; if (t < 1) done = false;
@@ -1351,7 +1352,21 @@ window.AYET = {
   resultCount: () => resultIds().length,
   resultIds: () => resultIds(),
   tweenCam, fitCam, w2s, cardOpen: () => !card.hidden, curBounds: () => cur.b, curP: () => cur.P, cam,
-  setOverlay(fn) { overlay = fn; needs = true; }, redraw() { needs = true; },
+  setOverlay(fn) { overlay = fn; needs = true; },
+  // açılış: bütün noktalar ekrandaki 3×3 noktadan (sx, sy: sayfa koordinatı, gap: aralık px) haritaya açılır
+  gather(sx, sy, gap, dur = 750, stag = 450) {
+    const r = map.getBoundingClientRect(), b = cur.b, P = cur.P;
+    sx -= r.left; sy -= r.top;
+    from = new Float32Array(N * 2);
+    for (let i = 0; i < N; i++) {
+      const cx = Math.min(2, Math.floor(3 * (P[2 * i] - b.x0) / (b.w + 1e-6))), cy = Math.min(2, Math.floor(3 * (P[2 * i + 1] - b.y0) / (b.h + 1e-6)));
+      const [wx, wy] = s2w(sx + (cx - 1) * gap, sy + (cy - 1) * gap);
+      from[2 * i] = wx; from[2 * i + 1] = wy;
+    }
+    pos.set(from); layoutDur = dur; layoutStag = stag; layoutT = 0; layoutStart = performance.now();
+    intro.on = false; $('#introCount').textContent = fmt(N); needs = true;
+  },
+  skipGather() { if (layoutT < 1) { layoutT = 1; pos.set(cur.P); buildBuckets(); needs = true; } }, redraw() { needs = true; },
   setExtraHash(h) { extraHash = h; buildHash(); syncHash(); }, LOCAL,
   mealText: id => mealText[id], mealName, cardIndex: () => selected, cardMeal: () => state.cardMeal, stopAudio: () => { if (playing) stopAudio(); },
   setPlaying(i) { playI = i; needs = true; }, juz: i => Q.verses[i][5]
