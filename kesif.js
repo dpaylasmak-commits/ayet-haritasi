@@ -413,6 +413,33 @@ const tezCard = (t, i) => `<a href="#" class="tzback" data-go="0">← Tez listes
   ${t.s.length ? `<dt>Sınav</dt><dd>${t.s.map(([y, w]) => `<span class="tzy">${y}</span> ${w}`).join('<br>')}</dd>` : ''}${t.c === '—' || t.st === 'zor' ? '' : `<dt>Çökerse</dt><dd>${t.c}</dd>`}<dt>Kayıt</dt><dd>${tezTarih(i)}</dd></dl>
   ${t.cd ? countdown(...t.cd) : ''}</div>`;
 
+
+/* ---------- Esmâ-ül Hüsnâ (veri: esma.js) ---------- */
+const ESMA = window.ESMA || [];
+const ESW = '#9aa3b8';
+const esmaGrid = () => `<ol class="esgrid">${ESMA.map((e, n) => `<li><a href="#" data-go="${n + 1}"><i>${n + 1}</i><b class="ar">${e.a}</b><span>${e.t}</span></a></li>`).join('')}</ol>`;
+function esmaStep(e, n) {
+  const S = e.s ? e.s.split(',') : [], W = e.w && (e.f === 'lemma' || !S.length) ? e.w.split(',') : [];
+  const terms = [];
+  if (S.length) terms.push(['set', S.join(','), '', e.t, GOLD]);
+  if (W.length) terms.push(['set', W.join(','), '', e.f === 'lemma' ? 'Aynı kelime, başka anlamda' : 'Aynı kökten', ESW]);
+  const refs = S.slice(0, 12).map(r => vlink(r, GOLD)).join(' ');
+  const how = e.f === 'lemma'
+    ? (S.length ? `Allah için <b>${fmt(S.length)}</b> ayette geçiyor.${W.length ? ` Aynı kelime <b>${fmt(W.length)}</b> ayette başka bir anlamda ya da başkası için kullanılıyor; onlar gri.` : ''}` : `Bu kelime Kur’an’da <b>${fmt(W.length)}</b> ayette geçiyor; Allah’ın ismi olarak açıkça kullanıldığı bir ayet bulunmadı.`)
+    : (S.length ? `Bu isim Kur’an’da bu biçimiyle geçmez. Aynı kökten fiil, Allah’ın işi olarak <b>${fmt(S.length)}</b> ayette anlatılıyor.` : `Bu isim Kur’an’da bu biçimiyle geçmez. <span class="ar">${e.x}</span> kökü <b>${fmt(W.length)}</b> ayette geçiyor; haritada gri.`);
+  return {
+    terms, cam: S.length ? S.slice(0, 40) : 'fit', labels: S.length <= 8 ? S.map(r => ({ r, t: r, c: GOLD })) : [],
+    text: `<a href="#" class="tzback" data-go="0">← 99 isme dön</a><div class="escard"><span class="esn">${n + 1}</span><b class="ar">${e.a}</b><h4>${e.t}</h4><p>${e.m}</p></div>${how}${refs ? `<p class="esrefs">${refs}${S.length > 12 ? ` <span class="muted">ve ${fmt(S.length - 12)} ayet daha; hepsi haritada</span>` : ''}</p>` : ''}<p><button class="ghost small" data-zikir="${n}">${'<svg class="i"><use href="#i-target"/></svg>'}Zikirmatik’te çek</button></p><small class="muted">${e.f === 'lemma' ? 'Sözlük biçimi' : 'Kök'}: <span class="ar">${e.x}</span></small>`,
+  };
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-zikir]'); if (!b) return;
+  const e = ESMA[+b.dataset.zikir]; if (!e) return;
+  // nida: "el-Azîz" → "Yâ Azîz", الْعَزِيزُ → يَا عَزِيزُ (harf-i tarif ve güneş harfindeki şedde düşer)
+  const def = /^(el|er|es|eş|ez|et|en|ed)-/.test(e.t);
+  const ar = def ? 'يَا ' + e.a.replace(/^ا[\u064B-\u065F]*ل[\u064B-\u065F\u0670]*/, '').replace(/^(.)\u0651/, '$1').replace(/^(.)([\u064B-\u0650\u0652]*)\u0651/, '$1$2') : e.a;
+  dispatchEvent(new CustomEvent('ayet:zikir', { detail: { t: def ? `Yâ ${e.t.replace(/^(el|er|es|eş|ez|et|en|ed)-/, '').replace(/^./, c => c.toLocaleUpperCase('tr'))}` : e.t, a: ar, hedef: 99 } }));
+});
 const STORIES = [
   { id: 'madrake', t: 'Nereden bileceksin?', icon: '؟', d: '“Ve mâ edrâke” 13 kez cevaplanıyor, “ve mâ yudrîke” 3 kez açık kalıyor', steps: [
     { terms: [['ar', 'ادراك', 'affix', 'Sana ne bildirdi?', GOLD], ['ar', 'يدريك', 'affix', 'Seni ne bilgilendirecek?', VIOLET]], cam: 'fit',
@@ -466,6 +493,11 @@ const STORIES = [
     ...DUA.map(g => ({ terms: [['set', g.l.flatMap(x => duaRefs(x[0])).join(','), '', g.t, g.c]], cam: g.l.map(x => x[0].split('-')[0]), labels: g.l.length <= 12 ? g.l.map(([r, w]) => ({ r: r.split('-')[0], t: w, c: g.c })) : [],
       text: `<h4>${g.t}</h4><p>${g.k === 'pey' ? 'Peygamberlerin zor anlarda yaptığı dualar. Çoğu kısa: bir itiraf, bir ihtiyaç, bir sığınma.' : g.k === 'kul' ? 'Kur’an’ın doğrudan öğrettiği dualar: Fâtiha, Bakara’nın son ayeti ve “de ki” diye başlayanlar. Namazda ve günlük hayatta en çok okunanlar bunlar.' : g.k === 'mum' ? 'Peygamber olmayan insanların duaları: bir ordu, bir grup genç, sihirbazlar, bir kraliçe. Kur’an bu sözleri örnek olarak aktarır.' : 'Arşı taşıyan meleklerin, yeryüzündeki mü’minler için yaptığı dua.'}</p>${duaBtn(g.l)}`,
       list: duaList(g) })),
+  ] },
+  { id: 'esma', t: 'Allah’ın 99 ismi', icon: 'ﷲ', d: 'Esmâ-ül Hüsnâ: her isim, geçtiği ayetlerle', nw: true, steps: [
+    { terms: [['set', ESMA.map(e => e.s).filter(Boolean).join(','), '', 'Esmâ-ül Hüsnâ', GOLD]], cam: 'fit',
+      text: `“En güzel isimler Allah’ındır; O’na onlarla dua edin” ${vlink('7:180', GOLD)}. Kur’an bu ifadeyi dört yerde tekrar eder: ${vlink('17:110', GOLD)}, ${vlink('20:8', GOLD)}, ${vlink('59:24', GOLD)}.<br><br>Burada bilinen 99 isimlik liste var. Her ismin Kur’an’da Allah için geçtiği ayetler haritada yanıyor. Bir isme dokunun; anlamını, geçtiği ayetleri ve aynı kelimenin başka anlamdaki kullanımlarını görün.${esmaGrid()}<small class="muted">Altın renk: ismin Allah için kullanıldığı ayetler. Bunlar isim çiftlerinden (“Azîz, Hakîm” gibi) ve bilinen ayetlerden seçildi; birkaç istisna olabilir. Bazı isimler Kur’an’da bu biçimiyle geçmez; onlarda aynı kökten fiilin Allah için kullanıldığı ayetler gösteriliyor.</small>` },
+    ...ESMA.map((e, n) => esmaStep(e, n)),
   ] },
   { id: 'tezler', t: 'Önceden yazılan tezler', icon: '⧗', d: 'Ayetten keşfe: 67 tez, 6.236 ayetin tamamından', nw: true, steps: [
     { terms: tezTerms(), labels: tezLabels(), pulses: TEZ.filter(t => t.st === 'acik').map(t => t.r[0]), cam: 'fit',

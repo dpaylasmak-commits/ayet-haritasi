@@ -717,3 +717,37 @@ body.has-mini .updbar{bottom:96px}
 .tzback:hover{text-decoration:underline}
 .mapwrap > .hint{position:static;transform:none;display:block;margin:8px auto 0;width:auto;max-width:100%}
 .tzlist li[hidden]{display:none}
+/* Esmâ-ül Hüsnâ */
+.esgrid{list-style:none;margin:14px 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.esgrid a{display:grid;justify-items:center;gap:2px;padding:10px 4px 8px;border-radius:12px;background:var(--surface-2);color:var(--ink);text-decoration:none;position:relative;transition:background var(--fast)}
+.esgrid a:hover{background:var(--surface-3)}
+.esgrid i{position:absolute;top:5px;left:7px;font:600 10px var(--sans);font-style:normal;color:var(--faint);font-variant-numeric:tabular-nums}
+.esgrid b.ar{font-family:var(--ar);direction:rtl;font-size:21px;line-height:1.5;font-weight:400;color:var(--accent-text)}
+.esgrid span{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.25}
+.escard{display:grid;justify-items:center;text-align:center;gap:2px;padding:16px 12px;margin:6px 0 12px;border-radius:var(--r);background:var(--accent-soft);position:relative}
+.escard .esn{position:absolute;top:8px;left:12px;font:600 12px var(--sans);color:var(--muted)}
+.escard b.ar{font-family:var(--ar);direction:rtl;font-size:40px;line-height:1.5;font-weight:400;color:var(--accent-text)}
+.escard h4{margin:0;font-size:18px}
+.escard p{margin:2px 0 0;color:var(--ink-2)}
+.esrefs{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:13px}
+/* Zikirmatik */
+.zk{display:grid;gap:12px;justify-items:center;border-top:1px solid var(--line);padding-top:16px;margin-bottom:6px}
+.zk .ph{width:100%}
+.zkpick{display:flex;gap:8px;width:100%}
+.zkpick select{flex:1;min-width:0}.zkpick #zkGoal{flex:0 0 auto;width:auto}
+.zkpad{position:relative;width:min(260px,72vw);aspect-ratio:1;border:0;padding:0;border-radius:50%;background:var(--accent-soft);color:var(--ink);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:transform .08s var(--ease),background var(--fast)}
+.zkpad:active{transform:scale(.97);background:var(--accent-soft-2)}
+.zkpad.hit .zkin strong{animation:zkhit .18s var(--ease)}
+@keyframes zkhit{0%{transform:scale(1.12)}100%{transform:scale(1)}}
+.zkpad svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.zkring{fill:none;stroke:var(--surface-3);stroke-width:5}
+.zkprog{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .2s var(--ease)}
+.zkin{position:relative;display:grid;justify-items:center;align-content:center;gap:2px;height:100%;padding:0 18%}
+.zkin .ar{font:400 22px/1.5 var(--ar);direction:rtl;color:var(--accent-text);min-height:1.5em}
+.zkin span{font-size:13px;color:var(--ink-2);text-align:center;line-height:1.25}
+.zkin strong{font:600 54px/1.1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:2px}
+.zkin small{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.zkf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.zkweek{text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){.zkpad,.zkprog{transition:none}.zkpad.hit .zkin strong{animation:none}}
+.zkf label{display:inline-flex;align-items:center;gap:6px}

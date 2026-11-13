@@ -291,6 +291,16 @@ vk.innerHTML = `
     <div class="imh"><select id="imSel" aria-label="Ay"></select><button class="ghost small" id="imCopy">${I('copy')}Kopyala</button></div>
     <div class="imwrap" id="imBody"></div>
   </details>
+  <div class="zk" id="zk">
+    <div class="ph"><h3>Zikirmatik</h3><span class="muted small" id="zkDay"></span></div>
+    <div class="zkpick"><select id="zkSel" aria-label="Zikir"></select><select id="zkGoal" aria-label="Hedef"><option value="33">33</option><option value="99">99</option><option value="100">100</option><option value="500">500</option><option value="1000">1000</option><option value="0">Sınırsız</option></select></div>
+    <button type="button" class="zkpad" id="zkPad" aria-label="Say">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" class="zkring"/><circle cx="60" cy="60" r="54" class="zkprog" id="zkProg"/></svg>
+      <span class="zkin"><b class="ar" id="zkAr"></b><span id="zkName"></span><strong id="zkN">0</strong><small id="zkOf"></small></span>
+    </button>
+    <div class="zkf"><button type="button" class="ghost small" id="zkUndo">Geri al</button><button type="button" class="ghost small" id="zkReset">Sıfırla</button><label class="chk small"><input type="checkbox" id="zkVib"> Titreşim</label></div>
+    <p class="muted small zkweek" id="zkWeek"></p>
+  </div>
   <div class="kible" id="kible">
     <div class="ph"><h3>Kıble</h3><span class="muted small" id="kbTxt"></span></div>
     <div class="kbdial" id="kbDial" aria-hidden="true">
@@ -633,6 +643,83 @@ $('#kbStart').onclick = async () => {
 if (!('DeviceOrientationEvent' in window)) $('#kbStart').hidden = true;
 
 renderVakit();
+
+
+/* =================================================================
+   ZİKİRMATİK · sayaç yalnız bu cihazda saklanır
+   ================================================================= */
+const ZK = [
+  ['tesbihat', 'Namaz sonrası tesbihat', '', 33],
+  ['subhan', 'Sübhânallah', 'سُبْحَانَ اللّٰهِ', 33],
+  ['hamd', 'Elhamdülillah', 'اَلْحَمْدُ لِلّٰهِ', 33],
+  ['tekbir', 'Allâhu ekber', 'اَللّٰهُ أَكْبَرُ', 33],
+  ['tevhid', 'Lâ ilâhe illallah', 'لَا إِلٰهَ إِلَّا اللّٰهُ', 100],
+  ['istigfar', 'Estağfirullah', 'أَسْتَغْفِرُ اللّٰهَ', 100],
+  ['salavat', 'Allâhümme salli alâ Muhammed', 'اَللّٰهُمَّ صَلِّ عَلٰى مُحَمَّدٍ', 100],
+];
+const TESB = ['subhan', 'hamd', 'tekbir'];
+const Z = Object.assign({ sel: 'tesbihat', goal: 33, n: 0, tur: 0, ph: 0, vib: true, ozel: null }, store.get('zikir', {}));
+const zkDays = store.get('zikir-gun', {});
+const dkey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const zkItem = () => Z.sel === 'ozel' && Z.ozel ? ['ozel', Z.ozel.t, Z.ozel.a, Z.ozel.hedef || 99] : ZK.find(z => z[0] === Z.sel) || ZK[0];
+const zkCur = () => Z.sel === 'tesbihat' ? ZK.find(z => z[0] === TESB[Z.ph]) : zkItem();
+function zkOptions() {
+  $('#zkSel').innerHTML = ZK.map(([v, t]) => `<option value="${v}">${t}</option>`).join('') + (Z.ozel ? `<option value="ozel">${A.escHtml(Z.ozel.t)}</option>` : '');
+}
+function zkSave() { store.set('zikir', Z); }
+function zkRender() {
+  const it = zkCur(), goal = Z.sel === 'tesbihat' ? 33 : Z.goal;
+  $('#zkSel').value = Z.sel; $('#zkGoal').value = String(Z.goal); $('#zkGoal').disabled = Z.sel === 'tesbihat'; $('#zkVib').checked = Z.vib;
+  $('#zkAr').textContent = it[2]; $('#zkName').textContent = it[1];
+  $('#zkN').textContent = fmt(Z.n);
+  $('#zkOf').textContent = Z.sel === 'tesbihat' ? `${Z.ph + 1}/3 · 33` : goal ? `/ ${fmt(goal)}${Z.tur ? ` · ${Z.tur + 1}. tur` : ''}` : (Z.tur ? '' : 'sınırsız');
+  const C = 2 * Math.PI * 54, f = goal ? Math.min(Z.n / goal, 1) : 0;
+  $('#zkProg').style.strokeDasharray = `${C}`; $('#zkProg').style.strokeDashoffset = `${C * (1 - f)}`;
+  const today = zkDays[dkey()] || 0;
+  $('#zkDay').textContent = today ? `Bugün ${fmt(today)}` : '';
+  let wk = 0; for (let k = 0; k < 7; k++) { const d = new Date(); d.setDate(d.getDate() - k); wk += zkDays[dkey(d)] || 0; }
+  $('#zkWeek').textContent = wk ? `Son 7 gün: ${fmt(wk)} zikir. Sayaç yalnız bu cihazda saklanır.` : 'Ortaya dokundukça sayar. Sayaç yalnız bu cihazda saklanır.';
+}
+const buzz = p => { if (!Z.vib) return; try { navigator.vibrate && navigator.vibrate(p); } catch (_) {} };
+let wake = null, wakeT = 0;
+async function keepAwake() {
+  clearTimeout(wakeT); wakeT = setTimeout(() => { try { wake && wake.release(); } catch (_) {} wake = null; }, 120000);
+  if (wake || !('wakeLock' in navigator)) return;
+  try { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } catch (_) {}
+}
+function zkTap() {
+  const goal = Z.sel === 'tesbihat' ? 33 : Z.goal;
+  Z.n++; const k = dkey(); zkDays[k] = (zkDays[k] || 0) + 1;
+  const pad = $('#zkPad'); pad.classList.remove('hit'); void pad.offsetWidth; pad.classList.add('hit');
+  if (goal && Z.n >= goal) {
+    if (Z.sel === 'tesbihat') {
+      if (Z.ph < 2) { Z.ph++; Z.n = 0; buzz([60, 50, 60]); }
+      else { Z.ph = 0; Z.n = 0; buzz([90, 60, 90, 60, 160]); A.toast('Tesbihat tamamlandı. Kabul olsun.'); }
+    } else { Z.n = 0; Z.tur++; buzz([60, 50, 60]); A.toast(`${fmt(goal)} tamamlandı`); }
+  } else buzz(12);
+  for (const d of Object.keys(zkDays)) if (Date.now() - new Date(d).getTime() > 40 * 864e5) delete zkDays[d];
+  store.set('zikir-gun', zkDays); zkSave(); zkRender(); keepAwake();
+}
+$('#zkPad').addEventListener('pointerdown', e => { if (e.button > 0) return; e.preventDefault(); zkTap(); });
+$('#zkPad').addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) zkTap(); } });
+$('#zkPad').addEventListener('click', e => e.preventDefault());
+$('#zkUndo').onclick = () => {
+  if (Z.n > 0) { Z.n--; const k = dkey(); if (zkDays[k]) zkDays[k]--; }
+  else if (Z.sel === 'tesbihat' && Z.ph > 0) { Z.ph--; Z.n = 32; const k = dkey(); if (zkDays[k]) zkDays[k]--; }
+  store.set('zikir-gun', zkDays); zkSave(); zkRender();
+};
+$('#zkReset').onclick = () => { Z.n = 0; Z.tur = 0; Z.ph = 0; zkSave(); zkRender(); };
+$('#zkSel').onchange = e => { Z.sel = e.target.value; Z.n = 0; Z.tur = 0; Z.ph = 0; if (Z.sel !== 'tesbihat') Z.goal = zkItem()[3]; zkSave(); zkRender(); };
+$('#zkGoal').onchange = e => { Z.goal = +e.target.value; Z.tur = 0; zkSave(); zkRender(); };
+$('#zkVib').onchange = e => { Z.vib = e.target.checked; zkSave(); if (Z.vib) buzz(20); };
+// Esmâ kartındaki "Zikirmatik'te çek": o ismi seç, Bugün sekmesine geç
+addEventListener('ayet:zikir', e => {
+  Z.ozel = e.detail; Z.sel = 'ozel'; Z.goal = e.detail.hedef || 99; Z.n = 0; Z.tur = 0; Z.ph = 0; zkSave(); zkOptions(); zkRender();
+  const b = document.querySelector('#bnav button[data-go="vakit"]') || document.querySelector('.ptabs button[data-go="vakit"], [data-go="vakit"]');
+  if (b) b.click();
+  setTimeout(() => $('#zk').scrollIntoView({ behavior: 'smooth', block: 'start' }), 250);
+});
+zkOptions(); zkRender();
 
 /* =================================================================
    4) GÜNÜN AYETİ · her gün aynı ayet herkese; paylaşım görseli
